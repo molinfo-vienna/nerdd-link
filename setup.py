@@ -16,7 +16,7 @@ rdkit_requirement = ["rdkit>=2022.3.3"] if not rdkit_installed else []
 
 setup(
     name="nerdd-kafka",
-    version="0.1.0",
+    version="0.2.1",
     maintainer="Steffen Hirte",
     maintainer_email="steffen.hirte@univie.ac.at",
     packages=find_packages(),
@@ -27,11 +27,14 @@ setup(
     install_requires=rdkit_requirement
     + [
         "kafka-python==2.0.2",
+        "nerdd-module>=0.2.0",
         "pandas>=1.2.1",
         "pyyaml~=6.0",
         "filetype~=1.2.0",
         "rich-click>=1.7.1",
         "stringcase~=1.2.0",
+        "numpy",
+        "simplejson>=3",
     ],
     extras_require={
         "dev": [],
@@ -44,6 +47,10 @@ setup(
             "pytest-watch",
             "hypothesis",
             "hypothesis-rdkit",
+        ],
+        "docs": [
+            "mkdocs",
+            "mkdocs-material",
         ],
     },
     entry_points={

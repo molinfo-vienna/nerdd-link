@@ -3,8 +3,7 @@ import time
 from threading import Thread
 
 from kafka.consumer.fetcher import ConsumerRecord
-from nerdd_module import run_server
-from pytest_bdd import given, when
+from pytest_bdd import given, then, when
 
 
 @given("a mocked kafka consumer", target_fixture="mocked_kafka_consumer")
@@ -26,8 +25,6 @@ def mocked_kafka_consumer(mocker, input_batches):
     # and waits indefinitely if there are no messages
     def serve_and_wait_indefinitely(*args, **kwargs):
         nonlocal current_batch
-
-        import time
 
         # serve all messages we would like to have processed
         for i, batch in enumerate(input_batches):
@@ -60,9 +57,8 @@ def mocked_kafka_consumer(mocker, input_batches):
             # * to records (of type List[ConsumerRecord])
             return dict(topic_partition_1=records)
 
-        # wait indefinitely
-        while True:
-            time.sleep(100)
+        time.sleep(1)
+        return None
 
     # note: the variable mocked holds the KafkaConsumer *class* and return_value is the
     # KafkaConsumer *instance*
@@ -81,13 +77,30 @@ def kafka_server(mocker, predictor, mocked_kafka_consumer, mocked_kafka_producer
     class ServerThread(Thread):
         def __init__(self):
             super().__init__()
+            # Importing nerdd_kafka at the top of the file would already import
+            # the KafkaConsumer and KafkaProducer classes. However, we want to mock
+            # these classes in the test, so we have to import them after the mocks
+            # have been set up! That is why we import the KafkaServer class here.
+            from nerdd_kafka import KafkaServer
+
+            self.server = KafkaServer()
 
         def run(self):
-            run_server(predictor, "dummy", "localhost", "dummy_inputs", 100)
+            self.server.start(predictor, "dummy", "localhost", "dummy_inputs", 100)
+
+        def stop(self):
+            self.server.stop()
 
     server_thread = ServerThread()
     server_thread.start()
     return server_thread
+
+
+@then("the server is shut down")
+def check_server_is_shut_down(kafka_server):
+    time.sleep(5)
+    kafka_server.stop()
+    kafka_server.join()
 
 
 @when(
