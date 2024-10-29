@@ -1,0 +1,7 @@
+name: nerdd_kafka
+channels:
+- conda-forge
+- defaults
+dependencies:
+- python=3.9
+- rdkit=2023
