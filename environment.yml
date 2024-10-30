@@ -1,4 +1,4 @@
-name: nerdd_kafka
+name: nerdd_link
 channels:
 - conda-forge
 - defaults

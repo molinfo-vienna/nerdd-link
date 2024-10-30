@@ -1,13 +1,13 @@
-# NERDD Kafka
+# NERDD-Link
 
-Run a [NERDD module](https://github.com/molinfo-vienna/nerdd-module) as a Kafka 
+Run a [NERDD module](https://github.com/molinfo-vienna/nerdd-module) as a  
 service that consumes input molecules and produces prediction tuples.
 
 
 ## Installation
 
 ```bash
-pip install -U nerdd-kafka
+pip install -U nerdd-link
 ```
   
 ## Usage
@@ -34,3 +34,6 @@ If the model class is called ```ExamplePredictionModel```, the server will read 
 tuples from the input topic ```example-prediction-inputs``` in batches of size 100
 and write results to the ```results``` topic. The batch size specifies the number
 of input tuples that are given to the model at once.
+
+## Communication
+
