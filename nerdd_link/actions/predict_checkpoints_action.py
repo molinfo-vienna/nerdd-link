@@ -22,10 +22,16 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
 
     def _process_message(self, message: CheckpointMessage) -> None:
         job_id = message.job_id
+        checkpoint_id = message.checkpoint_id
         params = message.params
 
         # the input file to the job is stored in the file data_dir/job_id/input/
-        checkpoints_file = f"{self.data_dir}/jobs/{job_id}/input/checkpoint_{message.checkpoint_id}.pickle"
+        checkpoints_file = (
+            f"{self.data_dir}/jobs/{job_id}/input/checkpoint_{checkpoint_id}.pickle"
+        )
+        checkpoint_results_file = (
+            f"{self.data_dir}/jobs/{job_id}/results/checkpoint_{checkpoint_id}.pickle"
+        )
 
         # create the results directory
         os.makedirs(f"{self.data_dir}/jobs/{job_id}/results", exist_ok=True)
@@ -34,9 +40,10 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         model = ReadCheckpointModel(
             base_model=self.model,
             job_id=job_id,
+            checkpoint_id=checkpoint_id,
             channel=self.channel,
             checkpoints_file=checkpoints_file,
-            results_file=f"{self.data_dir}/jobs/{job_id}/results/checkpoint_{message.checkpoint_id}.pickle",
+            results_file=checkpoint_results_file,
         )
 
         # predict the checkpoint
