@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from threading import Event, Thread
 from typing import Generic, Type, TypeVar
 
+from stringcase import spinalcase
+
 from ..channels import Channel, Topic
 from ..types import Message
 
@@ -17,7 +19,9 @@ class Action(ABC, Thread, Generic[T]):
     def run(self):
         self._stopped.clear()
 
-        messages = self._input_topic.receive()
+        consumer_group = spinalcase(self._get_group_name())
+
+        messages = self._input_topic.receive(consumer_group)
 
         while not self._stopped.is_set():
             try:
@@ -41,3 +45,6 @@ class Action(ABC, Thread, Generic[T]):
     @property
     def channel(self) -> Channel:
         return self._input_topic.channel
+
+    def _get_group_name(self) -> str:
+        return spinalcase(self.__class__.__name__)

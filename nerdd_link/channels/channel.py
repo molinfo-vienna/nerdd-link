@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Generic, Iterator, Optional, TypeVar, Union, cast
+from typing import Generic, Iterator, TypeVar, Union, cast
 
 from nerdd_module import Model
 from stringcase import spinalcase  # type: ignore
@@ -42,7 +42,7 @@ class Topic(Generic[T]):
         self._channel = channel
         self._name = name
 
-    def receive(self, consumer_group: Optional[str] = None) -> Iterator[T]:
+    def receive(self, consumer_group: str) -> Iterator[T]:
         for msg in self.channel.iter_messages(self._name, consumer_group):
             yield cast(T, msg)
 
@@ -64,15 +64,11 @@ class Channel(ABC):
     #
     # RECEIVE
     #
-    def iter_messages(
-        self, topic: str, consumer_group: Optional[str] = None
-    ) -> Iterator[Message]:
+    def iter_messages(self, topic: str, consumer_group: str) -> Iterator[Message]:
         return self._iter_messages(topic, consumer_group)
 
     @abstractmethod
-    def _iter_messages(
-        self, topic: str, consumer_group: Optional[str] = None
-    ) -> Iterator[Message]:
+    def _iter_messages(self, topic: str, consumer_group: str) -> Iterator[Message]:
         pass
 
     #
