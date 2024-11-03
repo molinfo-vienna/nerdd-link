@@ -83,9 +83,7 @@ class ProcessJobsAction(Action[JobMessage]):
             num_store = min(len(batch), self.max_num_molecules - num_entries)
 
             # store batch in data_dir
-            with open(
-                f"{self.data_dir}/jobs/{job_id}/input/checkpoint_{i}.pickle", "wb"
-            ) as f:
+            with open(f"{self.data_dir}/jobs/{job_id}/input/checkpoint_{i}.pickle", "wb") as f:
                 dump(batch[:num_store], f)
 
             # send a tuple to topic cypstrate-checkpoints
