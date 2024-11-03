@@ -27,9 +27,7 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         params = message.params
 
         # the input file to the job is stored in the file data_dir/job_id/input/
-        checkpoints_file = (
-            f"{self.data_dir}/jobs/{job_id}/input/checkpoint_{checkpoint_id}.pickle"
-        )
+        checkpoints_file = f"{self.data_dir}/jobs/{job_id}/input/checkpoint_{checkpoint_id}.pickle"
         checkpoint_results_file = (
             f"{self.data_dir}/jobs/{job_id}/results/checkpoint_{checkpoint_id}.pickle"
         )

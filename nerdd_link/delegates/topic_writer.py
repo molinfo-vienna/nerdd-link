@@ -19,7 +19,5 @@ class TopicWriter(Writer, output_format="json"):
         for record in records:
             self.results_topic.send(ResultMessage(job_id=self.job_id, **record))
         self.result_checkpoints_topic.send(
-            ResultCheckpointMessage(
-                job_id=self.job_id, checkpoint_id=self.checkpoint_id
-            )
+            ResultCheckpointMessage(job_id=self.job_id, checkpoint_id=self.checkpoint_id)
         )

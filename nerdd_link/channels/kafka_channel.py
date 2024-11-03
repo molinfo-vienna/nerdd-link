@@ -22,13 +22,9 @@ class KafkaChannel(Channel):
             bootstrap_servers=[self._broker_url],
             api_version=(3, 3, 1),
         )
-        logger.info(
-            f"Connecting to Kafka broker {self._broker_url} and starting a producer."
-        )
+        logger.info(f"Connecting to Kafka broker {self._broker_url} and starting a producer.")
 
-    def _iter_messages(
-        self, topic: str, consumer_group: Optional[str] = None
-    ) -> Iterator[Message]:
+    def _iter_messages(self, topic: str, consumer_group: Optional[str] = None) -> Iterator[Message]:
         if consumer_group is not None:
             consumer_group = f"{consumer_group}-consumer-group"
 

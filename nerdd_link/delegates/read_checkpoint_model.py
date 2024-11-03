@@ -39,9 +39,7 @@ class ReadCheckpointModel(Model):
     ) -> List[Step]:
         return self._base_model._get_preprocessing_steps(input, input_format, **kwargs)
 
-    def _get_postprocessing_steps(
-        self, output_format: Optional[str], **kwargs: Any
-    ) -> List[Step]:
+    def _get_postprocessing_steps(self, output_format: Optional[str], **kwargs: Any) -> List[Step]:
         # We would like to write the results in two different formats:
         #
         #                             /---> json -> send to results topic
