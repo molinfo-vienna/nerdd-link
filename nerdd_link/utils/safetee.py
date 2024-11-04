@@ -6,7 +6,7 @@ __all__ = ["safetee"]
 # Note: This code was taken from https://stackoverflow.com/questions/6703594
 
 
-class safeteeobject(object):
+class safeteeobject:
     """tee object wrapped to make it thread-safe"""
 
     def __init__(self, teeobj, lock):

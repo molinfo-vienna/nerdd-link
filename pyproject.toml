@@ -98,10 +98,18 @@ line-length = 100
 extend-exclude = ["tests", "nerdd_link/tests"]
 
 [tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "T20"  # no print statements
+]
 # F403: 'from module import *' used; unable to detect undefined names
 #       (but we need this for the __init__ files in submodules)
 ignore = ["F403"]
-extend-select = ["T20"]
 
 [tool.mypy]
 disallow_untyped_defs = true
