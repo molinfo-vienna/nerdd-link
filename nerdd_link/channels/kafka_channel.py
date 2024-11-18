@@ -58,7 +58,7 @@ class KafkaChannel(Channel):
                 for _, message_list in messages.items():
                     for message in message_list:
                         message_obj = json.loads(message.value)
-                        yield message_obj
+                        yield Message(**message_obj)
 
                 # commit the message offsets we have processed
                 consumer.commit()

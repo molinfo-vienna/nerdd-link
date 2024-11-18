@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from threading import Event, Thread
-from typing import Generic, Type, TypeVar
+from typing import Generic, TypeVar
 
 from stringcase import spinalcase
 

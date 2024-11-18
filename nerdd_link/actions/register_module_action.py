@@ -20,7 +20,7 @@ class RegisterModuleAction(Action[SystemMessage]):
     def _process_message(self, message: SystemMessage) -> None:
         # send the initialization message
         config = self._model.get_config()
-        self.channel.modules_topic().send(ModuleMessage(**config))
+        self.channel.modules_topic().send(ModuleMessage(**config.model_dump()))
 
     def _get_group_name(self):
         model_name = spinalcase(self._model.__class__.__name__)

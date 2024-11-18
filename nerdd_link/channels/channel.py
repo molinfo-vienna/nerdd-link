@@ -58,9 +58,6 @@ class Topic(Generic[T]):
 
 
 class Channel(ABC):
-    def __init__(self):
-        pass
-
     #
     # RECEIVE
     #

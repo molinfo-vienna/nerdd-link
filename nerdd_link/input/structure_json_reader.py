@@ -28,7 +28,7 @@ class StructureJsonReader(Reader):
             for result in explore(source_id):
                 source = result.source
                 if len(source) > 0 and source[0] == source_id:
-                    result._replace(source=tuple([filename, *source[1:]]))
+                    result._replace(source=tuple(filename, *source[1:]))
                 yield result
 
     def __repr__(self) -> str:
