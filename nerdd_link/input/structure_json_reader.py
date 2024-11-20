@@ -1,5 +1,5 @@
 import json
-from collections.abc import Generator
+from typing import Iterator
 
 from nerdd_module.input import MoleculeEntry, Reader
 
@@ -10,7 +10,7 @@ class StructureJsonReader(Reader):
     def __init__(self):
         super().__init__()
 
-    def read(self, input_stream, explore) -> Generator[MoleculeEntry, None, None]:
+    def read(self, input_stream, explore) -> Iterator[MoleculeEntry]:
         if not hasattr(input_stream, "read") or not hasattr(input_stream, "seek"):
             raise TypeError("input must be a stream-like object")
 
@@ -28,7 +28,7 @@ class StructureJsonReader(Reader):
             for result in explore(source_id):
                 source = result.source
                 if len(source) > 0 and source[0] == source_id:
-                    result._replace(source=tuple(filename, *source[1:]))
+                    result._replace(source=(filename, *source[1:]))
                 yield result
 
     def __repr__(self) -> str:
