@@ -45,7 +45,7 @@ class ProcessJobsAction(Action[JobMessage]):
         self.max_num_lines_mol_block = max_num_lines_mol_block
         self.data_dir = data_dir
 
-    def _process_message(self, message: JobMessage) -> None:
+    async def _process_message(self, message: JobMessage) -> None:
         job_id = message.id
         job_type = message.job_type
 
@@ -87,7 +87,7 @@ class ProcessJobsAction(Action[JobMessage]):
                 dump(batch[:num_store], f)
 
             # send a tuple to topic cypstrate-checkpoints
-            self.channel.checkpoints_topic(job_type).send(
+            await self.channel.checkpoints_topic(job_type).send(
                 CheckpointMessage(
                     job_id=job_id,
                     checkpoint_id=i,
@@ -112,7 +112,7 @@ class ProcessJobsAction(Action[JobMessage]):
             pass
 
         if too_many_molecules:
-            self.channel.logs_topic().send(
+            await self.channel.logs_topic().send(
                 LogMessage(
                     job_id=job_id,
                     message_type="warning",
@@ -126,7 +126,7 @@ class ProcessJobsAction(Action[JobMessage]):
 
         # at the end, send a tuple to topic job-sizes with the overall size
         # of the job
-        self.channel.logs_topic().send(
+        await self.channel.logs_topic().send(
             LogMessage(
                 job_id=job_id,
                 message_type="report_job_size",
