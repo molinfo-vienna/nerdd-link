@@ -1,7 +1,7 @@
+import asyncio
 import json
 import logging
-from typing import Optional, AsyncIterator
-import asyncio
+from typing import AsyncIterator, Optional
 
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 

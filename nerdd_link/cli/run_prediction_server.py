@@ -1,7 +1,7 @@
+import asyncio
 import logging
 from importlib import import_module
 from typing import List
-import asyncio
 
 import rich_click as click
 

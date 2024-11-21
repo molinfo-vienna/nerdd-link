@@ -1,5 +1,5 @@
-from typing import Iterable
 import asyncio
+from typing import Iterable
 
 from nerdd_module import Model, Writer
 

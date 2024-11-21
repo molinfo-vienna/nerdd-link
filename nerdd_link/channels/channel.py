@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import AsyncIterator, Generic, Iterator, TypeVar, Union, cast
+from typing import AsyncIterator, Generic, TypeVar, Union, cast
 
 from nerdd_module import Model
 from stringcase import spinalcase  # type: ignore
