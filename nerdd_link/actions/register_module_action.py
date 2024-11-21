@@ -17,10 +17,10 @@ class RegisterModuleAction(Action[SystemMessage]):
         super().__init__(channel.system_topic())
         self._model = model
 
-    def _process_message(self, message: SystemMessage) -> None:
+    async def _process_message(self, message: SystemMessage) -> None:
         # send the initialization message
         config = self._model.get_config()
-        self.channel.modules_topic().send(ModuleMessage(**config.model_dump()))
+        await self.channel.modules_topic().send(ModuleMessage(**config.model_dump()))
 
     def _get_group_name(self):
         model_name = spinalcase(self._model.__class__.__name__)

@@ -21,6 +21,7 @@ dependencies = [
     "numpy",
     "simplejson>=3",
     "pydantic>=2",
+    "aiokafka>=0.12.0",
     # for old Python versions
     "importlib-metadata>=4.6; python_version<'3.10'",
 ]
@@ -60,7 +61,7 @@ test = [
     "pytest-sugar",
     "pytest-cov",
     "pytest-asyncio",
-    "pytest-bdd",
+    "pytest-bdd==7.3.0",
     "pytest-mock",
     "pytest-watcher",
     "hypothesis",
@@ -99,17 +100,17 @@ extend-exclude = ["tests", "nerdd_link/tests"]
 
 [tool.ruff.lint]
 select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-    "I",  # isort
-    "B",  # flake8-bugbear
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
     "C4",  # flake8-comprehensions
-    "T20"  # no print statements
+    "T20", # no print statements
 ]
 ignore = [
     "F403", # I often use 'from .submodule import *' in __init__.py files
-    "C408"  # I prefer dict(a=5) over {'a': 5}
+    "C408", # I prefer dict(a=5) over {'a': 5}
 ]
 
 [tool.mypy]

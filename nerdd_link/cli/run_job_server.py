@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 import rich_click as click
@@ -94,11 +95,14 @@ def run_job_server(
         data_dir,
     )
 
-    try:
-        logging.info(f"Running action {action}")
-        action.start()
-        action.join()
-    except KeyboardInterrupt:
-        logger.info("Shutting down server")
-        action.stop()
-        action.join()
+    async def main():
+        task = asyncio.create_task(action.start())
+        try:
+            logging.info(f"Running action {action}")
+            await task
+        except KeyboardInterrupt:
+            logger.info("Shutting down server")
+            task.cancel()
+            await task
+
+    asyncio.run(main())

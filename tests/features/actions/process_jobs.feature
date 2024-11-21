@@ -16,11 +16,11 @@ Feature: Process job action
     Then the file 'jobs/123/input/checkpoint_0.pickle' is created
     And the file 'jobs/123/input/checkpoint_1.pickle' is created
     And the file 'jobs/123/input/checkpoint_2.pickle' is created
-    And the channel sends a message on topic 'mol-weight-model-checkpoints' with content 
+    And the channel sends a message on topic 'mol-scale-checkpoints' with content 
         { "job_id": "123", "checkpoint_id": 0, "params": { "multiplier": 10 } }
-    And the channel sends a message on topic 'mol-weight-model-checkpoints' with content 
+    And the channel sends a message on topic 'mol-scale-checkpoints' with content 
         { "job_id": "123", "checkpoint_id": 1, "params": { "multiplier": 10 } }
-    And the channel sends a message on topic 'mol-weight-model-checkpoints' with content 
+    And the channel sends a message on topic 'mol-scale-checkpoints' with content 
         { "job_id": "123", "checkpoint_id": 2, "params": { "multiplier": 10 } }
     And the channel sends a message on topic 'logs' with content 
         { "job_id": "123", "message_type": "report_job_size", "size": 100 }
@@ -39,7 +39,7 @@ Feature: Process job action
     And the process job action is executed
 
     Then the file 'jobs/123/input/checkpoint_0.pickle' is created
-    And the channel sends a message on topic 'mol-weight-model-checkpoints' with content 
+    And the channel sends a message on topic 'mol-scale-checkpoints' with content 
         { "job_id": "123", "checkpoint_id": 0, "params": { "multiplier": 10 } }
     And the channel sends a message on topic 'logs' with content 
         { "job_id": "123", "message_type": "report_job_size", "size": 10 }

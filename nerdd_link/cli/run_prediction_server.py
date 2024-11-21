@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from importlib import import_module
 from typing import List
@@ -66,15 +67,16 @@ def run_prediction_server(
 
     actions: List[Action] = [register_module, predict_checkpoints]
 
-    try:
-        for action in actions:
-            logging.info(f"Running action {action}")
-            action.start()
-        for action in actions:
-            action.join()
-    except KeyboardInterrupt:
-        logger.info("Shutting down server")
-        for action in actions:
-            action.stop()
-        for action in actions:
-            action.join()
+    async def main():
+        tasks = [asyncio.create_task(action.start()) for action in actions]
+        try:
+            for task in tasks:
+                logging.info(f"Running action {task}")
+            await asyncio.gather(*tasks)
+        except KeyboardInterrupt:
+            logger.info("Shutting down server")
+            for task in tasks:
+                task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+
+    asyncio.run(main())

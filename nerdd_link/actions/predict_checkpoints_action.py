@@ -21,7 +21,7 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         self.model = model
         self.data_dir = data_dir
 
-    def _process_message(self, message: CheckpointMessage) -> None:
+    async def _process_message(self, message: CheckpointMessage) -> None:
         job_id = message.job_id
         checkpoint_id = message.checkpoint_id
         params = message.params

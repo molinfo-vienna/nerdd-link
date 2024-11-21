@@ -16,13 +16,13 @@ class DummyChannel(Channel):
     def get_produced_messages(self):
         return self._messages
 
-    def _iter_messages(self, topic, consumer_group=None):
+    async def _iter_messages(self, topic, consumer_group=None):
         for t, message in self._messages:
             if t == topic:
                 yield Message(**message)
 
-    def _send(self, topic, message):
-        print(f"Sending message to topic {topic}")
+    async def _send(self, topic, message):
+        print(f"Sending message to topic {topic}", message)
         self._messages.append((topic, message.model_dump()))
 
 
