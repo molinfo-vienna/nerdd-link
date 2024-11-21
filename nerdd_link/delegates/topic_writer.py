@@ -1,4 +1,5 @@
 from typing import Iterable
+import asyncio
 
 from nerdd_module import Model, Writer
 
@@ -16,8 +17,11 @@ class TopicWriter(Writer, output_format="json"):
         self.result_checkpoints_topic = channel.result_checkpoints_topic(model)
 
     def write(self, records: Iterable[dict]) -> None:
-        for record in records:
-            self.results_topic.send(ResultMessage(job_id=self.job_id, **record))
-        self.result_checkpoints_topic.send(
-            ResultCheckpointMessage(job_id=self.job_id, checkpoint_id=self.checkpoint_id)
-        )
+        async def send_messages():
+            for record in records:
+                await self.results_topic.send(ResultMessage(job_id=self.job_id, **record))
+            await self.result_checkpoints_topic.send(
+                ResultCheckpointMessage(job_id=self.job_id, checkpoint_id=self.checkpoint_id)
+            )
+        
+        asyncio.run(send_messages())
