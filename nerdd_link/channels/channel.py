@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Generic, Iterator, TypeVar, Union, cast
+from typing import AsyncIterator, Generic, Iterator, TypeVar, Union, cast
 
 from nerdd_module import Model
 from stringcase import spinalcase  # type: ignore
@@ -42,12 +42,13 @@ class Topic(Generic[T]):
         self._channel = channel
         self._name = name
 
-    def receive(self, consumer_group: str) -> Iterator[T]:
-        for msg in self.channel.iter_messages(self._name, consumer_group):
+    async def receive(self, consumer_group: str) -> AsyncIterator[T]:
+        messages = await self.channel.iter_messages(self._name, consumer_group)
+        async for msg in messages:
             yield cast(T, msg)
 
-    def send(self, message: T) -> None:
-        self.channel.send(self._name, message)
+    async def send(self, message: T) -> None:
+        await self.channel.send(self._name, message)
 
     @property
     def channel(self) -> Channel:
@@ -61,21 +62,25 @@ class Channel(ABC):
     #
     # RECEIVE
     #
-    def iter_messages(self, topic: str, consumer_group: str) -> Iterator[Message]:
+    async def iter_messages(
+        self, topic: str, consumer_group: str
+    ) -> AsyncIterator[Message]:
         return self._iter_messages(topic, consumer_group)
 
     @abstractmethod
-    def _iter_messages(self, topic: str, consumer_group: str) -> Iterator[Message]:
+    async def _iter_messages(
+        self, topic: str, consumer_group: str
+    ) -> AsyncIterator[Message]:
         pass
 
     #
     # SEND
     #
-    def send(self, topic: str, message: Message) -> None:
-        self._send(topic, message)
+    async def send(self, topic: str, message: Message) -> None:
+        await self._send(topic, message)
 
     @abstractmethod
-    def _send(self, topic: str, message: Message) -> None:
+    async def _send(self, topic: str, message: Message) -> None:
         pass
 
     #
@@ -87,7 +92,9 @@ class Channel(ABC):
     def jobs_topic(self) -> Topic[JobMessage]:
         return Topic[JobMessage](self, "jobs")
 
-    def checkpoints_topic(self, job_type_or_model: Union[str, Model]) -> Topic[CheckpointMessage]:
+    def checkpoints_topic(
+        self, job_type_or_model: Union[str, Model]
+    ) -> Topic[CheckpointMessage]:
         job_type = get_job_type(job_type_or_model)
         topic_name = f"{job_type}-checkpoints"
         return Topic[CheckpointMessage](self, topic_name)
