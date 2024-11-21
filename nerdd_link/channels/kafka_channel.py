@@ -25,7 +25,9 @@ class KafkaChannel(Channel):
         asyncio.create_task(self._producer.start())
         logger.info(f"Connecting to Kafka broker {self._broker_url} and starting a producer.")
 
-    async def _iter_messages(self, topic: str, consumer_group: Optional[str] = None) -> AsyncIterator[Message]:
+    async def _iter_messages(
+        self, topic: str, consumer_group: Optional[str] = None
+    ) -> AsyncIterator[Message]:
         if consumer_group is not None:
             consumer_group = f"{consumer_group}-consumer-group"
 

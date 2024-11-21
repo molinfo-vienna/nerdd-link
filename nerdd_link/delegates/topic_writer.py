@@ -23,5 +23,5 @@ class TopicWriter(Writer, output_format="json"):
             await self.result_checkpoints_topic.send(
                 ResultCheckpointMessage(job_id=self.job_id, checkpoint_id=self.checkpoint_id)
             )
-        
+
         asyncio.run(send_messages())

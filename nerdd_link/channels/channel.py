@@ -62,15 +62,11 @@ class Channel(ABC):
     #
     # RECEIVE
     #
-    async def iter_messages(
-        self, topic: str, consumer_group: str
-    ) -> AsyncIterator[Message]:
+    async def iter_messages(self, topic: str, consumer_group: str) -> AsyncIterator[Message]:
         return self._iter_messages(topic, consumer_group)
 
     @abstractmethod
-    async def _iter_messages(
-        self, topic: str, consumer_group: str
-    ) -> AsyncIterator[Message]:
+    async def _iter_messages(self, topic: str, consumer_group: str) -> AsyncIterator[Message]:
         pass
 
     #
@@ -92,9 +88,7 @@ class Channel(ABC):
     def jobs_topic(self) -> Topic[JobMessage]:
         return Topic[JobMessage](self, "jobs")
 
-    def checkpoints_topic(
-        self, job_type_or_model: Union[str, Model]
-    ) -> Topic[CheckpointMessage]:
+    def checkpoints_topic(self, job_type_or_model: Union[str, Model]) -> Topic[CheckpointMessage]:
         job_type = get_job_type(job_type_or_model)
         topic_name = f"{job_type}-checkpoints"
         return Topic[CheckpointMessage](self, topic_name)

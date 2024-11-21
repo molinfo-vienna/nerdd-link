@@ -18,9 +18,7 @@ logger = logging.getLogger(__name__)
     default="kafka",
     help="Channel to use for communication with the model.",
 )
-@click.option(
-    "--broker-url", default="localhost:9092", help="Kafka broker to connect to."
-)
+@click.option("--broker-url", default="localhost:9092", help="Kafka broker to connect to.")
 @click.option(
     "--max-num-molecules",
     default=10_000,
@@ -59,9 +57,7 @@ logger = logging.getLogger(__name__)
 @click.option(
     "--log-level",
     default="info",
-    type=click.Choice(
-        ["debug", "info", "warning", "error", "critical"], case_sensitive=False
-    ),
+    type=click.Choice(["debug", "info", "warning", "error", "critical"], case_sensitive=False),
     help="The logging level.",
 )
 def run_job_server(
