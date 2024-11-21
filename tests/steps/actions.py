@@ -7,6 +7,8 @@ from nerdd_link.actions import (
 )
 from pytest_bdd import given, parsers, when
 
+from .async_step import async_step
+
 
 @given("the data directory is a temporary directory", target_fixture="data_dir")
 def data_dir():
@@ -30,7 +32,10 @@ def checkpoint_size(value):
 
 
 @when(parsers.parse("the process job action is executed"))
-def execute_process_job_action(channel, checkpoint_size, max_num_molecules, data_dir):
+@async_step
+async def execute_process_job_action(
+    channel, checkpoint_size, max_num_molecules, data_dir
+):
     action = ProcessJobsAction(
         channel=channel,
         max_num_molecules=max_num_molecules,
@@ -42,34 +47,27 @@ def execute_process_job_action(channel, checkpoint_size, max_num_molecules, data
         max_num_lines_mol_block=10000,
     )
 
-    action.start()
-    # wait for the action to finish
-    # (this will happen, because the number of messages in the queue is finite)
-    action.join()
+    await action.start()
 
 
 @when(parsers.parse("the predict checkpoints action is executed"))
-def execute_predict_checkpoints_action(channel, model, data_dir):
+@async_step
+async def execute_predict_checkpoints_action(channel, model, data_dir):
     action = PredictCheckpointsAction(
         channel=channel,
         model=model,
         data_dir=data_dir,
     )
 
-    action.start()
-    # wait for the action to finish
-    # (this will happen, because the number of messages in the queue is finite)
-    action.join()
+    await action.start()
 
 
 @when(parsers.parse("the register module action is executed"))
-def register_module_action(channel, model):
+@async_step
+async def register_module_action(channel, model):
     action = RegisterModuleAction(
         channel=channel,
         model=model,
     )
 
-    action.start()
-    # wait for the action to finish
-    # (this will happen, because the number of messages in the queue is finite)
-    action.join()
+    await action.start()
