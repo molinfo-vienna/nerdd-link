@@ -5,6 +5,7 @@ import rich_click as click
 
 from ..actions import ProcessJobsAction
 from ..channels import KafkaChannel
+from ..utils import async_to_sync
 
 __all__ = ["run_job_server"]
 
@@ -60,7 +61,8 @@ logger = logging.getLogger(__name__)
     type=click.Choice(["debug", "info", "warning", "error", "critical"], case_sensitive=False),
     help="The logging level.",
 )
-def run_job_server(
+@async_to_sync
+async def run_job_server(
     # communication options
     channel: str,
     broker_url: str,
@@ -95,14 +97,11 @@ def run_job_server(
         data_dir,
     )
 
-    async def main():
-        task = asyncio.create_task(action.start())
-        try:
-            logging.info(f"Running action {action}")
-            await task
-        except KeyboardInterrupt:
-            logger.info("Shutting down server")
-            task.cancel()
-            await task
-
-    asyncio.run(main())
+    task = asyncio.create_task(action.run())
+    try:
+        logging.info(f"Running action {action}")
+        await task
+    except KeyboardInterrupt:
+        logger.info("Shutting down server")
+        task.cancel()
+        await task
