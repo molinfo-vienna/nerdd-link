@@ -1,8 +1,11 @@
+import asyncio
 import os
 
 from nerdd_module import ReadInputStep, WriteOutputStep
 from nerdd_module.input import DepthFirstExplorer
-from pytest_bdd import given, parsers, then
+from pytest_bdd import given, parsers, then, when
+
+from .async_step import async_step
 
 
 @given(parsers.parse("a file '{path}' with the molecules in format '{format}'"))
@@ -27,3 +30,9 @@ def input_file(data_dir, path, molecules, format):
 def file_created(data_dir, path):
     full_path = os.path.join(data_dir, path)
     assert os.path.exists(full_path)
+
+
+@when(parsers.parse("we wait for {seconds:d} seconds"))
+@async_step
+async def wait_for_seconds(seconds):
+    await asyncio.sleep(seconds)
