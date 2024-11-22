@@ -51,11 +51,7 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-dev = [
-    "mypy",
-    "ruff",
-    # "pre-commit",
-]
+dev = ["mypy", "ruff", "pre-commit>=2"]
 test = [
     "pytest",
     "pytest-sugar",
