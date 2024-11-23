@@ -1,8 +1,7 @@
 Feature: Register module action
 
   Scenario: Register a valid module
-    Given a mocked cummunication channel
-    And the mol weight model (version 'mol_ids')
+    Given the mol weight model (version 'mol_ids')
 
     # note: the content of the system message is irrelevant
     When the channel receives a message on topic 'system' with content

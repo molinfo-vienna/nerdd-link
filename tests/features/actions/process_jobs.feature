@@ -7,7 +7,6 @@ Feature: Process job action
     
     And the checkpoint size is 40
     And the maximum number of molecules is 10000
-    And a mocked cummunication channel
 
     When the channel receives a message on topic 'jobs' with content
         { "id": "123", "job_type": "mol-scale", "source_id": "456", "params": { "multiplier": 10 } }
@@ -32,7 +31,6 @@ Feature: Process job action
     
     And the checkpoint size is 100
     And the maximum number of molecules is 10
-    And a mocked cummunication channel
 
     When the channel receives a message on topic 'jobs' with content
         { "id": "123", "job_type": "mol-scale", "source_id": "456", "params": { "multiplier": 10 } }
