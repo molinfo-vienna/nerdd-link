@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import AsyncIterator, Generic, TypeVar, Union, cast
+from typing import AsyncIterable, Generic, TypeVar, Union, cast
 
 from nerdd_module import Model
 from stringcase import spinalcase  # type: ignore
@@ -42,9 +42,8 @@ class Topic(Generic[T]):
         self._channel = channel
         self._name = name
 
-    async def receive(self, consumer_group: str) -> AsyncIterator[T]:
-        messages = await self.channel.iter_messages(self._name, consumer_group)
-        async for msg in messages:
+    async def receive(self, consumer_group: str) -> AsyncIterable[T]:
+        async for msg in self.channel.iter_messages(self._name, consumer_group):
             yield cast(T, msg)
 
     async def send(self, message: T) -> None:
@@ -62,11 +61,15 @@ class Channel(ABC):
     #
     # RECEIVE
     #
-    async def iter_messages(self, topic: str, consumer_group: str) -> AsyncIterator[Message]:
-        return self._iter_messages(topic, consumer_group)
+    async def iter_messages(self, topic: str, consumer_group: str) -> AsyncIterable[Message]:
+        async for message in self._iter_messages(topic, consumer_group):
+            yield message
 
+    # Insane glitch: we need to use "def _iter_messages" instead of "async def _iter_messages"
+    # here, because the method doesn't use "yield" and so the type checker will assume that the
+    # actual type is Coroutine[AsyncIterable[Message], None, None].
     @abstractmethod
-    async def _iter_messages(self, topic: str, consumer_group: str) -> AsyncIterator[Message]:
+    def _iter_messages(self, topic: str, consumer_group: str) -> AsyncIterable[Message]:
         pass
 
     #

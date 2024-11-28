@@ -1,5 +1,7 @@
+import asyncio
 from tempfile import TemporaryDirectory
 
+import pytest_asyncio
 from nerdd_link.actions import (
     PredictCheckpointsAction,
     ProcessJobsAction,
@@ -31,11 +33,8 @@ def checkpoint_size(value):
     return value
 
 
-@when(parsers.parse("the process job action is executed"))
-@async_step
-async def execute_process_job_action(
-    channel, checkpoint_size, max_num_molecules, data_dir
-):
+@pytest_asyncio.fixture(scope="function")
+async def process_job_action(channel, checkpoint_size, max_num_molecules, data_dir):
     action = ProcessJobsAction(
         channel=channel,
         max_num_molecules=max_num_molecules,
@@ -47,27 +46,49 @@ async def execute_process_job_action(
         max_num_lines_mol_block=10000,
     )
 
-    await action.start()
+    task = asyncio.create_task(action.run())
+    yield task
+    task.cancel()
 
 
-@when(parsers.parse("the predict checkpoints action is executed"))
+@when(parsers.parse("the process job action is executed"))
 @async_step
-async def execute_predict_checkpoints_action(channel, model, data_dir):
+async def execute_process_job_action(process_job_action):
+    return process_job_action
+
+
+@pytest_asyncio.fixture(scope="function")
+async def predict_checkpoints_action(channel, model, data_dir):
     action = PredictCheckpointsAction(
         channel=channel,
         model=model,
         data_dir=data_dir,
     )
 
-    await action.start()
+    task = asyncio.create_task(action.run())
+    yield task
+    task.cancel()
 
 
-@when(parsers.parse("the register module action is executed"))
+@when(parsers.parse("the predict checkpoints action is executed"))
 @async_step
+async def execute_predict_checkpoints_action(predict_checkpoints_action):
+    return predict_checkpoints_action
+
+
+@pytest_asyncio.fixture(scope="function")
 async def register_module_action(channel, model):
     action = RegisterModuleAction(
         channel=channel,
         model=model,
     )
 
-    await action.start()
+    task = asyncio.create_task(action.run())
+    yield task
+    task.cancel()
+
+
+@when(parsers.parse("the register module action is executed"))
+@async_step
+async def execute_register_module_action(register_module_action):
+    return register_module_action

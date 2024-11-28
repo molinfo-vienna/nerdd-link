@@ -7,6 +7,7 @@ import rich_click as click
 
 from ..actions import Action, PredictCheckpointsAction, RegisterModuleAction
 from ..channels import KafkaChannel
+from ..utils import async_to_sync
 
 __all__ = ["run_prediction_server"]
 
@@ -33,7 +34,8 @@ logger = logging.getLogger(__name__)
     type=click.Choice(["debug", "info", "warning", "error", "critical"], case_sensitive=False),
     help="The logging level.",
 )
-def run_prediction_server(
+@async_to_sync
+async def run_prediction_server(
     # communication options
     channel: str,
     broker_url: str,
@@ -67,16 +69,13 @@ def run_prediction_server(
 
     actions: List[Action] = [register_module, predict_checkpoints]
 
-    async def main():
-        tasks = [asyncio.create_task(action.start()) for action in actions]
-        try:
-            for task in tasks:
-                logging.info(f"Running action {task}")
-            await asyncio.gather(*tasks)
-        except KeyboardInterrupt:
-            logger.info("Shutting down server")
-            for task in tasks:
-                task.cancel()
-            await asyncio.gather(*tasks, return_exceptions=True)
-
-    asyncio.run(main())
+    tasks = [asyncio.create_task(action.run()) for action in actions]
+    try:
+        for task in tasks:
+            logging.info(f"Running action {task}")
+        await asyncio.gather(*tasks)
+    except KeyboardInterrupt:
+        logger.info("Shutting down server")
+        for task in tasks:
+            task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)

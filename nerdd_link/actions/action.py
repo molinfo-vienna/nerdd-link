@@ -13,7 +13,7 @@ class Action(ABC, Generic[T]):
     def __init__(self, input_topic: Topic[T]):
         self._input_topic = input_topic
 
-    async def start(self):
+    async def run(self):
         consumer_group = spinalcase(self._get_group_name())
         async for message in self._input_topic.receive(consumer_group):
             await self._process_message(message)

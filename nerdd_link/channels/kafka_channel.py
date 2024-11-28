@@ -1,7 +1,7 @@
 import asyncio
 import json
 import logging
-from typing import AsyncIterator, Optional
+from typing import AsyncIterable, Optional
 
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 
@@ -22,12 +22,17 @@ class KafkaChannel(Channel):
         self._producer = AIOKafkaProducer(
             bootstrap_servers=[self._broker_url],
         )
+        # TODO: check value_serializer
+        # producer = AIOKafkaProducer(
+        #     bootstrap_servers=KAFKA_BROKER_URL,
+        #     value_serializer=lambda v: json.dumps(v).encode("utf-8"),
+        # )
         asyncio.create_task(self._producer.start())
         logger.info(f"Connecting to Kafka broker {self._broker_url} and starting a producer.")
 
     async def _iter_messages(
         self, topic: str, consumer_group: Optional[str] = None
-    ) -> AsyncIterator[Message]:
+    ) -> AsyncIterable[Message]:
         if consumer_group is not None:
             consumer_group = f"{consumer_group}-consumer-group"
 
@@ -58,6 +63,34 @@ class KafkaChannel(Channel):
                 await consumer.commit()
         finally:
             await consumer.stop()
+
+        # try:
+        #     while True:
+        #         # we use polling (instead of iterating through the consumer messages)
+        #         # to be able to cancel the consumer
+        #         messages = await self.kafka_consumer.getmany(timeout_ms=1000)
+
+        #         if messages:
+        #             for _, message_list in messages.items():
+        #                 for message in message_list:
+        #                     result = json.loads(message.value)
+        #                     logger.info(f"Received message on {message.topic}")
+
+        #                     try:
+        #                         for consumer in self.consumers:
+        #                             await consumer.consume(result)
+
+        #                         logger.info("Committing message")
+        #                         await self.kafka_consumer.commit()
+        #                     except Exception:
+        #                         logger.info("Rolling back message")
+        #                         logger.error(traceback.format_exc())
+        # except asyncio.CancelledError:
+        #     logger.info("Stopping ConsumeKafkaTopicLifespan")
+        #     await self.kafka_consumer.stop()
+        # except Exception as e:
+        #     logger.error(e)
+        #     logger.error(traceback.format_exc())
 
     async def _send(self, topic: str, message: Message) -> None:
         await self._producer.send_and_wait(
