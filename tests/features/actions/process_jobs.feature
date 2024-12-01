@@ -1,8 +1,8 @@
 Feature: Process job action
 
   Scenario: Process a valid job
-    Given the data directory is a temporary directory
-    And a list of 100 random molecules, where 0 entries are None
+    Given a temporary data directory
+    And a list of 100 random molecules
     And a file 'sources/456' with the molecules in format 'sdf'
     
     And the checkpoint size is 40
@@ -25,8 +25,8 @@ Feature: Process job action
         { "job_id": "123", "message_type": "report_job_size", "size": 100 }
 
   Scenario: Process a job with too many molecules
-    Given the data directory is a temporary directory
-    And a list of 100 random molecules, where 0 entries are None
+    Given a temporary data directory
+    And a list of 100 random molecules
     And a file 'sources/456' with the molecules in format 'sdf'
     
     And the checkpoint size is 100
