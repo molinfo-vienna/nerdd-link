@@ -27,6 +27,11 @@ class ObservableList(Generic[T]):
         self._event.set()  # Notify all readers
         self._event.clear()
 
+    def update(self, old_item: T, new_item: T):
+        self._apply_change((old_item, new_item))
+        self._event.set()
+        self._event.clear()
+
     def remove(self, item: T):
         self._apply_change((item, None))
         self._event.set()
