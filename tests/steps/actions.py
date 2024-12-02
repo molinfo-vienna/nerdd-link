@@ -1,5 +1,4 @@
 import asyncio
-from tempfile import TemporaryDirectory
 
 import pytest_asyncio
 from nerdd_link.actions import (
@@ -10,12 +9,6 @@ from nerdd_link.actions import (
 from pytest_bdd import given, parsers, when
 
 from .async_step import async_step
-
-
-@given("the data directory is a temporary directory", target_fixture="data_dir")
-def data_dir():
-    with TemporaryDirectory() as temp_dir:
-        yield temp_dir
 
 
 @given(

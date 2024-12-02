@@ -1,7 +1,7 @@
 Feature: Predict checkpoints action
   Scenario: Process valid checkpoints
-    Given the data directory is a temporary directory
-    And a list of 100 random molecules, where 0 entries are None
+    Given a temporary data directory
+    And a list of 100 random molecules
     And a file 'sources/456' with the molecules in format 'sdf'
     
     # process job action
@@ -15,7 +15,6 @@ Feature: Predict checkpoints action
         { "id": "123", "job_type": "mol-scale", "source_id": "456", "params": { "multiplier": 10 } }
     And the process job action is executed
     And the predict checkpoints action is executed
-    And we wait for 2 seconds
 
     Then the file 'jobs/123/results/checkpoint_0.pickle' is created
     And the file 'jobs/123/results/checkpoint_1.pickle' is created
