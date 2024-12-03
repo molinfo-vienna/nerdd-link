@@ -1,6 +1,87 @@
 # CHANGELOG
 
 
+## v0.0.1 (2024-12-03)
+
+### Fixes
+
+* fix: Add update operation to ObservableList ([`d12ba0a`](https://github.com/molinfo-vienna/nerdd-link/commit/d12ba0a8458a60861dc6268193295b6c6b1a7159))
+
+### Unknown
+
+* Merge pull request #15 from shirte/main
+
+Add types ([`965f5b3`](https://github.com/molinfo-vienna/nerdd-link/commit/965f5b3da10a2a8cbe77b1f255b1712c50263ea0))
+
+* Remove kafka-python dependency ([`9949ce9`](https://github.com/molinfo-vienna/nerdd-link/commit/9949ce96750cdbba86b7deb5041063156bb4481b))
+
+* Add types for safetee ([`72a5a67`](https://github.com/molinfo-vienna/nerdd-link/commit/72a5a67455f0afbab21b6d7ad1a9682eb0d29769))
+
+* Add type stubs for stringcase ([`82d7e64`](https://github.com/molinfo-vienna/nerdd-link/commit/82d7e64acb1632e2bdb458e9e436231a7e62ac66))
+
+* Ignore rdkit typing errors ([`e763b33`](https://github.com/molinfo-vienna/nerdd-link/commit/e763b3306da18c42aa73e8005b22a6082fe7fd5c))
+
+* Merge pull request #14 from shirte/main
+
+Let ObservableList track changes ([`6a99d06`](https://github.com/molinfo-vienna/nerdd-link/commit/6a99d0608556306c466ff7c25a0e1a7d7ca468e6))
+
+* Finalize register_module feature test ([`a72d105`](https://github.com/molinfo-vienna/nerdd-link/commit/a72d105e4f8dea39e5a71c3e766659fbd8c8c7ac))
+
+* Let ObservableList track changes ([`eeb4e4f`](https://github.com/molinfo-vienna/nerdd-link/commit/eeb4e4febce98cdebfc59a731946045f4de98e42))
+
+* Merge pull request #13 from shirte/main
+
+Introduce ObservableList ([`6f3a7a4`](https://github.com/molinfo-vienna/nerdd-link/commit/6f3a7a467774b2671505b2a96b6560c32f0e0495))
+
+* Introduce ObservableList ([`d08d896`](https://github.com/molinfo-vienna/nerdd-link/commit/d08d89618ea65125fa02027c5d5b66cc3f556b3c))
+
+* Adapt feature tests ([`72ebace`](https://github.com/molinfo-vienna/nerdd-link/commit/72ebace7f4e9b13d9db02d1f586b3902f63e4381))
+
+* Move data directory step to main code ([`9f04504`](https://github.com/molinfo-vienna/nerdd-link/commit/9f04504ec71a8c2ec293fe4b2814e188ee334206))
+
+* Merge pull request #12 from shirte/main
+
+Add pre-commit hooks ([`0d0b405`](https://github.com/molinfo-vienna/nerdd-link/commit/0d0b405447701cc75f039e762d8439e9c27e0c39))
+
+* Minor changes ([`c78b021`](https://github.com/molinfo-vienna/nerdd-link/commit/c78b021d88fcbb2910878d9adb33707769b6a849))
+
+* Move test code into submodule ([`09dd25d`](https://github.com/molinfo-vienna/nerdd-link/commit/09dd25dec257b19c505e722c40bb0fa85a72f755))
+
+* Run actions in pytest as async with cleanup code ([`ac8639a`](https://github.com/molinfo-vienna/nerdd-link/commit/ac8639aac841c6a6c11de4d19a7d9e6f4c50ce17))
+
+* Reimplement DummyChannel correctly ([`7c0b9bf`](https://github.com/molinfo-vienna/nerdd-link/commit/7c0b9bf73822972ec1649ba7adb70166a06fdb81))
+
+* Avoid mocked communication channel step ([`d2a34ac`](https://github.com/molinfo-vienna/nerdd-link/commit/d2a34ac0898bd121764bd2b8f0f195c98e6cf8b8))
+
+* Use AsyncIterable instead of AsyncIterator ([`77db952`](https://github.com/molinfo-vienna/nerdd-link/commit/77db9527af5b1824b04795daa6c87e6df280d7d4))
+
+* Add waiting step in tests ([`cff0147`](https://github.com/molinfo-vienna/nerdd-link/commit/cff01475480805b1aa87db5b2b7d019fbad518fd))
+
+* Make cli commands async ([`1a48ca9`](https://github.com/molinfo-vienna/nerdd-link/commit/1a48ca9c68c9ba1a3bf450b3e485c30715ea2c64))
+
+* Rename start to run ([`2f79b29`](https://github.com/molinfo-vienna/nerdd-link/commit/2f79b296f8ad5b984c950160cb8b316a6c0f2581))
+
+* Run tests in pull requests ([`f41bc77`](https://github.com/molinfo-vienna/nerdd-link/commit/f41bc77040632b1a45a8c22f9fbefe6dd1372830))
+
+* Increase ruff version ([`5228e8c`](https://github.com/molinfo-vienna/nerdd-link/commit/5228e8c2bfc106a61160aaf5b763a779bed4e3ce))
+
+* Add submodules to main __init__ ([`923fc47`](https://github.com/molinfo-vienna/nerdd-link/commit/923fc47516576d58727a4e1daaf457533951f532))
+
+* Add pre-commit hook ([`1ad6c65`](https://github.com/molinfo-vienna/nerdd-link/commit/1ad6c65054fb473db10aa139bd5ff5b546d638fb))
+
+* Merge pull request #11 from shirte/main
+
+Add async_to_sync helper function ([`d610da8`](https://github.com/molinfo-vienna/nerdd-link/commit/d610da8fe1ae8a09c2b4f8543fb583369dce19a3))
+
+* Add async_to_sync helper function ([`5e61635`](https://github.com/molinfo-vienna/nerdd-link/commit/5e616358326823d28fba9721b48c5a91e2edf893))
+
+* Merge pull request #10 from shirte/main
+
+Downgrade aiokafka dependency ([`0da06ec`](https://github.com/molinfo-vienna/nerdd-link/commit/0da06ec2192b98cc335bca1774129f471d71a643))
+
+* Downgrade aiokafka dependency ([`59677b7`](https://github.com/molinfo-vienna/nerdd-link/commit/59677b72e1ad8eadb1a23cc2b3d51cb29706479b))
+
+
 ## v0.0.0 (2024-11-21)
 
 ### Unknown
