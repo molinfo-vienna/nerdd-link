@@ -20,6 +20,7 @@ class RegisterModuleAction(Action[SystemMessage]):
     async def _process_message(self, message: SystemMessage) -> None:
         # send the initialization message
         config = self._model.get_config()
+        logger.info(f"Send registration message for module {config.name}")
         await self.channel.modules_topic().send(ModuleMessage(**config.model_dump()))
 
     def _get_group_name(self):

@@ -11,7 +11,6 @@ license = { file = "LICENSE" }
 authors = [{ name = "Steffen Hirte", email = "steffen.hirte@univie.ac.at" }]
 maintainers = [{ name = "Steffen Hirte", email = "steffen.hirte@univie.ac.at" }]
 dependencies = [
-    "kafka-python==2.0.2",
     "nerdd-module>=0.3.6",
     "pandas>=1.2.1",
     "pyyaml~=6.0",
@@ -110,10 +109,17 @@ ignore = [
 ]
 
 [tool.mypy]
+# type stubs of packages lacking types are in the "typings" directory
+mypy_path = "typings"
 disallow_untyped_defs = true
 # no_implicit_optional = True
 # check_untyped_defs = True
-# show_error_codes = True 
+# show_error_codes = True
+
+[[tool.mypy.overrides]]
+module = ["rdkit.*"]
+follow_imports = "skip"
+follow_imports_for_stubs = true
 
 [[tool.mypy.overrides]]
 module = ["nerdd_link.tests.*", "tests.*"]
