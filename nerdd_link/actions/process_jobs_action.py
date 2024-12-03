@@ -25,14 +25,14 @@ class ProcessJobsAction(Action[JobMessage]):
     def __init__(
         self,
         channel: Channel,
-        checkpoint_size,
-        max_num_molecules,
-        num_test_entries,
-        ratio_valid_entries,
-        maximum_depth,
-        max_num_lines_mol_block,
-        data_dir,
-    ):
+        checkpoint_size: int,
+        max_num_molecules: int,
+        num_test_entries: int,
+        ratio_valid_entries: float,
+        maximum_depth: int,
+        max_num_lines_mol_block: int,
+        data_dir: str,
+    ) -> None:
         super().__init__(channel.jobs_topic())
         # relevant for chunking
         self.checkpoint_size = checkpoint_size

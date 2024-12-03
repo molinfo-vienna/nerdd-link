@@ -55,6 +55,6 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
             **params,
         )
 
-    def _get_group_name(self):
+    def _get_group_name(self) -> str:
         model_name = spinalcase(self.model.__class__.__name__)
         return model_name
