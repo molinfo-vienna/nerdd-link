@@ -1,3 +1,4 @@
+import logging
 import os
 
 from nerdd_module import Model
@@ -9,6 +10,8 @@ from ..types import CheckpointMessage
 from .action import Action
 
 __all__ = ["PredictCheckpointsAction"]
+
+logger = logging.getLogger(__name__)
 
 
 class PredictCheckpointsAction(Action[CheckpointMessage]):
@@ -25,6 +28,7 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         job_id = message.job_id
         checkpoint_id = message.checkpoint_id
         params = message.params
+        logger.info(f"Predict checkpoint {checkpoint_id} of job {job_id}")
 
         # the input file to the job is stored in the file data_dir/job_id/input/
         checkpoints_file = f"{self.data_dir}/jobs/{job_id}/input/checkpoint_{checkpoint_id}.pickle"
