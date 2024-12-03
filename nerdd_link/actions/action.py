@@ -13,7 +13,7 @@ class Action(ABC, Generic[T]):
     def __init__(self, input_topic: Topic[T]):
         self._input_topic = input_topic
 
-    async def run(self):
+    async def run(self) -> None:
         consumer_group = spinalcase(self._get_group_name())
         async for message in self._input_topic.receive(consumer_group):
             await self._process_message(message)
@@ -27,4 +27,4 @@ class Action(ABC, Generic[T]):
         return self._input_topic.channel
 
     def _get_group_name(self) -> str:
-        return spinalcase(self.__class__.__name__)
+        return self.__class__.__name__
