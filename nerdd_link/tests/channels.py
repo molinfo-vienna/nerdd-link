@@ -1,6 +1,6 @@
 import asyncio
 from ast import literal_eval
-from typing import AsyncIterable, Generic, List, TypeVar
+from typing import AsyncIterable, Generic, List, Optional, Tuple, TypeVar
 
 import pytest_asyncio
 from pytest_bdd import parsers, then, when
@@ -12,17 +12,38 @@ from .async_step import async_step
 
 T = TypeVar("T")
 
+Change = Tuple[Optional[T], Optional[T]]
+
 
 class ObservableList(Generic[T]):
     def __init__(self) -> None:
         self._items: List[T] = []
+        self._changes: List[Change] = []
         self._event = asyncio.Event()
         self._stopped = False
 
     def append(self, item: T):
-        self._items.append(item)
+        self._apply_change((None, item))
         self._event.set()  # Notify all readers
         self._event.clear()
+
+    def remove(self, item: T):
+        self._apply_change((item, None))
+        self._event.set()
+        self._event.clear()
+
+    def _apply_change(self, change: Change):
+        # apply the change to the list of items
+        old, new = change
+        if old is not None and new is not None:
+            self._items[self._items.index(old)] = new
+        if old is not None:
+            self._items.remove(old)
+        if new is not None:
+            self._items.append(new)
+
+        # add change to the list of changes
+        self._changes.append(change)
 
     def __len__(self):
         return len(self._items)
@@ -33,21 +54,25 @@ class ObservableList(Generic[T]):
     def __getitem__(self, index):
         return self._items[index]
 
-    async def __aiter__(self) -> AsyncIterable[T]:
+    async def changes(self) -> AsyncIterable[Change]:
         processed = 0
         while not self._stopped:  # Check if the channel is stopped
-            if len(self._items) <= processed:
+            if len(self._changes) <= processed:
                 await self._event.wait()
 
             # Return all items from last_read_index onward
-            new_items = self._items[processed:]
+            new_changes = self._changes[processed:]
 
-            for item in new_items:
-                yield item
+            for change in new_changes:
+                yield change
                 processed += 1
 
     async def stop(self):
         self._stopped = True
+
+        # This will unblock the async iterator. It will go through the loop once more and process an
+        # empty list. At the start of the next iteration, it will see that the channel is stopped
+        # and exit.
         self._event.set()
 
 
@@ -65,7 +90,7 @@ class DummyChannel(Channel):
     async def _iter_messages(
         self, topic: str, consumer_group: str
     ) -> AsyncIterable[Message]:
-        async for t, message in self._messages:
+        async for _, (t, message) in self._messages.changes():
             if topic == t:
                 yield Message(**message)
 
