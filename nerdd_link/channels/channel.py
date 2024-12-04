@@ -12,6 +12,7 @@ from ..types import (
     LogMessage,
     Message,
     ModuleMessage,
+    ResultCheckpointMessage,
     ResultMessage,
     SystemMessage,
 )
@@ -101,10 +102,10 @@ class Channel(ABC):
 
     def result_checkpoints_topic(
         self, job_type_or_model: Union[str, Model]
-    ) -> Topic[CheckpointMessage]:
+    ) -> Topic[ResultCheckpointMessage]:
         job_type = get_job_type(job_type_or_model)
         topic_name = f"{job_type}-result-checkpoints"
-        return Topic[CheckpointMessage](self, topic_name)
+        return Topic[ResultCheckpointMessage](self, topic_name)
 
     def logs_topic(self) -> Topic[LogMessage]:
         return Topic[LogMessage](self, "logs")

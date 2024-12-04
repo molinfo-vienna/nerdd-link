@@ -1,7 +1,7 @@
 import asyncio
 import json
 import logging
-from typing import AsyncIterable, Optional
+from typing import AsyncIterable, Dict, Tuple
 
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 
@@ -14,10 +14,10 @@ logger = logging.getLogger(__name__)
 
 
 class KafkaChannel(Channel):
-    def __init__(self, broker_url):
+    def __init__(self, broker_url: str) -> None:
         super().__init__()
         self._broker_url = broker_url
-        self._consumers = {}
+        self._consumers: Dict[Tuple[str, str], AIOKafkaConsumer] = {}
 
         self._producer = AIOKafkaProducer(
             bootstrap_servers=[self._broker_url],
@@ -30,9 +30,7 @@ class KafkaChannel(Channel):
         asyncio.create_task(self._producer.start())
         logger.info(f"Connecting to Kafka broker {self._broker_url} and starting a producer.")
 
-    async def _iter_messages(
-        self, topic: str, consumer_group: Optional[str] = None
-    ) -> AsyncIterable[Message]:
+    async def _iter_messages(self, topic: str, consumer_group: str) -> AsyncIterable[Message]:
         if consumer_group is not None:
             consumer_group = f"{consumer_group}-consumer-group"
 
