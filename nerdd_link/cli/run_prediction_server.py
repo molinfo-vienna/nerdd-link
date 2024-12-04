@@ -44,7 +44,7 @@ async def run_prediction_server(
     data_dir: str,
     # log level
     log_level: str,
-):
+) -> None:
     logging.basicConfig(level=log_level.upper())
 
     channel_instance = None
