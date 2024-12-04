@@ -26,7 +26,7 @@ class SplitAndMergeStep(OutputStep):
         # Note: we use a thread-safe variant of tee.
         source_copies = safetee(source, len(self._step_lists))
 
-        def _run_steps(steps: List[Step], source: Iterator[dict]):
+        def _run_steps(steps: List[Step], source: Iterator[dict]) -> Any:
             assert len(steps) > 0, "There must be at least one step."
 
             output_step = steps[-1]
