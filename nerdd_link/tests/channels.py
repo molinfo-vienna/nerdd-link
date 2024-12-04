@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from ast import literal_eval
 from typing import AsyncIterable, Generic, List, Optional, Tuple, TypeVar
 
@@ -9,6 +10,8 @@ from nerdd_link.channels import Channel
 from nerdd_link.types import Message
 
 from .async_step import async_step
+
+logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
@@ -87,6 +90,7 @@ class DummyChannel(Channel):
         self._messages = ObservableList()
 
     async def push_message(self, topic, message):
+        logger.info(f"Send message to topic {topic}")
         self._messages.append((topic, message))
 
     def get_produced_messages(self):
