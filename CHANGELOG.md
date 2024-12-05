@@ -1,6 +1,33 @@
 # CHANGELOG
 
 
+## v0.0.2 (2024-12-05)
+
+### Fixes
+
+* fix: Use spinalcase for specified job_type ([`5c1f5a7`](https://github.com/molinfo-vienna/nerdd-link/commit/5c1f5a787815c0a8d610095a794dda7f87b19949))
+
+### Unknown
+
+* Merge pull request #16 from shirte/main
+
+Add types ([`7e9a229`](https://github.com/molinfo-vienna/nerdd-link/commit/7e9a22935ea65f29a47d45bea86a50e1035f839a))
+
+* Add types to async_to_sync ([`51b92d9`](https://github.com/molinfo-vienna/nerdd-link/commit/51b92d9216f879c4236dccec66dace754baa29ab))
+
+* Add types to StructureJsonReader ([`a294c8a`](https://github.com/molinfo-vienna/nerdd-link/commit/a294c8ae25315e76a8f79e5e69b5e2fd4dc07fb6))
+
+* Always use spinalcase ([`6956dc9`](https://github.com/molinfo-vienna/nerdd-link/commit/6956dc91adc9c82c3e28845a877c4fe845ee7673))
+
+* Check that the given module has a config ([`00b8697`](https://github.com/molinfo-vienna/nerdd-link/commit/00b8697cc97273eb1619dfde721674cc813fe45e))
+
+* Add types to actions ([`f960685`](https://github.com/molinfo-vienna/nerdd-link/commit/f96068534aa9f14a77a28b3104d129deeb6653d4))
+
+* Add pyproject.toml to pre-commit-config ([`c67e8d5`](https://github.com/molinfo-vienna/nerdd-link/commit/c67e8d5590a3316aa658f53aff79b9eb36bcc2f2))
+
+* Use logging in actions ([`4038256`](https://github.com/molinfo-vienna/nerdd-link/commit/4038256832739c41de89e2a6f4c22d056092f56a))
+
+
 ## v0.0.1 (2024-12-03)
 
 ### Fixes
