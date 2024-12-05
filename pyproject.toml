@@ -111,6 +111,7 @@ ignore = [
 [tool.mypy]
 # type stubs of packages lacking types are in the "typings" directory
 mypy_path = "typings"
+plugins = ["pydantic.mypy"]
 disallow_untyped_defs = true
 # no_implicit_optional = True
 # check_untyped_defs = True
