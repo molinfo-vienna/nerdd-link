@@ -126,7 +126,7 @@ follow_imports_for_stubs = true
 module = ["nerdd_link.tests.*", "tests.*"]
 ignore_errors = true
 
-# [tool.semantic_release]
-# version_toml = ["pyproject.toml:project.version"]
-# branch = "main"
-# upload_to_vcs_release = true
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+branch = "main"
+upload_to_vcs_release = true
