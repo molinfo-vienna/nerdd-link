@@ -33,8 +33,8 @@ def get_job_type(job_type_or_model: Union[str, Model]) -> str:
         topic_name = topic_name.lower()
         topic_name = "".join([c for c in topic_name if str.isalnum(c) or c == "-"])
         return topic_name
-
-    return job_type_or_model
+    else:
+        return spinalcase(job_type_or_model)
 
 
 class Topic(Generic[T]):

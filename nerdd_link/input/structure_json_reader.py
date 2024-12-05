@@ -1,16 +1,22 @@
 import json
-from typing import Iterator
+from typing import Iterator, Protocol
 
-from nerdd_module.input import MoleculeEntry, Reader
+from nerdd_module.input import ExploreCallable, MoleculeEntry, Reader
 
 __all__ = ["StructureJsonReader"]
 
 
+class StreamLike(Protocol):
+    def read(self, size: int = -1) -> str: ...
+
+    def seek(self, offset: int, whence: int = 0) -> int: ...
+
+
 class StructureJsonReader(Reader):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
-    def read(self, input_stream, explore) -> Iterator[MoleculeEntry]:
+    def read(self, input_stream: StreamLike, explore: ExploreCallable) -> Iterator[MoleculeEntry]:
         if not hasattr(input_stream, "read") or not hasattr(input_stream, "seek"):
             raise TypeError("input must be a stream-like object")
 

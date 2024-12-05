@@ -25,14 +25,14 @@ class ProcessJobsAction(Action[JobMessage]):
     def __init__(
         self,
         channel: Channel,
-        checkpoint_size,
-        max_num_molecules,
-        num_test_entries,
-        ratio_valid_entries,
-        maximum_depth,
-        max_num_lines_mol_block,
-        data_dir,
-    ):
+        checkpoint_size: int,
+        max_num_molecules: int,
+        num_test_entries: int,
+        ratio_valid_entries: float,
+        maximum_depth: int,
+        max_num_lines_mol_block: int,
+        data_dir: str,
+    ) -> None:
         super().__init__(channel.jobs_topic())
         # relevant for chunking
         self.checkpoint_size = checkpoint_size
@@ -48,6 +48,7 @@ class ProcessJobsAction(Action[JobMessage]):
     async def _process_message(self, message: JobMessage) -> None:
         job_id = message.id
         job_type = message.job_type
+        logger.info(f"Received a new job {job_id} of type {job_type}")
 
         # the input file to the job is stored in the directory data_dir/sources/
         # (the file is allowed to reference other files, but setting the data_dir
@@ -99,6 +100,8 @@ class ProcessJobsAction(Action[JobMessage]):
 
             if num_entries >= self.max_num_molecules:
                 break
+
+        logger.info(f"Wrote {i+1} checkpoints containing {num_entries} entries for job {job_id}")
 
         # send a warning message if there were more molecules in the job than allowed
         too_many_molecules = num_store < len(batch)
