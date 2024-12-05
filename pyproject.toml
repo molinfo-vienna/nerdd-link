@@ -68,6 +68,7 @@ docs = ["mkdocs", "mkdocs-material", "mkdocstrings"]
 Repository = "https://github.com/molinfo-vienna/nerdd-link"
 
 [project.scripts]
+nerdd_init = "nerdd_link.cli:initialize_system"
 nerdd_job_server = "nerdd_link.cli:run_job_server"
 nerdd_prediction_server = "nerdd_link.cli:run_prediction_server"
 
