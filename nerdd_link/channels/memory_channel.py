@@ -11,13 +11,11 @@ logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
-Change = Tuple[Optional[T], Optional[T]]
-
 
 class ObservableList(Generic[T]):
     def __init__(self) -> None:
         self._items: List[T] = []
-        self._changes: List[Change] = []
+        self._changes: List[Tuple[Optional[T], Optional[T]]] = []
         self._event = asyncio.Event()
         self._stopped = False
 
@@ -36,7 +34,7 @@ class ObservableList(Generic[T]):
         self._event.set()
         self._event.clear()
 
-    def _apply_change(self, change: Change) -> None:
+    def _apply_change(self, change: Tuple[Optional[T], Optional[T]]) -> None:
         # apply the change to the list of items
         old, new = change
         if old is not None and new is not None:
@@ -58,7 +56,7 @@ class ObservableList(Generic[T]):
     def __getitem__(self, index: int) -> T:
         return self._items[index]
 
-    async def changes(self) -> AsyncIterable[Change]:
+    async def changes(self) -> AsyncIterable[Tuple[Optional[T], Optional[T]]]:
         processed = 0
         while not self._stopped:  # Check if the channel is stopped
             if len(self._changes) <= processed:
@@ -83,13 +81,15 @@ class ObservableList(Generic[T]):
 class MemoryChannel(Channel):
     def __init__(self) -> None:
         super().__init__()
-        self._messages: ObservableList[Tuple[str, Message]] = ObservableList()
+        self._messages = ObservableList[Tuple[str, Message]]()
 
     def get_produced_messages(self) -> List[Tuple[str, Message]]:
         return self._messages.get_items()
 
     async def _iter_messages(self, topic: str, consumer_group: str) -> AsyncIterable[Message]:
-        async for _, (t, message) in self._messages.changes():
+        async for _, new in self._messages.changes():
+            assert new is not None
+            (t, message) = new
             if topic == t:
                 yield message
 
