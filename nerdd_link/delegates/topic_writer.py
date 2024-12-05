@@ -17,7 +17,7 @@ class TopicWriter(Writer, output_format="json"):
         self.result_checkpoints_topic = channel.result_checkpoints_topic(model)
 
     def write(self, records: Iterable[dict]) -> None:
-        async def send_messages():
+        async def send_messages() -> None:
             for record in records:
                 await self.results_topic.send(ResultMessage(job_id=self.job_id, **record))
             await self.result_checkpoints_topic.send(

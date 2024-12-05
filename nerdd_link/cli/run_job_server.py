@@ -77,7 +77,7 @@ async def run_job_server(
     checkpoint_size: int,
     # log level
     log_level: str,
-):
+) -> None:
     logging.basicConfig(level=log_level.upper())
 
     channel_instance = None

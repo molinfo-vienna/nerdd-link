@@ -13,9 +13,9 @@ class WriteOutputAction(Action[SystemMessage]):
         super().__init__(channel.system_topic())
         self._model = model
 
-    def _process_message(self, message: SystemMessage) -> None:
-        return super()._process_message(message)
+    async def _process_message(self, message: SystemMessage) -> None:
+        pass
 
-    def _get_group_name(self):
+    def _get_group_name(self) -> str:
         model_name = spinalcase(self._model.__class__.__name__)
         return model_name

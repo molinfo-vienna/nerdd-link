@@ -2,7 +2,6 @@ import logging
 import os
 
 from nerdd_module import Model
-from stringcase import spinalcase
 
 from ..channels import Channel
 from ..delegates import ReadCheckpointModel
@@ -56,5 +55,5 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         )
 
     def _get_group_name(self) -> str:
-        model_name = spinalcase(self.model.__class__.__name__)
+        model_name = self.model.__class__.__name__
         return model_name
