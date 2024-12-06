@@ -68,6 +68,7 @@ docs = ["mkdocs", "mkdocs-material", "mkdocstrings"]
 Repository = "https://github.com/molinfo-vienna/nerdd-link"
 
 [project.scripts]
+nerdd_init = "nerdd_link.cli:initialize_system"
 nerdd_job_server = "nerdd_link.cli:run_job_server"
 nerdd_prediction_server = "nerdd_link.cli:run_prediction_server"
 
@@ -111,6 +112,7 @@ ignore = [
 [tool.mypy]
 # type stubs of packages lacking types are in the "typings" directory
 mypy_path = "typings"
+plugins = ["pydantic.mypy"]
 disallow_untyped_defs = true
 # no_implicit_optional = True
 # check_untyped_defs = True
@@ -125,7 +127,11 @@ follow_imports_for_stubs = true
 module = ["nerdd_link.tests.*", "tests.*"]
 ignore_errors = true
 
-# [tool.semantic_release]
-# version_toml = ["pyproject.toml:project.version"]
-# branch = "main"
-# upload_to_vcs_release = true
+[[tool.mypy.overrides]]
+module = ["aiokafka.*"]
+ignore_missing_imports = true
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+branch = "main"
+upload_to_vcs_release = true

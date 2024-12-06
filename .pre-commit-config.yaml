@@ -8,17 +8,13 @@ repos:
       # Run the formatter.
       - id: ruff-format
         args: [ --config=pyproject.toml ]
-  # - repo: https://github.com/pre-commit/mirrors-mypy
-  #   rev: v1.13.0
-  #   hooks:
-  #     - id: mypy
-  #       additional_dependencies: 
-  #         - types-decorator
-  #         - types-PyYAML
-  #         - pandas-stubs
-  #         - rdkit-stubs
-  #         - importlib-metadata
-  #         - importlib-resources
-  #         - rich-click
-  #         - pydantic
-  #       args: [--config-file=pyproject.toml]
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - rdkit-stubs
+          - nerdd-module
+          - rich-click
+          - pydantic
+        args: [--config-file=pyproject.toml]
