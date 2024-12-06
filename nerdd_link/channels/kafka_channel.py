@@ -23,9 +23,11 @@ class KafkaChannel(Channel):
             bootstrap_servers=[self._broker_url],
             value_serializer=lambda v: json.dumps(v.model_dump()).encode("utf-8"),
         )
-        # TODO: start consumers
+        logger.info(f"Connecting to Kafka broker {self._broker_url} and starting a producer...")
         await self._producer.start()
-        logger.info(f"Connecting to Kafka broker {self._broker_url} and starting a producer.")
+
+        for consumer in self._consumers.values():
+            await consumer.start()
 
     async def _stop(self) -> None:
         await self._producer.stop()
