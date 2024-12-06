@@ -59,6 +59,30 @@ class Topic(Generic[T]):
 
 
 class Channel(ABC):
+    def __init__(self) -> None:
+        self._is_running = False
+
+    async def start(self) -> None:
+        self._is_running = True
+        await self._start()
+
+    async def _start(self) -> None:  # noqa: B027
+        pass
+
+    async def stop(self) -> None:
+        await self._stop()
+        self._is_running = False
+
+    async def _stop(self) -> None:  # noqa: B027
+        pass
+
+    async def __aenter__(self) -> Channel:
+        await self.start()
+        return self
+
+    async def __aexit__(self, exc_type: type, exc_value: Exception, traceback: object) -> None:
+        await self.stop()
+
     #
     # RECEIVE
     #
