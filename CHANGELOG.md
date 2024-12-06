@@ -1,6 +1,49 @@
 # CHANGELOG
 
 
+## v0.1.0 (2024-12-06)
+
+### Features
+
+* feat: Move ObservableList to utils ([`0c5358d`](https://github.com/molinfo-vienna/nerdd-link/commit/0c5358db561a72ee2ec474d463ed439c44d4af7d))
+
+### Unknown
+
+* Merge pull request #18 from shirte/main
+
+Fix types ([`1331854`](https://github.com/molinfo-vienna/nerdd-link/commit/13318542719128a97f70973620e9abef8b49fe83))
+
+* Add initialize_system command ([`ce229f2`](https://github.com/molinfo-vienna/nerdd-link/commit/ce229f26291b22c6ac03f557171af30990b69c47))
+
+* Add mypy to pre-commit hooks ([`6fe227b`](https://github.com/molinfo-vienna/nerdd-link/commit/6fe227b763693635ec1579890dd5293622426453))
+
+* Ignore aiokafka when checking types ([`95e5d0f`](https://github.com/molinfo-vienna/nerdd-link/commit/95e5d0f6018e03b5767ca4bba9113062cdee9c94))
+
+* Configure semantic release in pyproject.toml ([`500ae8c`](https://github.com/molinfo-vienna/nerdd-link/commit/500ae8c66e28f18239cd71f97a709a9e7bac8cb2))
+
+* Add mypy plugin for pydantic ([`915bbad`](https://github.com/molinfo-vienna/nerdd-link/commit/915bbad81e2a5358ce83a1b7577d1fbbd09717c1))
+
+* Fix types in MemoryChannel ([`339458e`](https://github.com/molinfo-vienna/nerdd-link/commit/339458e407283f6f2a941cb16a62a4b4f0806dc3))
+
+* Merge pull request #17 from shirte/main
+
+Rename DummyChannel and move to main code ([`f1c0235`](https://github.com/molinfo-vienna/nerdd-link/commit/f1c02353741257b3c62bf1278494baad96aa760b))
+
+* Do not return spinalcase in PredictCheckpointsAction ([`5c928c9`](https://github.com/molinfo-vienna/nerdd-link/commit/5c928c9aa53d9d084f96c714139a5da5ec5564ea))
+
+* Rename DummyChannel to MemoryChannel and move to channels submodule ([`78adf26`](https://github.com/molinfo-vienna/nerdd-link/commit/78adf26f568fb0de80644af2304d3184e99899f9))
+
+* Use correct types in WriteOutputAction ([`9647a61`](https://github.com/molinfo-vienna/nerdd-link/commit/9647a61158ee8047738e5d3672946c03985a811c))
+
+* Use logger in DummyChannel ([`9106a16`](https://github.com/molinfo-vienna/nerdd-link/commit/9106a1663c0eb5d208f839d2a8ead2180ef710be))
+
+* Add types to channel classes ([`b62f0fa`](https://github.com/molinfo-vienna/nerdd-link/commit/b62f0fac04c4009b4d12ff727d013f363f140533))
+
+* Add types to cli classes ([`d0c93e2`](https://github.com/molinfo-vienna/nerdd-link/commit/d0c93e23ef7fa3383c372d9e06fd288c3ec2f40a))
+
+* Add types to delegate classes ([`0fbd987`](https://github.com/molinfo-vienna/nerdd-link/commit/0fbd98762c9e86952dc7fe045816b82cee78cf00))
+
+
 ## v0.0.2 (2024-12-05)
 
 ### Fixes
