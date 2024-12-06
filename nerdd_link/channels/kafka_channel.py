@@ -21,13 +21,9 @@ class KafkaChannel(Channel):
     async def _start(self) -> None:
         self._producer = AIOKafkaProducer(
             bootstrap_servers=[self._broker_url],
+            value_serializer=lambda v: json.dumps(v.model_dump()).encode("utf-8"),
         )
         # TODO: start consumers
-        # TODO: check value_serializer
-        # producer = AIOKafkaProducer(
-        #     bootstrap_servers=KAFKA_BROKER_URL,
-        #     value_serializer=lambda v: json.dumps(v).encode("utf-8"),
-        # )
         await self._producer.start()
         logger.info(f"Connecting to Kafka broker {self._broker_url} and starting a producer.")
 
@@ -96,5 +92,5 @@ class KafkaChannel(Channel):
     async def _send(self, topic: str, message: Message) -> None:
         await self._producer.send_and_wait(
             topic,
-            json.dumps(message.model_dump()).encode("utf-8"),
+            message,
         )
