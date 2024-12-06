@@ -37,9 +37,6 @@ class KafkaChannel(Channel):
             await consumer.stop()
 
     async def _iter_messages(self, topic: str, consumer_group: str) -> AsyncIterable[Message]:
-        if consumer_group is not None:
-            consumer_group = f"{consumer_group}-consumer-group"
-
         key = (topic, consumer_group)
 
         if key not in self._consumers:
