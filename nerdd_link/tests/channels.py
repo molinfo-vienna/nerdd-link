@@ -13,9 +13,8 @@ logger = logging.getLogger(__name__)
 
 @pytest_asyncio.fixture(scope="function")
 async def channel():
-    channel = MemoryChannel()
-    yield channel
-    await channel.stop()
+    async with MemoryChannel() as channel:
+        yield channel
 
 
 @when(

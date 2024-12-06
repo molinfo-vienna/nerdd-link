@@ -87,6 +87,8 @@ class Channel(ABC):
     # RECEIVE
     #
     async def iter_messages(self, topic: str, consumer_group: str) -> AsyncIterable[Message]:
+        if not self._is_running:
+            raise RuntimeError("Channel is not running. Call start() first.")
         async for message in self._iter_messages(topic, consumer_group):
             yield message
 
@@ -101,6 +103,8 @@ class Channel(ABC):
     # SEND
     #
     async def send(self, topic: str, message: Message) -> None:
+        if not self._is_running:
+            raise RuntimeError("Channel is not running. Call start() first.")
         await self._send(topic, message)
 
     @abstractmethod
