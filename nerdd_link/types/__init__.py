@@ -41,6 +41,7 @@ class JobMessage(Message):
 
 class SerializationRequestMessage(Message):
     job_id: str
+    params: Dict[str, Any]
     output_format: str
 
 
