@@ -20,8 +20,8 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
 
     def __init__(self, channel: Channel, model: Model, data_dir: str) -> None:
         super().__init__(channel.checkpoints_topic(model))
-        self.model = model
-        self.file_system = FileSystem(data_dir)
+        self._model = model
+        self._file_system = FileSystem(data_dir)
 
     async def _process_message(self, message: CheckpointMessage) -> None:
         job_id = message.job_id
@@ -35,9 +35,9 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         # * does not write to the specified results file, but to the checkpoints file instead
         # * sends the results to the results topic
         model = ReadCheckpointModel(
-            base_model=self.model,
+            base_model=self._model,
             job_id=job_id,
-            file_system=self.file_system,
+            file_system=self._file_system,
             checkpoint_id=checkpoint_id,
             channel=self.channel,
         )
@@ -49,5 +49,5 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         )
 
     def _get_group_name(self) -> str:
-        model_name = self.model.__class__.__name__
+        model_name = self._model.__class__.__name__
         return model_name
