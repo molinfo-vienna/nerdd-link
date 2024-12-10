@@ -1,10 +1,10 @@
 import logging
-import os
 
 from nerdd_module import Model
 
 from ..channels import Channel
 from ..delegates import ReadCheckpointModel
+from ..files import FileSystem
 from ..types import CheckpointMessage
 from .action import Action
 
@@ -21,7 +21,7 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
     def __init__(self, channel: Channel, model: Model, data_dir: str) -> None:
         super().__init__(channel.checkpoints_topic(model))
         self.model = model
-        self.data_dir = data_dir
+        self.file_system = FileSystem(data_dir)
 
     async def _process_message(self, message: CheckpointMessage) -> None:
         job_id = message.job_id
@@ -29,23 +29,17 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         params = message.params
         logger.info(f"Predict checkpoint {checkpoint_id} of job {job_id}")
 
-        # the input file to the job is stored in the file data_dir/job_id/input/
-        checkpoints_file = f"{self.data_dir}/jobs/{job_id}/input/checkpoint_{checkpoint_id}.pickle"
-        checkpoint_results_file = (
-            f"{self.data_dir}/jobs/{job_id}/results/checkpoint_{checkpoint_id}.pickle"
-        )
-
-        # create the results directory
-        os.makedirs(f"{self.data_dir}/jobs/{job_id}/results", exist_ok=True)
-
-        # create a model that reads the checkpoint file
+        # create a wrapper model that
+        # * reads the checkpoint file instead of normal input
+        # * does preprocessing, prediction, and postprocessing like the encapsulated model
+        # * does not write to the specified results file, but to the checkpoints file instead
+        # * sends the results to the results topic
         model = ReadCheckpointModel(
             base_model=self.model,
             job_id=job_id,
+            file_system=self.file_system,
             checkpoint_id=checkpoint_id,
             channel=self.channel,
-            checkpoints_file=checkpoints_file,
-            results_file=checkpoint_results_file,
         )
 
         # predict the checkpoint
