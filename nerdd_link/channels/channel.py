@@ -14,6 +14,7 @@ from ..types import (
     ModuleMessage,
     ResultCheckpointMessage,
     ResultMessage,
+    SerializationRequestMessage,
     SystemMessage,
 )
 
@@ -134,6 +135,13 @@ class Channel(ABC):
         job_type = get_job_type(job_type_or_model)
         topic_name = f"{job_type}-result-checkpoints"
         return Topic[ResultCheckpointMessage](self, topic_name)
+
+    def serialization_request_topic(
+        self, job_type_or_model: Union[str, Model]
+    ) -> Topic[SerializationRequestMessage]:
+        job_type = get_job_type(job_type_or_model)
+        topic_name = f"{job_type}-serialization-requests"
+        return Topic[SerializationRequestMessage](self, topic_name)
 
     def logs_topic(self) -> Topic[LogMessage]:
         return Topic[LogMessage](self, "logs")
