@@ -13,8 +13,15 @@ class FileSystem:
     def __init__(self, root_path: str) -> None:
         self.root_path = root_path
 
-    # create the results directory
+    #
+    # DIRECTORIES
+    #
+    def get_sources_dir(self) -> str:
+        return os.path.join(self.root_path, "sources")
 
+    #
+    # FILES
+    #
     def get_checkpoint_file_path(self, job_id: str, checkpoint_id: Union[int, str]) -> str:
         return os.path.join(
             self.root_path, f"jobs/{job_id}/input/checkpoint_{checkpoint_id}.pickle"
