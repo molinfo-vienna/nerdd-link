@@ -36,7 +36,6 @@ class JobMessage(Message):
     job_type: str
     source_id: str
     params: Dict[str, Any]
-    timestamp: int
 
 
 class SerializationRequestMessage(Message):
