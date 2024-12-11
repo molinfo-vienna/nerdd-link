@@ -16,10 +16,13 @@ Feature: Predict checkpoints action
     And the process job action is executed
     And the predict checkpoints action is executed
 
+    # files
     Then the file 'jobs/123/results/checkpoint_0.pickle' is created
     And the file 'jobs/123/results/checkpoint_1.pickle' is created
     And the file 'jobs/123/results/checkpoint_2.pickle' is created
-    # actions sends result messages
+
+    # channels
+    # actions sends result messages:
     And the channel sends 100 messages on topic 'results'
     # actions sends result checkpoint messages:
     And the channel sends a message on topic 'mol-scale-result-checkpoints' with content
