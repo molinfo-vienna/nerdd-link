@@ -1,6 +1,39 @@
 # CHANGELOG
 
 
+## v0.2.0 (2024-12-12)
+
+### Features
+
+* feat: Add start and stop method to Channel ([`f4997cf`](https://github.com/molinfo-vienna/nerdd-link/commit/f4997cfac8643307c1c6ed085fe8324a1ec5730c))
+
+### Fixes
+
+* fix: Keep molecule properties when serializing them to pickle (part 2) ([`110103b`](https://github.com/molinfo-vienna/nerdd-link/commit/110103be86e08a847ae62e0129d92292cb20ddbb))
+
+* fix: Keep molecule properties when serializing them to pickle ([`1d9b0b8`](https://github.com/molinfo-vienna/nerdd-link/commit/1d9b0b83dc8c23f953a9a66fb2cdea913cb239c8))
+
+### Unknown
+
+* Merge pull request #19 from shirte/main
+
+Add start and stop method to channels ([`a0f8451`](https://github.com/molinfo-vienna/nerdd-link/commit/a0f845197d4dd3949c3d83eebba82fa5a6f3446b))
+
+* Make sure that all properties are serialized to pickle ([`dd46074`](https://github.com/molinfo-vienna/nerdd-link/commit/dd46074d0e524550c7b03df1a559d8e65a8d7047))
+
+* Implement consumer groups in MemoryChannel ([`aa4f1f6`](https://github.com/molinfo-vienna/nerdd-link/commit/aa4f1f6aaf35d004aa77cd15a940ecc9af7ca2a9))
+
+* Start consumers when restarting in KafkaChannel ([`f4d9e6f`](https://github.com/molinfo-vienna/nerdd-link/commit/f4d9e6f2e0a8fc07c2b127579088b9bcf41e4331))
+
+* Add value serializer in KafkaChannel ([`47da130`](https://github.com/molinfo-vienna/nerdd-link/commit/47da13036c9d1ebae9f428dfd3292b5d26a7c480))
+
+* Let KafkaChannel use consumer group as given ([`e918927`](https://github.com/molinfo-vienna/nerdd-link/commit/e9189276483ba0855645a3bc320cae94264e2735))
+
+* Start kafka producer and consumers in _start method ([`721631e`](https://github.com/molinfo-vienna/nerdd-link/commit/721631eea05edb8e37bbe57bc2faa2e54c6379c1))
+
+* Make channel only usable in running state ([`5ac0f29`](https://github.com/molinfo-vienna/nerdd-link/commit/5ac0f29aa9c4fabddb37d3d96c2c25615d7e7ee0))
+
+
 ## v0.1.0 (2024-12-06)
 
 ### Features
