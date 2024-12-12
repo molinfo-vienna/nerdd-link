@@ -59,10 +59,36 @@ class Topic(Generic[T]):
 
 
 class Channel(ABC):
+    def __init__(self) -> None:
+        self._is_running = False
+
+    async def start(self) -> None:
+        self._is_running = True
+        await self._start()
+
+    async def _start(self) -> None:  # noqa: B027
+        pass
+
+    async def stop(self) -> None:
+        await self._stop()
+        self._is_running = False
+
+    async def _stop(self) -> None:  # noqa: B027
+        pass
+
+    async def __aenter__(self) -> Channel:
+        await self.start()
+        return self
+
+    async def __aexit__(self, exc_type: type, exc_value: Exception, traceback: object) -> None:
+        await self.stop()
+
     #
     # RECEIVE
     #
     async def iter_messages(self, topic: str, consumer_group: str) -> AsyncIterable[Message]:
+        if not self._is_running:
+            raise RuntimeError("Channel is not running. Call start() first.")
         async for message in self._iter_messages(topic, consumer_group):
             yield message
 
@@ -77,6 +103,8 @@ class Channel(ABC):
     # SEND
     #
     async def send(self, topic: str, message: Message) -> None:
+        if not self._is_running:
+            raise RuntimeError("Channel is not running. Call start() first.")
         await self._send(topic, message)
 
     @abstractmethod

@@ -1,4 +1,3 @@
-import asyncio
 import json
 import logging
 from typing import AsyncIterable, Dict, Tuple
@@ -19,21 +18,23 @@ class KafkaChannel(Channel):
         self._broker_url = broker_url
         self._consumers: Dict[Tuple[str, str], AIOKafkaConsumer] = {}
 
+    async def _start(self) -> None:
         self._producer = AIOKafkaProducer(
             bootstrap_servers=[self._broker_url],
+            value_serializer=lambda v: json.dumps(v.model_dump()).encode("utf-8"),
         )
-        # TODO: check value_serializer
-        # producer = AIOKafkaProducer(
-        #     bootstrap_servers=KAFKA_BROKER_URL,
-        #     value_serializer=lambda v: json.dumps(v).encode("utf-8"),
-        # )
-        asyncio.create_task(self._producer.start())
-        logger.info(f"Connecting to Kafka broker {self._broker_url} and starting a producer.")
+        logger.info(f"Connecting to Kafka broker {self._broker_url} and starting a producer...")
+        await self._producer.start()
+
+        for consumer in self._consumers.values():
+            await consumer.start()
+
+    async def _stop(self) -> None:
+        await self._producer.stop()
+        for consumer in self._consumers.values():
+            await consumer.stop()
 
     async def _iter_messages(self, topic: str, consumer_group: str) -> AsyncIterable[Message]:
-        if consumer_group is not None:
-            consumer_group = f"{consumer_group}-consumer-group"
-
         key = (topic, consumer_group)
 
         if key not in self._consumers:
@@ -93,5 +94,5 @@ class KafkaChannel(Channel):
     async def _send(self, topic: str, message: Message) -> None:
         await self._producer.send_and_wait(
             topic,
-            json.dumps(message.model_dump()).encode("utf-8"),
+            message,
         )

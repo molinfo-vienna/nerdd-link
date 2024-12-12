@@ -1,9 +1,12 @@
 import logging
 import os
 from pickle import dump
+from typing import Any
 
 from nerdd_module.input import DepthFirstExplorer
 from nerdd_module.model import ReadInputStep
+from rdkit.Chem import Mol
+from rdkit.Chem.PropertyMol import PropertyMol
 
 from ..channels import Channel
 from ..types import CheckpointMessage, JobMessage, LogMessage
@@ -85,7 +88,23 @@ class ProcessJobsAction(Action[JobMessage]):
 
             # store batch in data_dir
             with open(f"{self.data_dir}/jobs/{job_id}/input/checkpoint_{i}.pickle", "wb") as f:
-                dump(batch[:num_store], f)
+                results = list(batch[:num_store])
+
+                # TODO: use a model for storing the batches
+
+                # check all items for mol values and use PropertyMol for those
+                # in order to keep molecular properties (thanks, RDKit! :/ )
+                def _check_value(value: Any) -> Any:
+                    if isinstance(value, Mol):
+                        return PropertyMol(value)
+                    return value
+
+                def _check_item(item: dict) -> dict:
+                    return {key: _check_value(value) for key, value in item.items()}
+
+                results = [_check_item(item) for item in results]
+
+                dump(results, f)
 
             # send a tuple to topic cypstrate-checkpoints
             await self.channel.checkpoints_topic(job_type).send(
