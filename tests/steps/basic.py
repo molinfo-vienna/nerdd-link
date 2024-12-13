@@ -20,9 +20,16 @@ def input_file(data_dir, path, molecules, format):
         data_dir=os.path.join(data_dir, "sources"),
     )
 
+    # When reading the input file, we get entries of the form
+    # { "input_mol": <molecule>, "raw_input": "CCCO", "input_type": "smiles", etc. }
+    # We remove all properties except "input_mol", because we don't want to store them.
+    def remove_properties(source):
+        for entry in source:
+            yield { "input_mol": entry["input_mol"] }
+
     input_step = ReadInputStep(explorer, molecules)
     output_step = WriteOutputStep(output_format=format, output_file=full_path)
-    output_step(input_step(None))
+    output_step(remove_properties(input_step(None)))
     output_step.get_result()
 
 

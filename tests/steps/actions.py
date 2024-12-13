@@ -1,12 +1,10 @@
 import asyncio
 
 import pytest_asyncio
-from nerdd_link.actions import (
-    PredictCheckpointsAction,
-    ProcessJobsAction,
-    RegisterModuleAction,
-)
 from pytest_bdd import given, parsers, when
+
+from nerdd_link.actions import (PredictCheckpointsAction, ProcessJobsAction,
+                                RegisterModuleAction, SerializeJobAction)
 
 from .async_step import async_step
 
@@ -85,3 +83,22 @@ async def register_module_action(channel, model):
 @async_step
 async def execute_register_module_action(register_module_action):
     return register_module_action
+
+
+@pytest_asyncio.fixture(scope="function")
+async def serialize_job_action(channel, model, data_dir):
+    action = SerializeJobAction(
+        channel=channel,
+        model=model,
+        data_dir=data_dir,
+    )
+
+    task = asyncio.create_task(action.run())
+    yield task
+    task.cancel()
+
+
+@when(parsers.parse("the serialize job action is executed"))
+@async_step
+async def execute_serialize_job_action(serialize_job_action):
+    return serialize_job_action

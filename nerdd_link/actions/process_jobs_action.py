@@ -1,5 +1,4 @@
 import logging
-import os
 from pickle import dump
 from typing import Any
 
@@ -9,6 +8,7 @@ from rdkit.Chem import Mol
 from rdkit.Chem.PropertyMol import PropertyMol
 
 from ..channels import Channel
+from ..files import FileSystem
 from ..types import CheckpointMessage, JobMessage, LogMessage
 from ..utils import batched
 from .action import Action
@@ -38,41 +38,38 @@ class ProcessJobsAction(Action[JobMessage]):
     ) -> None:
         super().__init__(channel.jobs_topic())
         # relevant for chunking
-        self.checkpoint_size = checkpoint_size
-        self.max_num_molecules = max_num_molecules
+        self._checkpoint_size = checkpoint_size
+        self._max_num_molecules = max_num_molecules
         # parameters of DepthFirstExplorer
-        self.num_test_entries = num_test_entries
-        self.ratio_valid_entries = ratio_valid_entries
-        self.maximum_depth = maximum_depth
+        self._num_test_entries = num_test_entries
+        self._ratio_valid_entries = ratio_valid_entries
+        self._maximum_depth = maximum_depth
         # used as kwargs in DepthFirstExplorer
-        self.max_num_lines_mol_block = max_num_lines_mol_block
-        self.data_dir = data_dir
+        self._max_num_lines_mol_block = max_num_lines_mol_block
+        self._file_system = FileSystem(data_dir)
 
     async def _process_message(self, message: JobMessage) -> None:
         job_id = message.id
         job_type = message.job_type
         logger.info(f"Received a new job {job_id} of type {job_type}")
 
-        # the input file to the job is stored in the directory data_dir/sources/
+        # the input file to the job is stored in a designated sources directory
         # (the file is allowed to reference other files, but setting the data_dir
         # to the sources directory ensures that we never read files outside of the
         # sources directory)
-        sources_dir = os.path.join(self.data_dir, "sources")
+        data_dir = self._file_system.get_sources_dir()
 
         # create a reader (explorer) for the input file
         explorer = DepthFirstExplorer(
-            num_test_entries=self.num_test_entries,
-            threshold=self.ratio_valid_entries,
-            maximum_depth=self.maximum_depth,
+            num_test_entries=self._num_test_entries,
+            threshold=self._ratio_valid_entries,
+            maximum_depth=self._maximum_depth,
             # extra args
-            max_num_lines_mol_block=self.max_num_lines_mol_block,
-            data_dir=sources_dir,
+            max_num_lines_mol_block=self._max_num_lines_mol_block,
+            data_dir=data_dir,
         )
 
         read_input_step = ReadInputStep(explorer, message.source_id)
-
-        # create a directory for the job
-        os.makedirs(f"{self.data_dir}/jobs/{job_id}/input", exist_ok=True)
 
         # read the input file
         entries = read_input_step()
@@ -80,14 +77,14 @@ class ProcessJobsAction(Action[JobMessage]):
         # iterate through the entries
         # create batches of size checkpoint_size
         # limit the number of molecules to max_num_molecules
-        batches = batched(entries, self.checkpoint_size)
+        batches = batched(entries, self._checkpoint_size)
         num_entries = 0
         for i, batch in enumerate(batches):
             # max_num_molecules might be reached within the batch
-            num_store = min(len(batch), self.max_num_molecules - num_entries)
+            num_store = min(len(batch), self._max_num_molecules - num_entries)
 
             # store batch in data_dir
-            with open(f"{self.data_dir}/jobs/{job_id}/input/checkpoint_{i}.pickle", "wb") as f:
+            with self._file_system.get_checkpoint_file_handle(job_id, i, "wb") as f:
                 results = list(batch[:num_store])
 
                 # TODO: use a model for storing the batches
@@ -117,7 +114,7 @@ class ProcessJobsAction(Action[JobMessage]):
 
             num_entries += num_store
 
-            if num_entries >= self.max_num_molecules:
+            if num_entries >= self._max_num_molecules:
                 break
 
         logger.info(f"Wrote {i+1} checkpoints containing {num_entries} entries for job {job_id}")
@@ -140,8 +137,8 @@ class ProcessJobsAction(Action[JobMessage]):
                     message_type="warning",
                     message=(
                         f"The provided job contains more than "
-                        f"{self.max_num_molecules} input structures. Only the "
-                        f"first {self.max_num_molecules} will be processed."
+                        f"{self._max_num_molecules} input structures. Only the "
+                        f"first {self._max_num_molecules} will be processed."
                     ),
                 )
             )

@@ -1,10 +1,14 @@
+import logging
 from abc import ABC, abstractmethod
+from asyncio import CancelledError
 from typing import Generic, TypeVar
 
 from stringcase import spinalcase
 
 from ..channels import Channel, Topic
 from ..types import Message
+
+logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=Message)
 
@@ -16,7 +20,14 @@ class Action(ABC, Generic[T]):
     async def run(self) -> None:
         consumer_group = spinalcase(self._get_group_name())
         async for message in self._input_topic.receive(consumer_group):
-            await self._process_message(message)
+            try:
+                await self._process_message(message)
+            except CancelledError:
+                # the consumer was cancelled, stop processing messages
+                break
+            except Exception:
+                # log the error and continue processing the next message
+                logger.error("Error processing message", exc_info=True)
 
     @abstractmethod
     async def _process_message(self, message: T) -> None:

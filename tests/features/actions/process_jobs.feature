@@ -12,9 +12,12 @@ Feature: Process job action
         { "id": "123", "job_type": "mol-scale", "source_id": "456", "params": { "multiplier": 10 } }
     And the process job action is executed
 
-    Then the file 'jobs/123/input/checkpoint_0.pickle' is created
-    And the file 'jobs/123/input/checkpoint_1.pickle' is created
-    And the file 'jobs/123/input/checkpoint_2.pickle' is created
+    # files
+    Then the file 'jobs/123/inputs/checkpoint_0.pickle' is created
+    And the file 'jobs/123/inputs/checkpoint_1.pickle' is created
+    And the file 'jobs/123/inputs/checkpoint_2.pickle' is created
+
+    # channel
     And the channel sends a message on topic 'mol-scale-checkpoints' with content 
         { "job_id": "123", "checkpoint_id": 0, "params": { "multiplier": 10 } }
     And the channel sends a message on topic 'mol-scale-checkpoints' with content 
@@ -36,7 +39,10 @@ Feature: Process job action
         { "id": "123", "job_type": "mol-scale", "source_id": "456", "params": { "multiplier": 10 } }
     And the process job action is executed
 
-    Then the file 'jobs/123/input/checkpoint_0.pickle' is created
+    # files
+    Then the file 'jobs/123/inputs/checkpoint_0.pickle' is created
+
+    # channel
     And the channel sends a message on topic 'mol-scale-checkpoints' with content 
         { "job_id": "123", "checkpoint_id": 0, "params": { "multiplier": 10 } }
     And the channel sends a message on topic 'logs' with content 

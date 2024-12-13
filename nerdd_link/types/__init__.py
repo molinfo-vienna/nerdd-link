@@ -39,6 +39,12 @@ class JobMessage(Message):
     timestamp: int
 
 
+class SerializationRequestMessage(Message):
+    job_id: str
+    params: Dict[str, Any]
+    output_format: str
+
+
 class ResultMessage(Message):
     job_id: str
 

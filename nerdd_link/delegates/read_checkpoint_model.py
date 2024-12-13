@@ -4,6 +4,7 @@ from nerdd_module import Model, Step
 from rdkit.Chem import Mol
 
 from ..channels import Channel
+from ..files import FileSystem
 from .read_pickle_step import ReadPickleStep
 from .split_and_merge_step import SplitAndMergeStep
 
@@ -15,24 +16,25 @@ class ReadCheckpointModel(Model):
         self,
         base_model: Model,
         job_id: str,
+        file_system: FileSystem,
         checkpoint_id: int,
         channel: Channel,
-        checkpoints_file: str,
-        results_file: str,
     ) -> None:
         super().__init__()
         self._base_model = base_model
         self._job_id = job_id
+        self._file_system = file_system
         self._checkpoint_id = checkpoint_id
         self._channel = channel
-        self._checkpoints_file = checkpoints_file
-        self._results_file = results_file
 
     def _get_input_steps(
         self, input: Any, input_format: Optional[str], **kwargs: Any
     ) -> List[Step]:
-        # we ignore "input" and read from the provided checkpoint file
-        return [ReadPickleStep(self._checkpoints_file)]
+        # we ignore the "input" argument and read from the checkpoint file
+        checkpoints_file = self._file_system.get_checkpoint_file_handle(
+            self._job_id, self._checkpoint_id, "rb"
+        )
+        return [ReadPickleStep(checkpoints_file)]
 
     def _get_preprocessing_steps(
         self, input: Any, input_format: Optional[str], **kwargs: Any
@@ -55,8 +57,12 @@ class ReadCheckpointModel(Model):
             **kwargs,
         )
 
+        results_file = self._file_system.get_results_file_handle(
+            self._job_id, self._checkpoint_id, "wb"
+        )
+
         file_writing_steps = self._base_model._get_postprocessing_steps(
-            output_format="pickle", output_file=self._results_file, **kwargs
+            output_format="pickle", output_file=results_file, **kwargs
         )
 
         return [SplitAndMergeStep(send_to_channel_steps, file_writing_steps)]

@@ -1,5 +1,6 @@
 import pickle
-from typing import Iterator, Optional
+from io import IOBase
+from typing import IO, Iterable, Iterator, Optional, Union
 
 from nerdd_module import Step
 
@@ -7,12 +8,14 @@ __all__ = ["ReadPickleStep"]
 
 
 class ReadPickleStep(Step):
-    def __init__(self, file_path: str):
+    def __init__(self, file_handles: Union[IO, Iterable[IO]]) -> None:
         super().__init__(is_source=True)
-        self.file_path = file_path
+        if isinstance(file_handles, IOBase):
+            file_handles = [file_handles]
+        self.file_handles = file_handles
 
     def _run(self, source: Optional[Iterator[dict]] = None) -> Iterator[dict]:
-        with open(self.file_path, "rb") as f:
-            entries = pickle.load(f)
-
-            yield from entries
+        for file_handle in self.file_handles:
+            with file_handle as f:
+                entries = pickle.load(f)
+                yield from entries
