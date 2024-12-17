@@ -9,6 +9,7 @@ __all__ = [
     "LogMessage",
     "ModuleMessage",
     "SystemMessage",
+    "ResultCheckpointMessage",
 ]
 
 
