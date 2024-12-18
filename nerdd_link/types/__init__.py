@@ -10,6 +10,7 @@ __all__ = [
     "ModuleMessage",
     "SystemMessage",
     "ResultCheckpointMessage",
+    "SerializationRequestMessage",
 ]
 
 
