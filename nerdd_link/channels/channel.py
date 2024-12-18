@@ -129,12 +129,8 @@ class Channel(ABC):
     def results_topic(self) -> Topic[ResultMessage]:
         return Topic[ResultMessage](self, "results")
 
-    def result_checkpoints_topic(
-        self, job_type_or_model: Union[str, Model]
-    ) -> Topic[ResultCheckpointMessage]:
-        job_type = get_job_type(job_type_or_model)
-        topic_name = f"{job_type}-result-checkpoints"
-        return Topic[ResultCheckpointMessage](self, topic_name)
+    def result_checkpoints_topic(self) -> Topic[ResultCheckpointMessage]:
+        return Topic[ResultCheckpointMessage](self, "result-checkpoints")
 
     def serialization_request_topic(
         self, job_type_or_model: Union[str, Model]

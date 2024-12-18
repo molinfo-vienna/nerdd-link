@@ -25,9 +25,9 @@ Feature: Predict checkpoints action
     # actions sends result messages:
     And the channel sends 100 messages on topic 'results'
     # actions sends result checkpoint messages:
-    And the channel sends a message on topic 'mol-scale-result-checkpoints' with content
+    And the channel sends a message on topic 'result-checkpoints' with content
         { "job_id": "123", "checkpoint_id": 0 }
-    And the channel sends a message on topic 'mol-scale-result-checkpoints' with content
+    And the channel sends a message on topic 'result-checkpoints' with content
         { "job_id": "123", "checkpoint_id": 1 }
-    And the channel sends a message on topic 'mol-scale-result-checkpoints' with content
+    And the channel sends a message on topic 'result-checkpoints' with content
         { "job_id": "123", "checkpoint_id": 2 }
