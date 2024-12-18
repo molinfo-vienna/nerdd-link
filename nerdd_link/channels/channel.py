@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import AsyncIterable, Generic, TypeVar, Union, cast
 
 from nerdd_module import Model
-from stringcase import spinalcase  # type: ignore
+from stringcase import spinalcase
 
 from ..types import (
     CheckpointMessage,
