@@ -11,6 +11,7 @@ __all__ = [
     "SystemMessage",
     "ResultCheckpointMessage",
     "SerializationRequestMessage",
+    "SerializationResultMessage",
 ]
 
 
@@ -43,6 +44,11 @@ class JobMessage(Message):
 class SerializationRequestMessage(Message):
     job_id: str
     params: Dict[str, Any]
+    output_format: str
+
+
+class SerializationResultMessage(Message):
+    job_id: str
     output_format: str
 
 
