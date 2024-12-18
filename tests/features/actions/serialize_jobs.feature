@@ -20,3 +20,5 @@ Feature: Serialize job action
     And the serialize job action is executed
 
     Then the file 'jobs/123/outputs/result.sdf' is created
+    And the channel sends a message on topic 'serialization-results' with content
+        { "job_id": "123", "output_format": "sdf" }
