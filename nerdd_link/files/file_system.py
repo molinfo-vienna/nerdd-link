@@ -49,6 +49,9 @@ class FileSystem:
     #
     # FILES
     #
+    def get_source_file_path(self, source_id: str) -> str:
+        return os.path.join(self.get_sources_dir(), source_id)
+
     def get_checkpoint_file_path(self, job_id: str, checkpoint_id: Union[int, str]) -> str:
         return os.path.join(self.get_input_dir(job_id), f"checkpoint_{checkpoint_id}.pickle")
 
