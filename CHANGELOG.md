@@ -1,6 +1,65 @@
 # CHANGELOG
 
 
+## v0.2.1 (2024-12-22)
+
+### Fixes
+
+* fix: Export SerializationRequestMessage ([`817c8ee`](https://github.com/molinfo-vienna/nerdd-link/commit/817c8ee258b42eb9377a6a907e00c8ce9b6801e7))
+
+* fix: Export ResultCheckpoint ([`a0ac71e`](https://github.com/molinfo-vienna/nerdd-link/commit/a0ac71e36f01fe3379d2af0640a642f1ba000eca))
+
+### Unknown
+
+* Merge pull request #21 from shirte/main
+
+Add confirmation messages for writing an output file ([`f55c481`](https://github.com/molinfo-vienna/nerdd-link/commit/f55c481b2ceaa4346bbce60e7a3581ef2400afeb))
+
+* Check that serialization result message is sent ([`cfdb0a5`](https://github.com/molinfo-vienna/nerdd-link/commit/cfdb0a5ec2ca4a2ea39c0cf7d8d56c25ec5fe507))
+
+* Start checking types for stringcase ([`d0e8f6a`](https://github.com/molinfo-vienna/nerdd-link/commit/d0e8f6a05cb34aea3444adf9115270e70e4829f2))
+
+* Add serialization-results topic to channel ([`7e358a8`](https://github.com/molinfo-vienna/nerdd-link/commit/7e358a8b0103e05dd1d7fae5b64f689778d46ed6))
+
+* Create SerializationResultMessage ([`92dcc20`](https://github.com/molinfo-vienna/nerdd-link/commit/92dcc2098291544cf8d0807904602b0bf498060c))
+
+* Adapt unit tests ([`867d9ee`](https://github.com/molinfo-vienna/nerdd-link/commit/867d9eef9fa62feccfc5637fb8c87fcec2f83c49))
+
+* Provide exactly one topic for result checkpoint messages ([`d98016d`](https://github.com/molinfo-vienna/nerdd-link/commit/d98016ddd20f5068029f39c2835f5811f85a996b))
+
+* Report number of checkpoints after chunking a job ([`e09e920`](https://github.com/molinfo-vienna/nerdd-link/commit/e09e920e34daad97ee3fe382ae279eabd09cbb28))
+
+* Delete timestamp field in JobMessage ([`212d311`](https://github.com/molinfo-vienna/nerdd-link/commit/212d311ccd0060da71c06caef763689407f89b48))
+
+* Merge pull request #20 from shirte/main
+
+Implement SerializeJobAction ([`ede3027`](https://github.com/molinfo-vienna/nerdd-link/commit/ede302757f7a2e950b876afefe2b59287ea29fd5))
+
+* Implement serialization cli command ([`e6a6063`](https://github.com/molinfo-vienna/nerdd-link/commit/e6a6063ba6676a7e08d7d57dfb71aab1024edeeb))
+
+* Improve tests ([`b0e3606`](https://github.com/molinfo-vienna/nerdd-link/commit/b0e36067a4ab6dca3d3b5cdb06afc45fc2a41a47))
+
+* Test SerializeJobAction ([`5e1c84f`](https://github.com/molinfo-vienna/nerdd-link/commit/5e1c84f234e15b003943a5ff3c20ef631c5557b4))
+
+* Implement SerializeJobAction ([`f43b47f`](https://github.com/molinfo-vienna/nerdd-link/commit/f43b47f2786c65f2b4bee08674a53fd523b7ec15))
+
+* Add functions to FileSystem ([`fb7c005`](https://github.com/molinfo-vienna/nerdd-link/commit/fb7c00545f83d55aecc167300b675aba308c76c8))
+
+* Fix type in ReadPickleStep ([`8bc6458`](https://github.com/molinfo-vienna/nerdd-link/commit/8bc6458d481c5ecc6c5f0a71fbbca8b08cd2c714))
+
+* Adapt ProcessJobsAction to FileSystem ([`64ea81c`](https://github.com/molinfo-vienna/nerdd-link/commit/64ea81c91634ef1cc6614afaf903a724b406f9b6))
+
+* Add serialization request topic and message ([`5587b68`](https://github.com/molinfo-vienna/nerdd-link/commit/5587b6833871e889fea42a13aa1bc69a6c06d505))
+
+* Make variables private in PredictCheckpointsAction ([`045c5b6`](https://github.com/molinfo-vienna/nerdd-link/commit/045c5b6d6deb608a42c25593e2f6f08114934b78))
+
+* Adapt PredictCheckpointAction to FileSystem ([`98b7fa1`](https://github.com/molinfo-vienna/nerdd-link/commit/98b7fa1bddb2cbbf51a71df4fe2127649a51faca))
+
+* Add a class FileSystem for standardizing file access ([`9c5329c`](https://github.com/molinfo-vienna/nerdd-link/commit/9c5329c1a11fe3d507d3f6f5ec4a54cc26e20365))
+
+* Log errors when processing messages ([`efdaa58`](https://github.com/molinfo-vienna/nerdd-link/commit/efdaa5832b1214e5f94e0987537cda39761887c0))
+
+
 ## v0.2.0 (2024-12-12)
 
 ### Features
