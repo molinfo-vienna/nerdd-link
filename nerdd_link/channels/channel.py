@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import AsyncIterable, Generic, TypeVar, Union, cast
 
 from nerdd_module import Model
-from stringcase import spinalcase  # type: ignore
+from stringcase import spinalcase
 
 from ..types import (
     CheckpointMessage,
@@ -15,6 +15,7 @@ from ..types import (
     ResultCheckpointMessage,
     ResultMessage,
     SerializationRequestMessage,
+    SerializationResultMessage,
     SystemMessage,
 )
 
@@ -129,19 +130,18 @@ class Channel(ABC):
     def results_topic(self) -> Topic[ResultMessage]:
         return Topic[ResultMessage](self, "results")
 
-    def result_checkpoints_topic(
-        self, job_type_or_model: Union[str, Model]
-    ) -> Topic[ResultCheckpointMessage]:
-        job_type = get_job_type(job_type_or_model)
-        topic_name = f"{job_type}-result-checkpoints"
-        return Topic[ResultCheckpointMessage](self, topic_name)
+    def result_checkpoints_topic(self) -> Topic[ResultCheckpointMessage]:
+        return Topic[ResultCheckpointMessage](self, "result-checkpoints")
 
-    def serialization_request_topic(
+    def serialization_requests_topic(
         self, job_type_or_model: Union[str, Model]
     ) -> Topic[SerializationRequestMessage]:
         job_type = get_job_type(job_type_or_model)
         topic_name = f"{job_type}-serialization-requests"
         return Topic[SerializationRequestMessage](self, topic_name)
+
+    def serialization_results_topic(self) -> Topic[SerializationResultMessage]:
+        return Topic[SerializationResultMessage](self, "serialization-results")
 
     def logs_topic(self) -> Topic[LogMessage]:
         return Topic[LogMessage](self, "logs")

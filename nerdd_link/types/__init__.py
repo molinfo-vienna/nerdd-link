@@ -9,6 +9,9 @@ __all__ = [
     "LogMessage",
     "ModuleMessage",
     "SystemMessage",
+    "ResultCheckpointMessage",
+    "SerializationRequestMessage",
+    "SerializationResultMessage",
 ]
 
 
@@ -36,12 +39,16 @@ class JobMessage(Message):
     job_type: str
     source_id: str
     params: Dict[str, Any]
-    timestamp: int
 
 
 class SerializationRequestMessage(Message):
     job_id: str
     params: Dict[str, Any]
+    output_format: str
+
+
+class SerializationResultMessage(Message):
+    job_id: str
     output_format: str
 
 

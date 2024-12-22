@@ -79,6 +79,7 @@ class ProcessJobsAction(Action[JobMessage]):
         # limit the number of molecules to max_num_molecules
         batches = batched(entries, self._checkpoint_size)
         num_entries = 0
+        num_checkpoints = 0
         for i, batch in enumerate(batches):
             # max_num_molecules might be reached within the batch
             num_store = min(len(batch), self._max_num_molecules - num_entries)
@@ -113,6 +114,7 @@ class ProcessJobsAction(Action[JobMessage]):
             )
 
             num_entries += num_store
+            num_checkpoints += 1
 
             if num_entries >= self._max_num_molecules:
                 break
@@ -149,6 +151,7 @@ class ProcessJobsAction(Action[JobMessage]):
             LogMessage(
                 job_id=job_id,
                 message_type="report_job_size",
-                size=num_entries,
+                num_entries=num_entries,
+                num_checkpoints=num_checkpoints,
             )
         )

@@ -25,7 +25,7 @@ Feature: Process job action
     And the channel sends a message on topic 'mol-scale-checkpoints' with content 
         { "job_id": "123", "checkpoint_id": 2, "params": { "multiplier": 10 } }
     And the channel sends a message on topic 'logs' with content 
-        { "job_id": "123", "message_type": "report_job_size", "size": 100 }
+        { "job_id": "123", "message_type": "report_job_size", "num_entries": 100, "num_checkpoints": 3 }
 
   Scenario: Process a job with too many molecules
     Given a temporary data directory
@@ -46,7 +46,7 @@ Feature: Process job action
     And the channel sends a message on topic 'mol-scale-checkpoints' with content 
         { "job_id": "123", "checkpoint_id": 0, "params": { "multiplier": 10 } }
     And the channel sends a message on topic 'logs' with content 
-        { "job_id": "123", "message_type": "report_job_size", "size": 10 }
+        { "job_id": "123", "message_type": "report_job_size", "num_entries": 10, "num_checkpoints": 1 }
     And the channel sends a message on topic 'logs' with content 
         { 
             "job_id": "123", 

@@ -6,7 +6,7 @@ from stringcase import spinalcase
 from ..channels import Channel
 from ..delegates import ReadPickleStep
 from ..files import FileSystem
-from ..types import SerializationRequestMessage
+from ..types import SerializationRequestMessage, SerializationResultMessage
 from .action import Action
 
 __all__ = ["SerializeJobAction"]
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class SerializeJobAction(Action[SerializationRequestMessage]):
     def __init__(self, channel: Channel, model: Model, data_dir: str) -> None:
-        super().__init__(channel.serialization_request_topic(model))
+        super().__init__(channel.serialization_requests_topic(model))
         self._model = model
         self._file_system = FileSystem(data_dir)
 
@@ -32,6 +32,8 @@ class SerializeJobAction(Action[SerializationRequestMessage]):
         params.pop("output_format", None)
 
         output_file = self._file_system.get_output_file(job_id, output_format)
+
+        # TODO: don't write the file if it exists
 
         read_pickle_step = ReadPickleStep(self._file_system.iter_results_file_handles(job_id))
         post_processing_steps = self._model._get_postprocessing_steps(
@@ -48,6 +50,10 @@ class SerializeJobAction(Action[SerializationRequestMessage]):
 
         # run the pipeline by calling the get_result method of the last step
         output_step.get_result()
+
+        await self.channel.serialization_results_topic().send(
+            SerializationResultMessage(job_id=job_id, output_format=output_format)
+        )
 
     def _get_group_name(self) -> str:
         model_name = spinalcase(self._model.__class__.__name__)
