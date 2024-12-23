@@ -33,9 +33,9 @@ class ObservableList(Generic[T]):
         old, new = change
         if old is not None and new is not None:
             self._items[self._items.index(old)] = new
-        if old is not None:
+        elif old is not None:
             self._items.remove(old)
-        if new is not None:
+        elif new is not None:
             self._items.append(new)
 
         # add change to the list of changes
