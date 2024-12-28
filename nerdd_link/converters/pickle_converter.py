@@ -6,7 +6,6 @@ from nerdd_module.config import ResultProperty
 __all__ = ["PickleConverter"]
 
 
-# TODO: use IdentityConverter
 class PickleConverter(Converter):
     def __init__(self, result_property: ResultProperty, output_format: str, **kwargs: Any) -> None:
         super().__init__(result_property, output_format, **kwargs)
