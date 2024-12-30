@@ -1,6 +1,27 @@
 # CHANGELOG
 
 
+## v0.2.2 (2024-12-30)
+
+### Fixes
+
+* fix: Export files submodule ([`c83fa82`](https://github.com/molinfo-vienna/nerdd-link/commit/c83fa827ec371dd57cd7b6d88f3f43744f00c761))
+
+### Unknown
+
+* Merge pull request #23 from shirte/main
+
+fix: Export files submodule ([`b8f4357`](https://github.com/molinfo-vienna/nerdd-link/commit/b8f435795cd1ba653d12223f1a854ba5f06a31b8))
+
+* Merge pull request #22 from shirte/main
+
+Minor changes ([`4307388`](https://github.com/molinfo-vienna/nerdd-link/commit/4307388fd1b1eb6c823014db1aafdff7a8211918))
+
+* Add method to obtain source file path to FileSystem ([`9832bf6`](https://github.com/molinfo-vienna/nerdd-link/commit/9832bf6aa2ee320920ffddb4c1f8d98fcba8cfd7))
+
+* Fix typo in ObservableList ([`730b414`](https://github.com/molinfo-vienna/nerdd-link/commit/730b4143809c58f12f983b2c4c5062df630d6931))
+
+
 ## v0.2.1 (2024-12-22)
 
 ### Fixes
