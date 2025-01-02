@@ -53,6 +53,8 @@ async def run_serialization_server(
     else:
         raise ValueError(f"Channel {channel} not supported.")
 
+    await channel_instance.start()
+
     # import the model class
     package_name, class_name = model_name.rsplit(".", 1)
     package = import_module(package_name)
@@ -77,3 +79,5 @@ async def run_serialization_server(
         for task in tasks:
             task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
+
+        await channel_instance.stop()

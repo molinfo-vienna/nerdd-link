@@ -19,7 +19,11 @@ logger = logging.getLogger(__name__)
     default="kafka",
     help="Channel to use for communication with the model.",
 )
-@click.option("--broker-url", default="localhost:9092", help="Kafka broker to connect to.")
+@click.option(
+    "--broker-url",
+    default="localhost:9092",
+    help="Broker url to connect to.",
+)
 @click.option(
     "--max-num-molecules",
     default=10_000,
@@ -86,6 +90,8 @@ async def run_job_server(
     else:
         raise ValueError(f"Channel {channel} not supported.")
 
+    await channel_instance.start()
+
     action = ProcessJobsAction(
         channel_instance,
         checkpoint_size,
@@ -105,3 +111,5 @@ async def run_job_server(
         logger.info("Shutting down server")
         task.cancel()
         await task
+
+        await channel_instance.stop()
