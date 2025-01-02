@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.2.3 (2025-01-02)
+
+### Fixes
+
+* fix: Start and stop channel in cli ([`4136159`](https://github.com/molinfo-vienna/nerdd-link/commit/4136159df9a603596252406dbf05be8773bb091d))
+
+### Unknown
+
+* Merge pull request #24 from shirte/main
+
+fix: Start and stop channel in cli ([`e02fedf`](https://github.com/molinfo-vienna/nerdd-link/commit/e02fedf2e0b326fa3bacd1be26f077dbb0da87f8))
+
+
 ## v0.2.2 (2024-12-30)
 
 ### Fixes
