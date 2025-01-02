@@ -41,5 +41,9 @@ async def initialize_system(
     else:
         raise ValueError(f"Channel {channel} not supported.")
 
+    await channel_instance.start()
+
     logging.info("Sending the system initialization message...")
     await channel_instance.system_topic().send(SystemMessage())
+
+    await channel_instance.stop()
