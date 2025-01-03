@@ -1,11 +1,9 @@
 from typing import Any
 from xml.dom import minidom
 
+from nerdd_module import Converter, ConverterConfig
 from rdkit.Chem import Mol
 from rdkit.Chem.Draw import MolDraw2DSVG
-
-from .converter import Converter
-from .converter_config import ConverterConfig
 
 __all__ = ["MolToImageConverter"]
 
