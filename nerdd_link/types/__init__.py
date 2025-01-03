@@ -20,7 +20,7 @@ class Message(BaseModel):
 
 
 class ModuleMessage(Message):
-    name: str
+    id: str
 
 
 class CheckpointMessage(Message):
@@ -43,6 +43,7 @@ class JobMessage(Message):
 
 class SerializationRequestMessage(Message):
     job_id: str
+    job_type: str
     params: Dict[str, Any]
     output_format: str
 
@@ -54,6 +55,8 @@ class SerializationResultMessage(Message):
 
 class ResultMessage(Message):
     job_id: str
+
+    model_config = ConfigDict(extra="allow")
 
 
 class LogMessage(Message):

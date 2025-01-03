@@ -68,10 +68,11 @@ async def execute_predict_checkpoints_action(predict_checkpoints_action):
 
 
 @pytest_asyncio.fixture(scope="function")
-async def register_module_action(channel, model):
+async def register_module_action(channel, model, data_dir):
     action = RegisterModuleAction(
         channel=channel,
         model=model,
+        data_dir=data_dir,
     )
 
     task = asyncio.create_task(action.run())
@@ -86,10 +87,9 @@ async def execute_register_module_action(register_module_action):
 
 
 @pytest_asyncio.fixture(scope="function")
-async def serialize_job_action(channel, model, data_dir):
+async def serialize_job_action(channel, data_dir):
     action = SerializeJobAction(
         channel=channel,
-        model=model,
         data_dir=data_dir,
     )
 

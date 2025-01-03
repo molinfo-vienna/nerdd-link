@@ -86,7 +86,7 @@ nerdd_link = ["py.typed"]
 
 [tool.pytest.ini_options]
 log_cli = 1
-log_cli_level = "INFO"
+log_cli_level = "ERROR"
 addopts = "-x --cov-report term --cov=nerdd_link"
 
 [tool.pytest-watcher]
