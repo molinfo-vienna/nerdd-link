@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from importlib import import_module
 from typing import List
 
 import rich_click as click
@@ -15,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 
 @click.command(context_settings={"show_default": True})
-@click.argument("model-name")
 @click.option(
     "--channel",
     type=click.Choice(["kafka"], case_sensitive=False),
@@ -40,7 +38,6 @@ async def run_serialization_server(
     channel: str,
     broker_url: str,
     # options
-    model_name: str,
     data_dir: str,
     # log level
     log_level: str,
@@ -55,15 +52,8 @@ async def run_serialization_server(
 
     await channel_instance.start()
 
-    # import the model class
-    package_name, class_name = model_name.rsplit(".", 1)
-    package = import_module(package_name)
-    Model = getattr(package, class_name)
-    model = Model()
-
     serialize_job = SerializeJobAction(
         channel=channel_instance,
-        model=model,
         data_dir=data_dir,
     )
 

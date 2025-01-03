@@ -16,6 +16,11 @@ class FileSystem:
     #
     # DIRECTORIES
     #
+    def get_modules_dir(self) -> str:
+        result = os.path.join(self.root_path, "modules")
+        os.makedirs(result, exist_ok=True)
+        return result
+
     def get_sources_dir(self) -> str:
         result = os.path.join(self.root_path, "sources")
         os.makedirs(result, exist_ok=True)
@@ -49,6 +54,9 @@ class FileSystem:
     #
     # FILES
     #
+    def get_module_file_path(self, module_id: str) -> str:
+        return os.path.join(self.get_modules_dir(), module_id)
+
     def get_source_file_path(self, source_id: str) -> str:
         return os.path.join(self.get_sources_dir(), source_id)
 
