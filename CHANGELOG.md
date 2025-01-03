@@ -1,6 +1,23 @@
 # CHANGELOG
 
 
+## v0.2.4 (2025-01-03)
+
+### Fixes
+
+* fix: Rewrite import statement ([`011299e`](https://github.com/molinfo-vienna/nerdd-link/commit/011299edd20186d7e23a919eb004a0763b45bbe8))
+
+### Unknown
+
+* Merge pull request #25 from shirte/main
+
+Use a single serialization job ([`36174e5`](https://github.com/molinfo-vienna/nerdd-link/commit/36174e58d5208ad97c7c36121cadf0b12acb9fd1))
+
+* Add MolToImageConverter ([`878f93d`](https://github.com/molinfo-vienna/nerdd-link/commit/878f93d496ef7d1a975850128586f96d0b45f6c9))
+
+* Use single serialization job ([`33acee0`](https://github.com/molinfo-vienna/nerdd-link/commit/33acee099759b49b9fad61bdd491a213a6adc78a))
+
+
 ## v0.2.3 (2025-01-02)
 
 ### Fixes
