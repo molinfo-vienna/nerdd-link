@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.2.5 (2025-01-04)
+
+### Fixes
+
+* fix: Pass data_dir to RegisterModuleAction ([`7df33a0`](https://github.com/molinfo-vienna/nerdd-link/commit/7df33a022f26a7e2fa3d13c9476322e7d31cb705))
+
+### Unknown
+
+* Merge pull request #26 from shirte/main
+
+fix: Pass data_dir to RegisterModuleAction ([`258e9b9`](https://github.com/molinfo-vienna/nerdd-link/commit/258e9b9935da6547b1409c1235e18fd3076d7af2))
+
+
 ## v0.2.4 (2025-01-03)
 
 ### Fixes
