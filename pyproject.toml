@@ -136,6 +136,10 @@ ignore_errors = true
 module = ["aiokafka.*"]
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = ["confluent_kafka", "confluent_kafka.*"]
+ignore_missing_imports = true
+
 [tool.semantic_release]
 version_toml = ["pyproject.toml:project.version"]
 branch = "main"
