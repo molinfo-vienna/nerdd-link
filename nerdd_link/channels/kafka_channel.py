@@ -1,7 +1,7 @@
-from .aio_kafka_channel import AioKafkaChannel
+from .confluent_kafka_channel import ConfluentKafkaChannel
 
 __all__ = ["KafkaChannel"]
 
 
-class KafkaChannel(AioKafkaChannel):
+class KafkaChannel(ConfluentKafkaChannel):
     pass
