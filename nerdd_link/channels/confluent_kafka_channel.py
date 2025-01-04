@@ -88,6 +88,8 @@ class ConfluentKafkaChannel(Channel):
                 "bootstrap.servers": self._broker_url,
                 # ensure no messages are lost
                 "acks": "all",
+                # match aiokafka's default partitioner to allow seamless switching between the two
+                "partitioner": "murmur2_random",
                 # time until sending is considered failed
                 "request.timeout.ms": 300_000,
                 # optional authentication config
