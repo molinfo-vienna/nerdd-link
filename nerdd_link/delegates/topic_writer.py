@@ -10,11 +10,18 @@ __all__ = ["TopicWriter"]
 
 
 class TopicWriter(Writer, output_format="json"):
-    def __init__(self, job_id: str, checkpoint_id: int, channel: Channel):
+    def __init__(
+        self,
+        job_id: str,
+        checkpoint_id: int,
+        channel: Channel,
+        event_loop: asyncio.AbstractEventLoop,
+    ):
         self.job_id = job_id
         self.checkpoint_id = checkpoint_id
         self.results_topic = channel.results_topic()
         self.result_checkpoints_topic = channel.result_checkpoints_topic()
+        self.event_loop = event_loop
 
     def write(self, records: Iterable[dict]) -> None:
         async def send_messages() -> None:
@@ -24,4 +31,5 @@ class TopicWriter(Writer, output_format="json"):
                 ResultCheckpointMessage(job_id=self.job_id, checkpoint_id=self.checkpoint_id)
             )
 
-        asyncio.run(send_messages())
+        # TODO: coroutine is not awaited and so the prediction is done before all results are sent
+        asyncio.run_coroutine_threadsafe(send_messages(), self.event_loop)
