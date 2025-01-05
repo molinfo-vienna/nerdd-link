@@ -61,7 +61,7 @@ async def run_prediction_server(
     Model = getattr(package, class_name)
     model = Model()
 
-    register_module = RegisterModuleAction(channel=channel_instance, model=model)
+    register_module = RegisterModuleAction(channel=channel_instance, model=model, data_dir=data_dir)
 
     predict_checkpoints = PredictCheckpointsAction(
         channel=channel_instance,
