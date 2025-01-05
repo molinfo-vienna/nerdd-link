@@ -1,3 +1,4 @@
+from asyncio import AbstractEventLoop
 from typing import Any, Iterable, List, Optional
 
 from nerdd_module import Model, Step
@@ -19,6 +20,7 @@ class ReadCheckpointModel(Model):
         file_system: FileSystem,
         checkpoint_id: int,
         channel: Channel,
+        event_loop: AbstractEventLoop,
     ) -> None:
         super().__init__()
         self._base_model = base_model
@@ -26,6 +28,7 @@ class ReadCheckpointModel(Model):
         self._file_system = file_system
         self._checkpoint_id = checkpoint_id
         self._channel = channel
+        self._event_loop = event_loop
 
     def _get_input_steps(
         self, input: Any, input_format: Optional[str], **kwargs: Any
@@ -54,6 +57,7 @@ class ReadCheckpointModel(Model):
             job_id=self._job_id,
             checkpoint_id=self._checkpoint_id,
             channel=self._channel,
+            event_loop=self._event_loop,
             **kwargs,
         )
 

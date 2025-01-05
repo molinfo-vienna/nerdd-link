@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from nerdd_module import Model
@@ -40,6 +41,7 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
             file_system=self._file_system,
             checkpoint_id=checkpoint_id,
             channel=self.channel,
+            event_loop=asyncio.get_event_loop(),
         )
 
         # predict the checkpoint
