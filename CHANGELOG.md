@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.2.6 (2025-01-05)
+
+### Fixes
+
+* fix: Run result sender in current event loop ([`d2597f1`](https://github.com/molinfo-vienna/nerdd-link/commit/d2597f1ba909244588cee5459a1a628a41f4f3e8))
+
+### Unknown
+
+* Merge pull request #27 from shirte/main
+
+fix: Run result sender in current event loop ([`41dd87c`](https://github.com/molinfo-vienna/nerdd-link/commit/41dd87c7488ca95196a3f25ebea40a2113726129))
+
+
 ## v0.2.5 (2025-01-04)
 
 ### Fixes
