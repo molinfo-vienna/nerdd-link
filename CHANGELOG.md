@@ -1,6 +1,23 @@
 # CHANGELOG
 
 
+## v0.2.7 (2025-01-06)
+
+### Fixes
+
+* fix: Use a queue to send messages ([`c6f4896`](https://github.com/molinfo-vienna/nerdd-link/commit/c6f489610819c531d9f13cf729adda2af049c8a0))
+
+### Unknown
+
+* Merge pull request #28 from shirte/main
+
+Use a queue to send messages ([`8a5e14f`](https://github.com/molinfo-vienna/nerdd-link/commit/8a5e14f8bf7e400afe0e468cba7f7d09c2c78ead))
+
+* Add a delay in unit tests ([`b18f0fe`](https://github.com/molinfo-vienna/nerdd-link/commit/b18f0fe83cd79f3480ab874eb2c853567a908aa3))
+
+* Write older pickle version ([`7a75396`](https://github.com/molinfo-vienna/nerdd-link/commit/7a753967fb624aa023bd3945bd31c5a73273adbc))
+
+
 ## v0.2.6 (2025-01-05)
 
 ### Fixes
