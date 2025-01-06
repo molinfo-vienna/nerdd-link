@@ -2,6 +2,7 @@ from typing import Any
 
 from nerdd_module import Converter, ConverterConfig
 from nerdd_module.config import ResultProperty
+from rdkit.Chem import Mol
 from rdkit.Chem.PropertyMol import PropertyMol
 
 __all__ = ["MolPickleConverter"]
@@ -12,7 +13,10 @@ class MolPickleConverter(Converter):
         super().__init__(result_property, output_format, **kwargs)
 
     def _convert(self, input: Any, context: dict) -> Any:
-        return PropertyMol(input)
+        if isinstance(input, Mol):
+            return PropertyMol(input)
+        else:
+            return input
 
     config = ConverterConfig(
         data_types="mol",
