@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.2.8 (2025-01-06)
+
+### Fixes
+
+* fix: Do not wrap None in PropertyMol ([`21a9b4e`](https://github.com/molinfo-vienna/nerdd-link/commit/21a9b4ecc5ff9a34f0af066f5d08cf9603d2c266))
+
+### Unknown
+
+* Merge pull request #29 from shirte/main
+
+fix: Do not wrap None in PropertyMol ([`0040108`](https://github.com/molinfo-vienna/nerdd-link/commit/0040108dfe73590d67294c8c72b201b3b80fc844))
+
+
 ## v0.2.7 (2025-01-06)
 
 ### Fixes
