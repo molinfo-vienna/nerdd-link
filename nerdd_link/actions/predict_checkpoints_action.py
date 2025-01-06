@@ -3,7 +3,7 @@ import concurrent.futures
 import logging
 from asyncio import Queue
 
-from nerdd_module import Model
+from nerdd_module import Model, SimpleModel
 
 from ..channels import Channel
 from ..delegates import ReadCheckpointModel
@@ -74,9 +74,10 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         with concurrent.futures.ThreadPoolExecutor() as pool:
             future = loop.run_in_executor(pool, _heavy_work)
 
-        # Wait for the prediction to finish and the results to be sent.
-        await asyncio.gather(future, send_messages())
+            # Wait for the prediction to finish and the results to be sent.
+            await asyncio.gather(future, send_messages())
 
     def _get_group_name(self) -> str:
+        assert isinstance(self._model, SimpleModel)
         model_id = self._model.get_config().id
         return f"predict-checkpoints-{model_id}"
