@@ -1,10 +1,9 @@
-from asyncio import AbstractEventLoop
+from asyncio import Queue
 from typing import Any, Iterable, List, Optional
 
 from nerdd_module import Model, Step
 from rdkit.Chem import Mol
 
-from ..channels import Channel
 from ..files import FileSystem
 from .read_pickle_step import ReadPickleStep
 from .split_and_merge_step import SplitAndMergeStep
@@ -19,16 +18,14 @@ class ReadCheckpointModel(Model):
         job_id: str,
         file_system: FileSystem,
         checkpoint_id: int,
-        channel: Channel,
-        event_loop: AbstractEventLoop,
+        queue: Queue,
     ) -> None:
         super().__init__()
         self._base_model = base_model
         self._job_id = job_id
         self._file_system = file_system
         self._checkpoint_id = checkpoint_id
-        self._channel = channel
-        self._event_loop = event_loop
+        self._queue = queue
 
     def _get_input_steps(
         self, input: Any, input_format: Optional[str], **kwargs: Any
@@ -54,10 +51,7 @@ class ReadCheckpointModel(Model):
         send_to_channel_steps = self._base_model._get_postprocessing_steps(
             output_format="json",
             model=self._base_model,
-            job_id=self._job_id,
-            checkpoint_id=self._checkpoint_id,
-            channel=self._channel,
-            event_loop=self._event_loop,
+            queue=self._queue,
             **kwargs,
         )
 
