@@ -3,6 +3,7 @@ import logging
 from typing import AsyncIterable, Dict, Tuple
 
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
+from aiokafka.errors import CommitFailedError
 
 from ..types import Message
 from .channel import Channel
@@ -45,6 +46,13 @@ class KafkaChannel(Channel):
                 auto_offset_reset="earliest",
                 group_id=consumer_group,
                 enable_auto_commit=False,
+                # consume only one message at a time
+                max_poll_records=1,
+                # one message should be consumed within 10 minutes
+                max_poll_interval_ms=10 * 60 * 1000,
+                session_timeout_ms=10 * 60 * 1000,
+                # send heartbeat every minute
+                heartbeat_interval_ms=1 * 60 * 1000,
             )
             await consumer.start()
             self._consumers[key] = consumer
@@ -59,7 +67,10 @@ class KafkaChannel(Channel):
             async for message in consumer:
                 message_obj = json.loads(message.value)
                 yield Message(**message_obj)
-                await consumer.commit()
+                try:
+                    await consumer.commit()
+                except CommitFailedError as e:
+                    logger.error(f"Commit failed: {e}... trying again.")
         finally:
             await consumer.stop()
 
