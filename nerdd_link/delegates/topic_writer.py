@@ -1,4 +1,4 @@
-from asyncio import Queue
+from multiprocessing import Queue
 from typing import Iterable
 
 from nerdd_module import Writer
@@ -15,5 +15,5 @@ class TopicWriter(Writer, output_format="json"):
 
     def write(self, records: Iterable[dict]) -> None:
         for record in records:
-            self._queue.put_nowait(record)
-        self._queue.put_nowait(None)
+            self._queue.put(record)
+        self._queue.put(None)

@@ -15,7 +15,6 @@ Feature: Predict checkpoints action
         { "id": "123", "job_type": "mol-scale", "source_id": "456", "params": { "multiplier": 10 } }
     And the process job action is executed
     And the predict checkpoints action is executed
-    And we wait for 2 seconds
 
     # files
     Then the file 'jobs/123/results/checkpoint_0.pickle' is created

@@ -1,4 +1,4 @@
-from asyncio import Queue
+from multiprocessing import Queue
 from typing import Any, Iterable, List, Optional
 
 from nerdd_module import Model, Step
