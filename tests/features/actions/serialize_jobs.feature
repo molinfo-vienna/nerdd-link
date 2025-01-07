@@ -21,7 +21,6 @@ Feature: Serialize job action
     And the channel receives a message on topic 'serialization-requests' with content
         { "job_id": "123", "job_type": "mol-scale", "params": { "multiplier": 10 }, "output_format": "sdf" }
     And the serialize job action is executed
-    And we wait for 2 seconds
 
     Then the file 'jobs/123/outputs/result.sdf' is created
     And the channel sends a message on topic 'serialization-results' with content

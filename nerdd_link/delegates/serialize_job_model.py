@@ -16,4 +16,6 @@ class SerializeJobModel(SimpleModel):
         return DictConfiguration(self._config)
 
     def _predict_mols(self, mols: List[Mol], **kwargs: Any) -> List[dict]:
+        # We will only extract the postprocessing steps of this model and the predict method
+        # will never be called.
         return []

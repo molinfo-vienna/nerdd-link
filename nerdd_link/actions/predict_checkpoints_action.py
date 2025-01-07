@@ -1,7 +1,6 @@
-import asyncio
-import concurrent.futures
 import logging
-from asyncio import Queue
+from multiprocessing import Process, Queue
+from typing import Any, Dict
 
 from nerdd_module import Model, SimpleModel
 
@@ -16,6 +15,36 @@ __all__ = ["PredictCheckpointsAction"]
 logger = logging.getLogger(__name__)
 
 
+def _run_prediction_process(
+    model: Model,
+    job_id: str,
+    checkpoint_id: int,
+    data_dir: str,
+    queue: Queue,
+    params: Dict[str, Any],
+) -> None:
+    file_system = FileSystem(data_dir)
+
+    # create a wrapper model that
+    # * reads the checkpoint file instead of normal input
+    # * does preprocessing, prediction, and postprocessing like the encapsulated model
+    # * does not write to the specified results file, but to the checkpoints file instead
+    # * sends the results to the results topic
+    model = ReadCheckpointModel(
+        base_model=model,
+        job_id=job_id,
+        file_system=file_system,
+        checkpoint_id=checkpoint_id,
+        queue=queue,
+    )
+
+    # predict the checkpoint
+    model.predict(
+        input=None,
+        **params,
+    )
+
+
 class PredictCheckpointsAction(Action[CheckpointMessage]):
     # Accept a batch of input molecules on the "<job-type>-checkpoints" topic
     # (generated in the previous step) and process them. Results are written to
@@ -24,7 +53,7 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
     def __init__(self, channel: Channel, model: Model, data_dir: str) -> None:
         super().__init__(channel.checkpoints_topic(model))
         self._model = model
-        self._file_system = FileSystem(data_dir)
+        self._data_dir = data_dir
 
     async def _process_message(self, message: CheckpointMessage) -> None:
         job_id = message.job_id
@@ -34,48 +63,34 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
 
         # The Kafka consumers and producers run in the current asyncio event loop and (by
         # observation) it seems that calling the produce method of a Kafka producer in a different
-        # event loop or thread doesn't seem to work (hangs indefinitely). Therefore, we create a
-        # queue in this event loop / thread and send the results from the other thread to the
-        # queue.
+        # event loop / thread / process doesn't seem to work (hangs indefinitely). Therefore, we
+        # create a queue in this event loop / thread and other tasks send to the queue instead of
+        # directly to the Kafka producer. This event loop will wait for new messages in this queue
+        # and forward them to the Kafka producer.
         queue: Queue = Queue()
 
-        async def send_messages() -> None:
-            while True:
-                record = await queue.get()
-                if record is not None:
-                    await self.channel.results_topic().send(ResultMessage(job_id=job_id, **record))
-                else:
-                    await self.channel.result_checkpoints_topic().send(
-                        ResultCheckpointMessage(job_id=job_id, checkpoint_id=checkpoint_id)
-                    )
-                    break
+        # We create a separate process for the prediction to avoid blocking the current event loop.
+        # Otherwise, the current event loop gets overwhelmed and won't be able to process incoming
+        # messages on the queue.
+        p = Process(
+            target=_run_prediction_process,
+            args=(self._model, job_id, checkpoint_id, self._data_dir, queue, params),
+        )
+        p.start()
 
-        def _heavy_work() -> None:
-            # create a wrapper model that
-            # * reads the checkpoint file instead of normal input
-            # * does preprocessing, prediction, and postprocessing like the encapsulated model
-            # * does not write to the specified results file, but to the checkpoints file instead
-            # * sends the results to the results topic
-            model = ReadCheckpointModel(
-                base_model=self._model,
-                job_id=job_id,
-                file_system=self._file_system,
-                checkpoint_id=checkpoint_id,
-                queue=queue,
-            )
+        # Wait for the prediction to finish and the results to be sent.
+        while True:
+            record = queue.get()
+            if record is not None:
+                await self.channel.results_topic().send(ResultMessage(job_id=job_id, **record))
+            else:
+                await self.channel.result_checkpoints_topic().send(
+                    ResultCheckpointMessage(job_id=job_id, checkpoint_id=checkpoint_id)
+                )
+                break
 
-            # predict the checkpoint
-            model.predict(
-                input=None,
-                **params,
-            )
-
-        loop = asyncio.get_running_loop()
-        with concurrent.futures.ThreadPoolExecutor() as pool:
-            future = loop.run_in_executor(pool, _heavy_work)
-
-            # Wait for the prediction to finish and the results to be sent.
-            await asyncio.gather(future, send_messages())
+        # Wait for the process to finish
+        p.join()
 
     def _get_group_name(self) -> str:
         assert isinstance(self._model, SimpleModel)
