@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.2.9 (2025-01-07)
+
+### Fixes
+
+* fix: Do prediction in different process ([`fa34a38`](https://github.com/molinfo-vienna/nerdd-link/commit/fa34a387ccd844bea99484501d389404192fe9fd))
+
+### Unknown
+
+* Merge pull request #30 from shirte/main
+
+fix: Do prediction in different process ([`119a013`](https://github.com/molinfo-vienna/nerdd-link/commit/119a01358fab9847937e36949ec39893dfa87d8d))
+
+
 ## v0.2.8 (2025-01-06)
 
 ### Fixes
