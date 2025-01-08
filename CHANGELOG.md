@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.2.10 (2025-01-08)
+
+### Fixes
+
+* fix: Use base_model config in ReadCheckpointModel ([`ffc3958`](https://github.com/molinfo-vienna/nerdd-link/commit/ffc3958652f4b277f09af6b853d2348d6bae8613))
+
+### Unknown
+
+* Merge pull request #31 from shirte/main
+
+fix: Use base_model config in ReadCheckpointModel ([`5926191`](https://github.com/molinfo-vienna/nerdd-link/commit/5926191eb8341bd405540715075fe0411f0515f4))
+
+
 ## v0.2.9 (2025-01-07)
 
 ### Fixes
