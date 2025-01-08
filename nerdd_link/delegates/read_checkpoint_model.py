@@ -1,7 +1,8 @@
 from multiprocessing import Queue
-from typing import Any, Iterable, List, Optional
+from typing import Any, List, Optional
 
-from nerdd_module import Model, Step
+from nerdd_module import SimpleModel, Step
+from nerdd_module.config import Configuration
 from rdkit.Chem import Mol
 
 from ..files import FileSystem
@@ -11,10 +12,10 @@ from .split_and_merge_step import SplitAndMergeStep
 __all__ = ["ReadCheckpointModel"]
 
 
-class ReadCheckpointModel(Model):
+class ReadCheckpointModel(SimpleModel):
     def __init__(
         self,
-        base_model: Model,
+        base_model: SimpleModel,
         job_id: str,
         file_system: FileSystem,
         checkpoint_id: int,
@@ -65,5 +66,8 @@ class ReadCheckpointModel(Model):
 
         return [SplitAndMergeStep(send_to_channel_steps, file_writing_steps)]
 
-    def _predict_mols(self, mols: List[Mol], **kwargs: Any) -> Iterable[dict]:
+    def _predict_mols(self, mols: List[Mol], **kwargs: Any) -> List[dict]:
         return self._base_model._predict_mols(mols, **kwargs)
+
+    def _get_config(self) -> Configuration:
+        return self._base_model._get_config()

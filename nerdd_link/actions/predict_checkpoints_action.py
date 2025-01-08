@@ -2,7 +2,7 @@ import logging
 from multiprocessing import Process, Queue
 from typing import Any, Dict
 
-from nerdd_module import Model, SimpleModel
+from nerdd_module import SimpleModel
 
 from ..channels import Channel
 from ..delegates import ReadCheckpointModel
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def _run_prediction_process(
-    model: Model,
+    model: SimpleModel,
     job_id: str,
     checkpoint_id: int,
     data_dir: str,
@@ -50,7 +50,7 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
     # (generated in the previous step) and process them. Results are written to
     # the "results" topic.
 
-    def __init__(self, channel: Channel, model: Model, data_dir: str) -> None:
+    def __init__(self, channel: Channel, model: SimpleModel, data_dir: str) -> None:
         super().__init__(channel.checkpoints_topic(model))
         self._model = model
         self._data_dir = data_dir
@@ -93,6 +93,5 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         p.join()
 
     def _get_group_name(self) -> str:
-        assert isinstance(self._model, SimpleModel)
         model_id = self._model.get_config().id
         return f"predict-checkpoints-{model_id}"
