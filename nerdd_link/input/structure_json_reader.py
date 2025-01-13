@@ -6,6 +6,7 @@ from nerdd_module.input import ExploreCallable, MoleculeEntry, Reader
 __all__ = ["StructureJsonReader"]
 
 
+# TODO: move somewhere else
 class StreamLike(Protocol):
     def read(self, size: int = -1) -> str: ...
 
@@ -30,12 +31,7 @@ class StructureJsonReader(Reader):
 
         for entry in contents:
             source_id = entry.get("id", None)
-            filename = entry.get("filename", None)
-            for result in explore(source_id):
-                source = result.source
-                if len(source) > 0 and source[0] == source_id:
-                    result._replace(source=(filename, *source[1:]))
-                yield result
+            yield from explore(source_id)
 
     def __repr__(self) -> str:
         return "StructureJsonReader()"
