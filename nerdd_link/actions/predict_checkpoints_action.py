@@ -1,6 +1,5 @@
 import logging
-from multiprocessing import Process, Queue
-from typing import Any, Dict
+from multiprocessing import Queue
 
 from nerdd_module import SimpleModel
 
@@ -13,36 +12,6 @@ from .action import Action
 __all__ = ["PredictCheckpointsAction"]
 
 logger = logging.getLogger(__name__)
-
-
-def _run_prediction_process(
-    model: SimpleModel,
-    job_id: str,
-    checkpoint_id: int,
-    data_dir: str,
-    queue: Queue,
-    params: Dict[str, Any],
-) -> None:
-    file_system = FileSystem(data_dir)
-
-    # create a wrapper model that
-    # * reads the checkpoint file instead of normal input
-    # * does preprocessing, prediction, and postprocessing like the encapsulated model
-    # * does not write to the specified results file, but to the checkpoints file instead
-    # * sends the results to the results topic
-    model = ReadCheckpointModel(
-        base_model=model,
-        job_id=job_id,
-        file_system=file_system,
-        checkpoint_id=checkpoint_id,
-        queue=queue,
-    )
-
-    # predict the checkpoint
-    model.predict(
-        input=None,
-        **params,
-    )
 
 
 class PredictCheckpointsAction(Action[CheckpointMessage]):
@@ -64,19 +33,32 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         # The Kafka consumers and producers run in the current asyncio event loop and (by
         # observation) it seems that calling the produce method of a Kafka producer in a different
         # event loop / thread / process doesn't seem to work (hangs indefinitely). Therefore, we
-        # create a queue in this event loop / thread and other tasks send to the queue instead of
-        # directly to the Kafka producer. This event loop will wait for new messages in this queue
-        # and forward them to the Kafka producer.
+        # create a queue in this event loop / thread and other tasks send messages to the queue
+        # instead of directly to the Kafka producer. This event loop will wait for new messages in
+        # this queue and forward them to the Kafka producer.
         queue: Queue = Queue()
 
-        # We create a separate process for the prediction to avoid blocking the current event loop.
-        # Otherwise, the current event loop gets overwhelmed and won't be able to process incoming
-        # messages on the queue.
-        p = Process(
-            target=_run_prediction_process,
-            args=(self._model, job_id, checkpoint_id, self._data_dir, queue, params),
+        file_system = FileSystem(self._data_dir)
+
+        # create a wrapper model that
+        # * reads the checkpoint file instead of normal input
+        # * does preprocessing, prediction, and postprocessing like the encapsulated model
+        # * does not write to the specified results file, but to the checkpoints file instead
+        # * sends the results to the results topic
+        model = ReadCheckpointModel(
+            base_model=self._model,
+            job_id=job_id,
+            file_system=file_system,
+            checkpoint_id=checkpoint_id,
+            queue=queue,
         )
-        p.start()
+
+        # predict the checkpoint
+        # assign input=None, because the checkpoint file is already provided in ReadCheckpointModel
+        model.predict(
+            input=None,
+            **params,
+        )
 
         # Wait for the prediction to finish and the results to be sent.
         while True:
@@ -88,9 +70,6 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
                     ResultCheckpointMessage(job_id=job_id, checkpoint_id=checkpoint_id)
                 )
                 break
-
-        # Wait for the process to finish
-        p.join()
 
     def _get_group_name(self) -> str:
         model_id = self._model.get_config().id
