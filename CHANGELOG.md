@@ -1,6 +1,35 @@
 # CHANGELOG
 
 
+## v0.2.11 (2025-01-15)
+
+### Fixes
+
+* fix: Remove prediction process ([`97a80fa`](https://github.com/molinfo-vienna/nerdd-link/commit/97a80fa4ad41015148cbbaa583067cb1d78f396d))
+
+* fix: Simplify MolPickleConverter and PickleConverter ([`04baad9`](https://github.com/molinfo-vienna/nerdd-link/commit/04baad98eaa08c5f7d7fb9fdc1b8774bb9c9747a))
+
+* fix: Put highlight circles in mol images on top ([`c5f2840`](https://github.com/molinfo-vienna/nerdd-link/commit/c5f2840ee32bbd8358a63703f8527a8b7e00c98f))
+
+* fix: Do not map sources to correct filenames in StructureJsonReader ([`684026d`](https://github.com/molinfo-vienna/nerdd-link/commit/684026d2428e0918a478d4ac02f0a239d98bab1c))
+
+* fix: Add converters for problem lists and source lists ([`583ffa4`](https://github.com/molinfo-vienna/nerdd-link/commit/583ffa4a8de0e06ea062b7ece1746d72d55e4301))
+
+* fix: Add image converter for json ([`5223d2c`](https://github.com/molinfo-vienna/nerdd-link/commit/5223d2c4d2d16711e1a40c683e44e46918103e4d))
+
+* fix: Require aiokafka >= 0.12.0 ([`68736d5`](https://github.com/molinfo-vienna/nerdd-link/commit/68736d5a0ef3d770b8508721d269e1053a2e19d8))
+
+### Unknown
+
+* Merge pull request #32 from shirte/main
+
+Many changes ([`fe2ebdb`](https://github.com/molinfo-vienna/nerdd-link/commit/fe2ebdb7969cb1af524c665a45978de456c869ba))
+
+* Use most recent RDKit for writing output files ([`eea2e87`](https://github.com/molinfo-vienna/nerdd-link/commit/eea2e87cb0169bf088103b13c255786ea7dc8a36))
+
+* Use old RDKit for writing input files ([`4d9f280`](https://github.com/molinfo-vienna/nerdd-link/commit/4d9f2801bf208d399a5fb6ebede9b7719c5e2ce0))
+
+
 ## v0.2.10 (2025-01-08)
 
 ### Fixes
