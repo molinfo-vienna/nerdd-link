@@ -1,5 +1,5 @@
 from typing import Any
-from xml.dom import minidom
+from xml.dom import Node, minidom
 
 from nerdd_module import Converter, ConverterConfig
 from rdkit.Chem import Mol
@@ -48,9 +48,27 @@ class MolToImageConverter(Converter):
         tree = minidom.parseString(xml)
         root = tree.getElementsByTagName("svg")[0]
 
-        # make highlight circles invisible
+        # manipulate highlight circles
         for ellipse in root.getElementsByTagName("ellipse"):
-            ellipse.setAttribute("style", "opacity:0")
+            # make highlight circles invisible
+            ellipse.setAttribute("style", "fill: transparent")
+
+            # remove highlight circle from parent
+            parent = ellipse.parentNode
+            parent.removeChild(ellipse)
+
+            # add highlight circle at the end of parent
+            parent.appendChild(ellipse)
+
+        # compress svg by removing whitespace nodes
+        # Note: removing nodes immediately would mess up the iteration
+        #   --> collect nodes to remove first and remove them in a second step
+        remove_nodes = []
+        for child in root.childNodes:
+            if child.nodeType == Node.TEXT_NODE and child.data.strip() == "":
+                remove_nodes.append(child)
+        for node in remove_nodes:
+            root.removeChild(node)
 
         xml = tree.toxml()
 

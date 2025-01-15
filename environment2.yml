@@ -1,7 +1,7 @@
-name: nerdd_link
+name: nerdd_link2
 channels:
   - conda-forge
   - defaults
 dependencies:
   - python=3.9
-  - rdkit=2020.09.1
+  - rdkit=2024.09.4
