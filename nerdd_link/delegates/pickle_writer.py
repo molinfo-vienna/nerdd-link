@@ -1,12 +1,12 @@
 import pickle
 from typing import IO, Any, Iterable
 
-from nerdd_module.output import FileLike, FileWriter
+from nerdd_module.output import FileLike, FileWriter, WriterConfig
 
 __all__ = ["PickleWriter"]
 
 
-class PickleWriter(FileWriter, output_format="pickle"):
+class PickleWriter(FileWriter):
     def __init__(self, output_file: FileLike) -> None:
         super().__init__(output_file, writes_bytes=True)
 
@@ -16,3 +16,5 @@ class PickleWriter(FileWriter, output_format="pickle"):
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(output_file='{self._output_file}')"
+
+    config = WriterConfig(output_format="pickle")
