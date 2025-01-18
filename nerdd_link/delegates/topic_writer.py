@@ -1,12 +1,12 @@
 from multiprocessing import Queue
 from typing import Iterable
 
-from nerdd_module import Writer
+from nerdd_module import Writer, WriterConfig
 
 __all__ = ["TopicWriter"]
 
 
-class TopicWriter(Writer, output_format="json"):
+class TopicWriter(Writer):
     def __init__(
         self,
         queue: Queue,
@@ -17,3 +17,5 @@ class TopicWriter(Writer, output_format="json"):
         for record in records:
             self._queue.put(record)
         self._queue.put(None)
+
+    config = WriterConfig(output_format="json")

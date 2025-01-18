@@ -104,7 +104,7 @@ class ProcessJobsAction(Action[JobMessage]):
 
                 dump(results, f)
 
-            # send a tuple to topic cypstrate-checkpoints
+            # send a tuple to checkpoints topic
             await self.channel.checkpoints_topic(job_type).send(
                 CheckpointMessage(
                     job_id=job_id,
