@@ -1,6 +1,21 @@
 # CHANGELOG
 
 
+## v0.2.12 (2025-01-18)
+
+### Fixes
+
+* fix: Adapt Writer classes to new version of nerdd-module ([`4316a3e`](https://github.com/molinfo-vienna/nerdd-link/commit/4316a3ee78b893afa2e96465c08385e4e87111e5))
+
+### Unknown
+
+* Merge pull request #33 from shirte/main
+
+Adapt Writer classes to new version of nerdd-module ([`4b2ef63`](https://github.com/molinfo-vienna/nerdd-link/commit/4b2ef639a6b5b1fd7d39af901bf64ba700d17dfa))
+
+* Draw atom highlights only on relevant molecules ([`f398c95`](https://github.com/molinfo-vienna/nerdd-link/commit/f398c951b000e84ced91ca7fa490f591d12785b9))
+
+
 ## v0.2.11 (2025-01-15)
 
 ### Fixes
