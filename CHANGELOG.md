@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.2.13 (2025-01-20)
+
+### Fixes
+
+* fix: Catch exceptions in PredictCheckpointAction ([`2ef6285`](https://github.com/molinfo-vienna/nerdd-link/commit/2ef628555e15068601167667785c41129c24308c))
+
+### Unknown
+
+* Merge pull request #34 from shirte/main
+
+fix: Catch exceptions in PredictCheckpointAction ([`802faae`](https://github.com/molinfo-vienna/nerdd-link/commit/802faaee179dff6a6d35f9c68777424c93ae5267))
+
+
 ## v0.2.12 (2025-01-18)
 
 ### Fixes
