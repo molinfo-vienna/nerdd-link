@@ -25,51 +25,54 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         self._data_dir = data_dir
 
     async def _process_message(self, message: CheckpointMessage) -> None:
-        job_id = message.job_id
-        checkpoint_id = message.checkpoint_id
-        params = message.params
-        logger.info(f"Predict checkpoint {checkpoint_id} of job {job_id}")
+        try:
+            job_id = message.job_id
+            checkpoint_id = message.checkpoint_id
+            params = message.params
+            logger.info(f"Predict checkpoint {checkpoint_id} of job {job_id}")
 
-        # The Kafka consumers and producers run in the current asyncio event loop and (by
-        # observation) it seems that calling the produce method of a Kafka producer in a different
-        # event loop / thread / process doesn't seem to work (hangs indefinitely). Therefore, we
-        # create a queue in this event loop / thread and other tasks send messages to the queue
-        # instead of directly to the Kafka producer. This event loop will wait for new messages in
-        # this queue and forward them to the Kafka producer.
-        queue: Queue = Queue()
+            # The Kafka consumers and producers run in the current asyncio event loop and (by
+            # observation) it seems that calling the produce method of a Kafka producer in a
+            # different event loop / thread / process doesn't seem to work (hangs indefinitely).
+            # Therefore, we create a queue in this event loop / thread and other tasks send messages
+            # to the queue instead of directly to the Kafka producer. This event loop will wait for
+            # new messages in this queue and forward them to the Kafka producer.
+            queue: Queue = Queue()
 
-        file_system = FileSystem(self._data_dir)
+            file_system = FileSystem(self._data_dir)
 
-        # create a wrapper model that
-        # * reads the checkpoint file instead of normal input
-        # * does preprocessing, prediction, and postprocessing like the encapsulated model
-        # * does not write to the specified results file, but to the checkpoints file instead
-        # * sends the results to the results topic
-        model = ReadCheckpointModel(
-            base_model=self._model,
-            job_id=job_id,
-            file_system=file_system,
-            checkpoint_id=checkpoint_id,
-            queue=queue,
-        )
+            # create a wrapper model that
+            # * reads the checkpoint file instead of normal input
+            # * does preprocessing, prediction, and postprocessing like the encapsulated model
+            # * does not write to the specified results file, but to the checkpoints file instead
+            # * sends the results to the results topic
+            model = ReadCheckpointModel(
+                base_model=self._model,
+                job_id=job_id,
+                file_system=file_system,
+                checkpoint_id=checkpoint_id,
+                queue=queue,
+            )
 
-        # predict the checkpoint
-        # assign input=None, because the checkpoint file is already provided in ReadCheckpointModel
-        model.predict(
-            input=None,
-            **params,
-        )
+            # predict the checkpoint
+            # assign input=None, because the checkpoint file is provided in ReadCheckpointModel
+            model.predict(
+                input=None,
+                **params,
+            )
 
-        # Wait for the prediction to finish and the results to be sent.
-        while True:
-            record = queue.get()
-            if record is not None:
-                await self.channel.results_topic().send(ResultMessage(job_id=job_id, **record))
-            else:
-                await self.channel.result_checkpoints_topic().send(
-                    ResultCheckpointMessage(job_id=job_id, checkpoint_id=checkpoint_id)
-                )
-                break
+            # Wait for the prediction to finish and the results to be sent.
+            while True:
+                record = queue.get()
+                if record is not None:
+                    await self.channel.results_topic().send(ResultMessage(job_id=job_id, **record))
+                else:
+                    await self.channel.result_checkpoints_topic().send(
+                        ResultCheckpointMessage(job_id=job_id, checkpoint_id=checkpoint_id)
+                    )
+                    break
+        except Exception as e:
+            logger.exception("An error occurred while predicting the checkpoint", exc_info=e)
 
     def _get_group_name(self) -> str:
         model_id = self._model.get_config().id
