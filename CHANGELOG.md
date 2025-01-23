@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.2.14 (2025-01-23)
+
+### Fixes
+
+* fix: Reroute exceptions from threads to main thread ([`722a9d7`](https://github.com/molinfo-vienna/nerdd-link/commit/722a9d787ad3f6ca247196fb56ec4ac3b12ff8c5))
+
+### Unknown
+
+* Merge pull request #35 from shirte/main
+
+fix: Reroute exceptions from threads to main thread ([`b844471`](https://github.com/molinfo-vienna/nerdd-link/commit/b8444718f0a79dbe92c8d0de8f01cda31c205a74))
+
+
 ## v0.2.13 (2025-01-20)
 
 ### Fixes
