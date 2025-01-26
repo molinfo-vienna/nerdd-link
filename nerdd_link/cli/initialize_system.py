@@ -2,7 +2,7 @@ import logging
 
 import rich_click as click
 
-from ..channels import KafkaChannel
+from ..channels import Channel
 from ..types import SystemMessage
 from ..utils import async_to_sync
 
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 @click.command(context_settings={"show_default": True})
 @click.option(
     "--channel",
-    type=click.Choice(["kafka"], case_sensitive=False),
+    type=click.Choice(Channel.get_channel_names(), case_sensitive=False),
     default="kafka",
     help="Channel to use for communication with the model.",
 )
@@ -35,11 +35,7 @@ async def initialize_system(
 ) -> None:
     logging.basicConfig(level=log_level.upper())
 
-    channel_instance = None
-    if channel == "kafka":
-        channel_instance = KafkaChannel(broker_url)
-    else:
-        raise ValueError(f"Channel {channel} not supported.")
+    channel_instance = Channel.create_channel(channel, broker_url=broker_url)
 
     await channel_instance.start()
 
