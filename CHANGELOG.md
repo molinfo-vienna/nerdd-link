@@ -1,6 +1,29 @@
 # CHANGELOG
 
 
+## v0.2.15 (2025-01-26)
+
+### Fixes
+
+* fix: Tune timeout variables in Kafka ([`d53fe6c`](https://github.com/molinfo-vienna/nerdd-link/commit/d53fe6cd0979e8334e2bce734a1310f92e4ab276))
+
+* fix: Always wait until all steps processed a record ([`4727eab`](https://github.com/molinfo-vienna/nerdd-link/commit/4727eab1b25baa772adf7cc438b841f277903343))
+
+* fix: Send intermediate results ([`b816582`](https://github.com/molinfo-vienna/nerdd-link/commit/b8165825d257f4a328847d97a14152f3163b2aae))
+
+* fix: Implement channel registry ([`26dad70`](https://github.com/molinfo-vienna/nerdd-link/commit/26dad7013e6fd63d9ca0dbae16060f5fbb74cf01))
+
+### Unknown
+
+* Merge pull request #36 from shirte/main
+
+Send intermediate results ([`d0b582b`](https://github.com/molinfo-vienna/nerdd-link/commit/d0b582b8bbe722480ccb4de281d2dc6a34c60267))
+
+* Adapt tests ([`946f8b7`](https://github.com/molinfo-vienna/nerdd-link/commit/946f8b7f6d3d0b1c9b2e77aeff97523f944e2d5e))
+
+* Do not catch all exceptions in PredictCheckpointAction ([`03a9f11`](https://github.com/molinfo-vienna/nerdd-link/commit/03a9f11543bbadeabb29fb73bb0830d963ea9277))
+
+
 ## v0.2.14 (2025-01-23)
 
 ### Fixes
