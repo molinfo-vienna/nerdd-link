@@ -1,5 +1,7 @@
+import asyncio
+import concurrent.futures
 import logging
-from multiprocessing import Queue
+from asyncio import Queue
 
 from nerdd_module import SimpleModel
 
@@ -40,6 +42,8 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
 
         file_system = FileSystem(self._data_dir)
 
+        loop = asyncio.get_running_loop()
+
         # create a wrapper model that
         # * reads the checkpoint file instead of normal input
         # * does preprocessing, prediction, and postprocessing like the encapsulated model
@@ -51,25 +55,27 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
             file_system=file_system,
             checkpoint_id=checkpoint_id,
             queue=queue,
+            loop=loop,
         )
 
-        # predict the checkpoint
-        # assign input=None, because the checkpoint file is provided in ReadCheckpointModel
-        model.predict(
-            input=None,
-            **params,
-        )
+        # Run the prediction in a separate thread to avoid blocking the event loop.
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            # predict the checkpoint
+            # assign input=None, because the checkpoint file is provided in ReadCheckpointModel
+            future = loop.run_in_executor(executor, lambda: model.predict(input=None, **params))
 
-        # Wait for the prediction to finish and the results to be sent.
-        while True:
-            record = queue.get()
-            if record is not None:
-                await self.channel.results_topic().send(ResultMessage(job_id=job_id, **record))
-            else:
-                await self.channel.result_checkpoints_topic().send(
-                    ResultCheckpointMessage(job_id=job_id, checkpoint_id=checkpoint_id)
-                )
-                break
+            # Wait for the prediction to finish and the results to be sent.
+            while True:
+                record = await queue.get()
+                if record is not None:
+                    await self.channel.results_topic().send(ResultMessage(job_id=job_id, **record))
+                else:
+                    await self.channel.result_checkpoints_topic().send(
+                        ResultCheckpointMessage(job_id=job_id, checkpoint_id=checkpoint_id)
+                    )
+                    break
+
+            await future
 
     def _get_group_name(self) -> str:
         model_id = self._model.get_config().id

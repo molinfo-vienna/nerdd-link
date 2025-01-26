@@ -1,4 +1,4 @@
-from multiprocessing import Queue
+from asyncio import AbstractEventLoop, Queue
 from typing import Any, List, Optional
 
 from nerdd_module import SimpleModel, Step
@@ -20,6 +20,7 @@ class ReadCheckpointModel(SimpleModel):
         file_system: FileSystem,
         checkpoint_id: int,
         queue: Queue,
+        loop: AbstractEventLoop,
     ) -> None:
         super().__init__()
         self._base_model = base_model
@@ -27,6 +28,7 @@ class ReadCheckpointModel(SimpleModel):
         self._file_system = file_system
         self._checkpoint_id = checkpoint_id
         self._queue = queue
+        self._loop = loop
 
     def _get_input_steps(
         self, input: Any, input_format: Optional[str], **kwargs: Any
@@ -53,6 +55,7 @@ class ReadCheckpointModel(SimpleModel):
             output_format="json",
             model=self._base_model,
             queue=self._queue,
+            loop=self._loop,
             **kwargs,
         )
 
