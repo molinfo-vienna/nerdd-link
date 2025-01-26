@@ -4,7 +4,7 @@ import logging
 import rich_click as click
 
 from ..actions import ProcessJobsAction
-from ..channels import KafkaChannel
+from ..channels import Channel
 from ..utils import async_to_sync
 
 __all__ = ["run_job_server"]
@@ -84,11 +84,7 @@ async def run_job_server(
 ) -> None:
     logging.basicConfig(level=log_level.upper())
 
-    channel_instance = None
-    if channel == "kafka":
-        channel_instance = KafkaChannel(broker_url)
-    else:
-        raise ValueError(f"Channel {channel} not supported.")
+    channel_instance = Channel.create_channel(channel, broker_url=broker_url)
 
     await channel_instance.start()
 

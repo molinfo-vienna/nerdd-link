@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import AsyncIterable, Generic, TypeVar, Union, cast
+from typing import Any, AsyncIterable, Dict, Generic, Type, TypeVar, Union, cast
 
 from nerdd_module import Model
-from stringcase import spinalcase
+from nerdd_module.util import call_with_mappings
+from stringcase import snakecase, spinalcase
 
 from ..types import (
     CheckpointMessage,
@@ -145,3 +146,37 @@ class Channel(ABC):
 
     def system_topic(self) -> Topic[SystemMessage]:
         return Topic[SystemMessage](self, "system")
+
+    #
+    # META
+    #
+    _channel_registry: Dict[str, Type["Channel"]] = {}
+
+    @classmethod
+    def __init_subclass__(
+        cls,
+        **kwargs: Any,
+    ) -> None:
+        super().__init_subclass__(**kwargs)
+
+        # check if class ends with "Channel"
+        if cls.__name__.endswith("Channel"):
+            name = cls.__name__[: -len("Channel")]
+            name = snakecase(name)
+        else:
+            name = cls.__name__
+
+        # register the channel class
+        Channel._channel_registry[name] = cls
+
+    @classmethod
+    def get_channel(cls, name: str) -> Channel:
+        return cls._channel_registry[name]()
+
+    @classmethod
+    def create_channel(cls, name: str, **kwargs: Any) -> Channel:
+        return call_with_mappings(cls._channel_registry[name], kwargs)
+
+    @classmethod
+    def get_channel_names(cls) -> list[str]:
+        return list(cls._channel_registry.keys())

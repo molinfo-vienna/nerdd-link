@@ -48,11 +48,19 @@ class KafkaChannel(Channel):
                 enable_auto_commit=False,
                 # consume only one message at a time
                 max_poll_records=1,
-                # one message should be consumed within 10 minutes
-                max_poll_interval_ms=10 * 60 * 1000,
-                session_timeout_ms=10 * 60 * 1000,
-                # send heartbeat every minute
+                # max_poll_interval_ms: Time between polls (in milliseconds) before the consumer
+                # is considered dead. Prediction tasks can take a long time, so we set this to 1
+                # hour.
+                max_poll_interval_ms=60 * 60 * 1000,
+                # heartbeat_interval_ms: The time interval between sending heartbeat messages to
+                # the consumer coordinator. We set this to 1 minute.
                 heartbeat_interval_ms=1 * 60 * 1000,
+                # session_timeout_ms: The maximum time between heartbeats before the consumer is
+                # considered dead. We set this to 10 minutes (-> allow missing 10 heartbeats).
+                session_timeout_ms=10 * 60 * 1000,
+                # request_timeout_ms: The maximum time to wait for a response to a request (e.g.
+                # when sending a message and waiting for the confirmation).
+                request_timeout_ms=1 * 60 * 1000,
             )
             await consumer.start()
             self._consumers[key] = consumer
