@@ -56,7 +56,7 @@ logger = logging.getLogger(__name__)
 )
 @click.option(
     "--checkpoint-size",
-    default=200,
+    default=100,
     help="Number of input entries that are put in a checkpoint file.",
 )
 @click.option(
