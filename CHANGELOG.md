@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.2.16 (2025-01-26)
+
+### Fixes
+
+* fix: Decrease checkpoint size to 100 ([`e7efa64`](https://github.com/molinfo-vienna/nerdd-link/commit/e7efa64bb882867ef721190b64ffc2530afe31af))
+
+### Unknown
+
+* Merge pull request #37 from shirte/main
+
+fix: Decrease checkpoint size to 100 ([`069a711`](https://github.com/molinfo-vienna/nerdd-link/commit/069a7116eed2dbdfb83b73c51bc4ca0b9037099d))
+
+
 ## v0.2.15 (2025-01-26)
 
 ### Fixes
