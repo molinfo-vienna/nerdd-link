@@ -73,8 +73,12 @@ class KafkaChannel(Channel):
 
         try:
             async for message in consumer:
-                message_obj = json.loads(message.value)
-                yield Message(**message_obj)
+                # be aware of tombstoned records with value = None
+                if message.value is not None:
+                    message_obj = json.loads(message.value)
+                    yield Message(**message_obj)
+                else:
+                    logger.info(f"Received tombstoned record on {message.topic}")
                 try:
                     await consumer.commit()
                 except CommitFailedError as e:
