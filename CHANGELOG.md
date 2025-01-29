@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.2.17 (2025-01-29)
+
+### Fixes
+
+* fix: Avoid tombstoned records ([`feb7675`](https://github.com/molinfo-vienna/nerdd-link/commit/feb7675b2b9ac7f5af87c226a74c1aeb6543c56d))
+
+### Unknown
+
+* Merge pull request #38 from shirte/main
+
+fix: Avoid tombstoned records ([`aaf8edb`](https://github.com/molinfo-vienna/nerdd-link/commit/aaf8edb0f577230f3689a474edd880a33b72858f))
+
+
 ## v0.2.16 (2025-01-26)
 
 ### Fixes
