@@ -1,0 +1,10 @@
+name: nerdd_process_jobs
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  # We need an old rdkit version here, because this aplication writes the input files for all
+  # NERDD modules. RDKit is usually backwards-compatible, but it often can't read files of future
+  # versions.
+  - rdkit=2020.09.1
