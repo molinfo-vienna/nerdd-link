@@ -78,5 +78,5 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
             await future
 
     def _get_group_name(self) -> str:
-        model_id = self._model.get_config().id
+        model_id = self._model.config.id
         return f"predict-checkpoints-{model_id}"
