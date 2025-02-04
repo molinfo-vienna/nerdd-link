@@ -7,7 +7,7 @@ USER root
 
 # entr is used for live reloading the application
 # wget is used to download the RDKit installation fix script
-RUN apk update && apk add git wget
+RUN apk update && apk add wget
 
 # Necessary, so Docker doesn't buffer the output and that we can see the output 
 # of the application (e.g., Django logs) in real-time.
@@ -26,9 +26,6 @@ RUN wget https://gist.githubusercontent.com/shirte/e1734e51dbc72984b2d918a71b68c
 RUN --mount=type=cache,target=/root/.cache/pip \
     micromamba run -n nerdd_serialization_server pip install .
 
-# --no-capture-output: output of the application is not buffered and we can see it 
-# Note: PYTHONUNBUFFERED is not enough, because it only affects the Python
-# standard output, not the output of the application.
 ENTRYPOINT micromamba run -n nerdd_serialization_server \
     nerdd_serialization_server \
     --broker-url $KAFKA_BROKER_URL \
