@@ -5,10 +5,6 @@ LABEL org.opencontainers.image.source="https://github.com/shirte/nerdd"
 
 USER root
 
-# entr is used for live reloading the application
-# wget is used to download the RDKit installation fix script
-RUN apk update && apk add wget
-
 # Necessary, so Docker doesn't buffer the output and that we can see the output 
 # of the application (e.g., Django logs) in real-time.
 ENV PYTHONUNBUFFERED 1
