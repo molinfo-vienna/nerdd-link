@@ -1,0 +1,11 @@
+name: nerdd_serialize_jobs
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  # We need a very recent version of RDKit here, because this aplication writes the output files
+  # for all NERDD modules. For that reason, it has to read and interpret serialized molecules from
+  # all other NERDD modules (that might use any version of RDKit) here. RDKit is usually
+  # backwards-compatible, but it often can't read files of future versions.
+  - rdkit=2024.09.4

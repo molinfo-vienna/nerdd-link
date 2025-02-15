@@ -17,12 +17,12 @@ class RegisterModuleAction(Action[SystemMessage]):
     def __init__(self, channel: Channel, model: Model, data_dir: str):
         super().__init__(channel.system_topic())
         # TODO: do this differently
-        assert hasattr(model, "get_config")
+        assert hasattr(model, "config")
         self._model = model
         self._file_system = FileSystem(data_dir)
 
     async def _process_message(self, message: SystemMessage) -> None:
-        config = self._model.get_config()
+        config = self._model.config
         logger.info(f"Registering module with id {config.id}")
 
         # save module as json to file
@@ -33,5 +33,5 @@ class RegisterModuleAction(Action[SystemMessage]):
         await self.channel.modules_topic().send(ModuleMessage(id=config.id))
 
     def _get_group_name(self) -> str:
-        model_id = self._model.get_config().id
+        model_id = self._model.config.id
         return f"register-module-{model_id}"
