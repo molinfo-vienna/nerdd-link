@@ -1,7 +1,6 @@
 name: nerdd_serialize_jobs
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - python=3.9
   # We need a very recent version of RDKit here, because this aplication writes the output files

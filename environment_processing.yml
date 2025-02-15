@@ -1,7 +1,6 @@
 name: nerdd_process_jobs
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - python=3.9
   # We need an old rdkit version here, because this aplication writes the input files for all
