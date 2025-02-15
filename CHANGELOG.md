@@ -1,6 +1,23 @@
 # CHANGELOG
 
 
+## v0.2.18 (2025-02-15)
+
+### Fixes
+
+* fix: Use config property instead of get_config ([`0cc2e02`](https://github.com/molinfo-vienna/nerdd-link/commit/0cc2e02fe161e4f5091e4f5acd7f4e3e7f3f26b1))
+
+### Unknown
+
+* Merge pull request #39 from shirte/main
+
+Use config property instead of get_config ([`03325bc`](https://github.com/molinfo-vienna/nerdd-link/commit/03325bcd0626c9fd8e180eb3b061cba02a935815))
+
+* Rename and adapt docker files ([`f51cb92`](https://github.com/molinfo-vienna/nerdd-link/commit/f51cb924532b41e4fd56f19f629580ac1f945d97))
+
+* Use meaningful names for conda environments ([`5f7a9f0`](https://github.com/molinfo-vienna/nerdd-link/commit/5f7a9f02676fc31351885679fb514297e75157f5))
+
+
 ## v0.2.17 (2025-01-29)
 
 ### Fixes
