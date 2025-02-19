@@ -1,28 +1,30 @@
 FROM mambaorg/micromamba:2.0.5-alpine3.20
 
 # necessary to display the image on Github
-LABEL org.opencontainers.image.source="https://github.com/shirte/nerdd"
+LABEL org.opencontainers.image.source="https://github.com/molinfo-vienna/nerdd-link"
 
-# Necessary, so Docker doesn't buffer the output and that we can see the output 
-# of the application (e.g., Django logs) in real-time.
+# using the root user during the build stage
+USER root
+
+# keep Docker from buffering the output so we can see the output of the application in real-time
 ENV PYTHONUNBUFFERED 1
 
 WORKDIR /app
 
 # Copy only the environment file first so that we can cache the dependencies
-COPY environment_processing.yml .
-RUN micromamba env create -f environment_processing.yml
-
-# Fix a problem with the RDKit installation
-RUN wget https://gist.githubusercontent.com/shirte/e1734e51dbc72984b2d918a71b68c25b/raw/4a419e6e2b9019e2d6d7d1fa0f9c2a4708c0fc53/rdkit_installation_fix.sh \
-    && chmod +x rdkit_installation_fix.sh \
-    && ./rdkit_installation_fix.sh nerdd_process_jobs
-
-# Copy the rest of the source code directory and install the main package
-COPY . .
-
+COPY environment_processing.yml requirements_processing.txt ./
 RUN --mount=type=cache,target=/root/.cache/pip \
-    micromamba run -n nerdd_process_jobs pip install .
+    micromamba env create -f environment_processing.yml && \
+    # Fix a problem with the RDKit installation
+    wget https://gist.githubusercontent.com/shirte/e1734e51dbc72984b2d918a71b68c25b/raw/ae4afece11980f5d7da9e7668a651abe349c357a/rdkit_installation_fix.sh && \
+    chmod +x rdkit_installation_fix.sh && \
+    micromamba run -n nerdd_process_jobs ./rdkit_installation_fix.sh nerdd_process_jobs && \
+    # install the pip dependencies
+    micromamba run -n nerdd_process_jobs pip install -r requirements_processing.txt
+
+# copy the rest of the source code directory and install the main package
+COPY . .
+RUN micromamba run -n nerdd_process_jobs pip install --no-deps .
 
 ENTRYPOINT micromamba run -n nerdd_process_jobs \
     nerdd_job_server \
