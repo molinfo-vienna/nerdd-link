@@ -1,6 +1,45 @@
 # CHANGELOG
 
 
+## v0.2.19 (2025-02-19)
+
+### Fixes
+
+* fix: Improve Dockerfile for job processing ([`714f1f0`](https://github.com/molinfo-vienna/nerdd-link/commit/714f1f0f1c75748c3dba778b87bfd7c81210039e))
+
+### Unknown
+
+* Merge pull request #41 from shirte/main
+
+Improve docker files ([`e8a16c7`](https://github.com/molinfo-vienna/nerdd-link/commit/e8a16c78fc2ffc26e47f125912dd01bc36efc5cf))
+
+* Change Dockerfile labels ([`c582e0a`](https://github.com/molinfo-vienna/nerdd-link/commit/c582e0a2b8ddcc76d1cd3bf86b4522b032281fbd))
+
+* Switch to BSD 3-Clause license ([`8394e8e`](https://github.com/molinfo-vienna/nerdd-link/commit/8394e8eb24941739b2ba87fb5f0df97cb54a86a6))
+
+* Remove test packages from requirements_serialization.txt ([`6358121`](https://github.com/molinfo-vienna/nerdd-link/commit/635812120d426b7c63d177b68d3704ee623aa3b8))
+
+* Add requirements.txt for job processing ([`d08fa8d`](https://github.com/molinfo-vienna/nerdd-link/commit/d08fa8d6b6a1a7ac1379b60b48014d9173048132))
+
+* Improve Dockerfile of serialization job ([`a5b9597`](https://github.com/molinfo-vienna/nerdd-link/commit/a5b95971355bcdafd03ef7a07421dfed506404df))
+
+* Add requirements file for serialization job ([`22f9a30`](https://github.com/molinfo-vienna/nerdd-link/commit/22f9a30072d5651bb14099573493f6ff6479be0d))
+
+* Merge pull request #40 from shirte/main
+
+Improve docker images ([`86881ef`](https://github.com/molinfo-vienna/nerdd-link/commit/86881efcd6be7b8717aa5e98020c51aa5bda2102))
+
+* Run docker files with non-root user ([`528a55d`](https://github.com/molinfo-vienna/nerdd-link/commit/528a55d20e31968d7df0efd9300d2a004c65fd3c))
+
+* Avoid apt dependencies in docker files ([`4852fc3`](https://github.com/molinfo-vienna/nerdd-link/commit/4852fc3da85de0b9ada6f7f19f6306673a9a05ca))
+
+* Copy source code in docker files ([`a36e1b1`](https://github.com/molinfo-vienna/nerdd-link/commit/a36e1b12bb8a774c44a05bdd12ebce79f7f287ff))
+
+* Remove git dependency in docker images ([`83d829c`](https://github.com/molinfo-vienna/nerdd-link/commit/83d829cce9e918c992c199292dc763eb0f6b7605))
+
+* Remove defaults channel from conda envs ([`b8163f8`](https://github.com/molinfo-vienna/nerdd-link/commit/b8163f8fe4fa71df0a4c835094f0636218fc5376))
+
+
 ## v0.2.18 (2025-02-15)
 
 ### Fixes
