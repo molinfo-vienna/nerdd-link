@@ -5,8 +5,7 @@ from pytest_bdd import given, parsers, when
 
 from nerdd_link.actions import (PredictCheckpointsAction, ProcessJobsAction,
                                 RegisterModuleAction, SerializeJobAction)
-
-from .async_step import async_step
+from nerdd_link.tests import async_step
 
 
 @given(

@@ -2,10 +2,11 @@ import asyncio
 import os
 
 from nerdd_module import ReadInputStep, WriteOutputStep
+from nerdd_module.config import Module
 from nerdd_module.input import DepthFirstExplorer
 from pytest_bdd import given, parsers, then, when
 
-from .async_step import async_step
+from nerdd_link.tests import async_step
 
 
 @given(parsers.parse("a file '{path}' with the molecules in format '{format}'"))
@@ -28,7 +29,7 @@ def input_file(data_dir, path, molecules, format):
             yield { "input_mol": entry["input_mol"] }
 
     input_step = ReadInputStep(explorer, molecules)
-    output_step = WriteOutputStep(output_format=format, output_file=full_path)
+    output_step = WriteOutputStep(config=Module(name="dummy"), output_format=format, output_file=full_path)
     output_step(remove_properties(input_step(None)))
     output_step.get_result()
 
