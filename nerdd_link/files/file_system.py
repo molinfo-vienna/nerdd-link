@@ -46,6 +46,11 @@ class FileSystem:
         os.makedirs(result, exist_ok=True)
         return result
 
+    def get_property_dir(self, job_id: str, property_name: str) -> str:
+        result = os.path.join(self.get_results_dir(job_id), property_name)
+        os.makedirs(result, exist_ok=True)
+        return result
+
     def get_output_dir(self, job_id: str) -> str:
         result = os.path.join(self.get_job_dir(job_id), "outputs")
         os.makedirs(result, exist_ok=True)
@@ -75,6 +80,9 @@ class FileSystem:
 
     def get_results_file_handle(self, job_id: str, checkpoint_id: Union[int, str], mode: str) -> IO:
         return _get_handle_and_create_dirs(self.get_results_file_path(job_id, checkpoint_id), mode)
+
+    def get_property_file_path(self, job_id: str, property_name: str, record_id: str) -> str:
+        return os.path.join(self.get_property_dir(job_id, property_name), record_id)
 
     def get_output_file(self, job_id: str, output_format: str) -> str:
         return os.path.join(self.get_output_dir(job_id), f"result.{output_format}")
