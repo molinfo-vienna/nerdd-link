@@ -1,5 +1,6 @@
 import json
 import logging
+from asyncio import Lock
 from typing import AsyncIterable, Dict, Tuple
 
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
@@ -18,6 +19,7 @@ class KafkaChannel(Channel):
         super().__init__()
         self._broker_url = broker_url
         self._consumers: Dict[Tuple[str, str], AIOKafkaConsumer] = {}
+        self._kafka_lock = Lock()
 
     async def _start(self) -> None:
         self._producer = AIOKafkaProducer(
@@ -39,35 +41,29 @@ class KafkaChannel(Channel):
         key = (topic, consumer_group)
 
         if key not in self._consumers:
-            # create consumer
-            consumer = AIOKafkaConsumer(
-                topic,
-                bootstrap_servers=[self._broker_url],
-                auto_offset_reset="earliest",
-                group_id=consumer_group,
-                enable_auto_commit=False,
-                # consume only one message at a time
-                max_poll_records=1,
-                # max_poll_interval_ms: Time between polls (in milliseconds) before the consumer
-                # is considered dead. Prediction tasks can take a long time, so we set this to 1
-                # hour.
-                max_poll_interval_ms=60 * 60 * 1000,
-                # heartbeat_interval_ms: The time interval between sending heartbeat messages to
-                # the consumer coordinator. We set this to 1 minute.
-                heartbeat_interval_ms=1 * 60 * 1000,
-                # session_timeout_ms: The maximum time between heartbeats before the consumer is
-                # considered dead. We set this to 10 minutes (-> allow missing 10 heartbeats).
-                session_timeout_ms=10 * 60 * 1000,
-                # request_timeout_ms: The maximum time to wait for a response to a request (e.g.
-                # when sending a message and waiting for the confirmation).
-                request_timeout_ms=1 * 60 * 1000,
-            )
-            await consumer.start()
-            self._consumers[key] = consumer
-            logger.info(
-                f"Connecting to Kafka broker {self._broker_url} and starting a consumer on "
-                f"topic {topic}."
-            )
+            async with self._kafka_lock:
+                # create consumer
+                consumer = AIOKafkaConsumer(
+                    topic,
+                    bootstrap_servers=[self._broker_url],
+                    auto_offset_reset="earliest",
+                    group_id=consumer_group,
+                    enable_auto_commit=False,
+                    # consume only one message at a time
+                    max_poll_records=1,
+                    # max_poll_interval_ms: Time between polls (in milliseconds) before the consumer
+                    # is considered dead. Prediction tasks can take a long time, so we set this to 1
+                    # hour.
+                    max_poll_interval_ms=60 * 60 * 1000,
+                )
+
+                logger.info(
+                    f"Connecting to Kafka broker {self._broker_url} and starting a consumer on "
+                    f"topic {topic}."
+                )
+                await consumer.start()
+                self._consumers[key] = consumer
+                logger.info(f"Consumer started on topic {topic}.")
 
         consumer = self._consumers[key]
 
