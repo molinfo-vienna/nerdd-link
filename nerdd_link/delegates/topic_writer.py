@@ -1,5 +1,5 @@
 from asyncio import AbstractEventLoop, Queue, run_coroutine_threadsafe
-from typing import Any, Iterable
+from typing import Iterable
 
 from nerdd_module import Writer, WriterConfig
 from nerdd_module.config import Module
