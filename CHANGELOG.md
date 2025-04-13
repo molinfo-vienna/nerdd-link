@@ -1,6 +1,27 @@
 # CHANGELOG
 
 
+## v0.2.20 (2025-04-13)
+
+### Fixes
+
+* fix: Bump version of nerdd-module in requirements_serialization ([`142689c`](https://github.com/molinfo-vienna/nerdd-link/commit/142689c175a9fd46483b833e52a507472c8b914f))
+
+* fix: Bump version of nerdd-module in requirements_processing ([`b11fd5f`](https://github.com/molinfo-vienna/nerdd-link/commit/b11fd5fc926c8772e3e38c5373f267abf2bc180e))
+
+### Unknown
+
+* Merge pull request #42 from shirte/main
+
+Bump version of nerdd-module dependency ([`c80cdb9`](https://github.com/molinfo-vienna/nerdd-link/commit/c80cdb9a51b23fd5546d4441a06c816e8905dcb8))
+
+* Rename Dockerfiles ([`66d040e`](https://github.com/molinfo-vienna/nerdd-link/commit/66d040ee478934e6be3305070dee529fb533157b))
+
+* Add workflow to build container nerdd-process-jobs ([`2d677b2`](https://github.com/molinfo-vienna/nerdd-link/commit/2d677b2ea0743c0e352deb532b6506aaece1b9c7))
+
+* Add workflow to build container nerdd-serialize-jobs ([`60bc44c`](https://github.com/molinfo-vienna/nerdd-link/commit/60bc44c7a51ea0a27f84ce7a26f3c1d0f3b1e71f))
+
+
 ## v0.2.19 (2025-02-19)
 
 ### Fixes
