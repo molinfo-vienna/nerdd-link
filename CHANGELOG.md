@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.2.21 (2025-04-17)
+
+### Fixes
+
+* fix: Use lock to avoid parallel start of kafka consumers ([`62c1024`](https://github.com/molinfo-vienna/nerdd-link/commit/62c1024e7cc213c5898401fe3c48eb7b0cffe84f))
+
+### Unknown
+
+* Merge pull request #43 from shirte/main
+
+fix: Use lock to avoid parallel start of kafka consumers ([`7beff90`](https://github.com/molinfo-vienna/nerdd-link/commit/7beff908cdbea83b02cfebb20790255bcb0e3632))
+
+
 ## v0.2.20 (2025-04-13)
 
 ### Fixes
