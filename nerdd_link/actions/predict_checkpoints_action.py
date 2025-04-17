@@ -30,6 +30,7 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         job_id = message.job_id
         checkpoint_id = message.checkpoint_id
         params = message.params
+
         logger.info(f"Predict checkpoint {checkpoint_id} of job {job_id}")
 
         # The Kafka consumers and producers run in the current asyncio event loop and (by
@@ -61,8 +62,11 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         # Run the prediction in a separate thread to avoid blocking the event loop.
         with concurrent.futures.ThreadPoolExecutor() as executor:
             # predict the checkpoint
-            # assign input=None, because the checkpoint file is provided in ReadCheckpointModel
-            future = loop.run_in_executor(executor, lambda: model.predict(input=None, **params))
+            # * assign input=None, because the checkpoint file is provided in ReadCheckpointModel
+            future = loop.run_in_executor(
+                executor,
+                lambda: model.predict(input=None, **params),
+            )
 
             # Wait for the prediction to finish and the results to be sent.
             while True:
@@ -70,6 +74,7 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
                 if record is not None:
                     await self.channel.results_topic().send(ResultMessage(job_id=job_id, **record))
                 else:
+                    # None indicates the end of the queue (end of the prediction)
                     await self.channel.result_checkpoints_topic().send(
                         ResultCheckpointMessage(job_id=job_id, checkpoint_id=checkpoint_id)
                     )

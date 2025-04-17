@@ -56,6 +56,8 @@ class ReadCheckpointModel(SimpleModel):
             model=self._base_model,
             queue=self._queue,
             loop=self._loop,
+            file_system=self._file_system,
+            job_id=self._job_id,
             **kwargs,
         )
 
