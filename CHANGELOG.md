@@ -1,6 +1,27 @@
 # CHANGELOG
 
 
+## v0.2.22 (2025-04-17)
+
+### Fixes
+
+* fix: Write large result properties to files ([`a9df4bc`](https://github.com/molinfo-vienna/nerdd-link/commit/a9df4bc703b75bee253800f237a9f08528073990))
+
+* fix: Pass file_system and job_id to TopicWriter ([`fede063`](https://github.com/molinfo-vienna/nerdd-link/commit/fede0639fbbb7cddfcf499484cc9eacb5b4cc8f3))
+
+### Unknown
+
+* Merge pull request #44 from shirte/main
+
+Write large result properties to files ([`a6f4b70`](https://github.com/molinfo-vienna/nerdd-link/commit/a6f4b70639eb9b5933cfe0f429a6069220fd949b))
+
+* Remove redundant async_step function ([`b740b03`](https://github.com/molinfo-vienna/nerdd-link/commit/b740b03fead6aa486a0b00c16334a27380c479cd))
+
+* Bump nerdd-module version ([`58fcaff`](https://github.com/molinfo-vienna/nerdd-link/commit/58fcaff17ce9c89655a0328ce40d3205ee9d7567))
+
+* Add file paths to write large result properties ([`0294962`](https://github.com/molinfo-vienna/nerdd-link/commit/02949623722cf0d0f899ff4804270105930d9b03))
+
+
 ## v0.2.21 (2025-04-17)
 
 ### Fixes
