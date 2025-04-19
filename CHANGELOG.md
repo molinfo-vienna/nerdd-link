@@ -1,6 +1,23 @@
 # CHANGELOG
 
 
+## v0.2.23 (2025-04-19)
+
+### Fixes
+
+* fix: Minimize number of files written to disk ([`f40afe2`](https://github.com/molinfo-vienna/nerdd-link/commit/f40afe212e7ef9f45fc48571a82e03d28dbc7f22))
+
+### Unknown
+
+* Merge pull request #45 from shirte/main
+
+Minimize number of files written to disk ([`4da77f7`](https://github.com/molinfo-vienna/nerdd-link/commit/4da77f7ed0375991bbb2da3d59a805778f5dadc0))
+
+* Remove unused import ([`fc9cede`](https://github.com/molinfo-vienna/nerdd-link/commit/fc9cede8f41eeb6138a642749e9559257482e89c))
+
+* Apply cosmetic changes ([`410f0f0`](https://github.com/molinfo-vienna/nerdd-link/commit/410f0f084dd7143b4305f1c3d447fc3073d0beb4))
+
+
 ## v0.2.22 (2025-04-17)
 
 ### Fixes
