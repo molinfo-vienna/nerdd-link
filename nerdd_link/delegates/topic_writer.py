@@ -1,5 +1,5 @@
 from asyncio import AbstractEventLoop, Queue, run_coroutine_threadsafe
-from typing import Any, Iterable
+from typing import Iterable
 
 from nerdd_module import Writer, WriterConfig
 from nerdd_module.config import Module
@@ -29,21 +29,10 @@ class TopicWriter(Writer):
             p.name for p in config.result_properties if p.type in ["image", "mol"]
         ]
 
-    def _replace_property(self, record_id: str, property_name: str, property_value: Any) -> str:
-        """
-        Replace large properties with file paths.
-        """
-        if property_value is None:
-            return None
-
-        # store large properties (images, molecules) on disk
-        file_path = self._file_system.get_property_file_path(
-            job_id=self._job_id, property_name=property_name, record_id=record_id
-        )
-        with open(file_path, "wb") as f:
-            f.write(str(property_value).encode("utf-8"))
-
-        return f"file://{file_path}"
+        # molecular properties
+        self._molecular_properties = [
+            p.name for p in config.result_properties if p.level is None or p.level == "molecule"
+        ]
 
     def _replace_properties(self, record: dict) -> dict:
         """
@@ -51,15 +40,39 @@ class TopicWriter(Writer):
         """
         if "atom_id" in record:
             record_id = f"{record['mol_id']}-{record['atom_id']}"
+            sub_id = record["atom_id"]
         elif "derivative_id" in record:
             record_id = f"{record['mol_id']}-{record['derivative_id']}"
+            sub_id = record["derivative_id"]
         else:
             record_id = str(record["mol_id"])
+            sub_id = None
 
-        return {
-            k: self._replace_property(record_id, k, v) if k in self._large_properties else v
-            for k, v in record.items()
-        }
+        def _r(k):
+            v = record[k]
+
+            # never store None in a file
+            if v is None:
+                return None
+
+            # only store large properties on disk
+            if k not in self._large_properties:
+                return v
+
+            # never store molecular properties in a file more than once (other than for sub_id = 0)
+            if k in self._molecular_properties and sub_id is not None and sub_id > 0:
+                return v
+
+            # store large properties (images, molecules) on disk
+            file_path = self._file_system.get_property_file_path(
+                job_id=self._job_id, property_name=k, record_id=record_id
+            )
+            with open(file_path, "wb") as f:
+                f.write(str(v).encode("utf-8"))
+
+            return f"file://{file_path}"
+
+        return {k: _r(k) for k, v in record.items()}
 
     def write(self, records: Iterable[dict]) -> None:
         for record in records:

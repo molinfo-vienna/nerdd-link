@@ -119,7 +119,7 @@ class ProcessJobsAction(Action[JobMessage]):
             if num_entries >= self._max_num_molecules:
                 break
 
-        logger.info(f"Wrote {i+1} checkpoints containing {num_entries} entries for job {job_id}")
+        logger.info(f"Wrote {i + 1} checkpoints containing {num_entries} entries for job {job_id}")
 
         # send a warning message if there were more molecules in the job than allowed
         too_many_molecules = num_store < len(batch)
@@ -145,8 +145,7 @@ class ProcessJobsAction(Action[JobMessage]):
                 )
             )
 
-        # at the end, send a tuple to topic job-sizes with the overall size
-        # of the job
+        # send a tuple to topic "logs" with the overall size of the job
         await self.channel.logs_topic().send(
             LogMessage(
                 job_id=job_id,
