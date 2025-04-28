@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -32,6 +32,7 @@ class CheckpointMessage(Message):
 class ResultCheckpointMessage(Message):
     job_id: str
     checkpoint_id: int
+    elapsed_time_seconds: Optional[int] = None
 
 
 class JobMessage(Message):
