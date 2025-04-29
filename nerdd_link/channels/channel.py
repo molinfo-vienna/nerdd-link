@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
-from typing import Any, AsyncIterable, Dict, Generic, Type, TypeVar, Union, cast
+from typing import Any, AsyncIterable, Dict, Generic, Optional, Tuple, Type, TypeVar, Union
 
 from nerdd_module import Model
 from nerdd_module.util import call_with_mappings
@@ -18,11 +19,14 @@ from ..types import (
     SerializationRequestMessage,
     SerializationResultMessage,
     SystemMessage,
+    Tombstone,
 )
 
 __all__ = ["Channel", "Topic"]
 
-T = TypeVar("T", bound=Message)
+logger = logging.getLogger(__name__)
+
+TMessage = TypeVar("TMessage", bound=Message)
 
 
 def get_job_type(job_type_or_model: Union[str, Model]) -> str:
@@ -42,16 +46,21 @@ def get_job_type(job_type_or_model: Union[str, Model]) -> str:
         return spinalcase(job_type_or_model)
 
 
-class Topic(Generic[T]):
-    def __init__(self, channel: Channel, name: str):
+class Topic(Generic[TMessage]):
+    def __init__(self, channel: Channel, name: str, message_type: Type[TMessage]) -> None:
         self._channel = channel
         self._name = name
+        self._message_type = message_type
 
-    async def receive(self, consumer_group: str) -> AsyncIterable[T]:
-        async for msg in self.channel.iter_messages(self._name, consumer_group):
-            yield cast(T, msg)
+    async def receive(
+        self, consumer_group: str
+    ) -> AsyncIterable[Union[TMessage, Tombstone[TMessage]]]:
+        async for msg in self.channel.iter_messages(
+            self._name, consumer_group=consumer_group, message_type=self._message_type
+        ):
+            yield msg
 
-    async def send(self, message: T) -> None:
+    async def send(self, message: Union[TMessage, Tombstone[TMessage]]) -> None:
         await self.channel.send(self._name, message)
 
     @property
@@ -90,62 +99,101 @@ class Channel(ABC):
     #
     # RECEIVE
     #
-    async def iter_messages(self, topic: str, consumer_group: str) -> AsyncIterable[Message]:
+    async def iter_messages(
+        self,
+        topic: str,
+        consumer_group: str,
+        message_type: Type[TMessage],
+    ) -> AsyncIterable[Union[TMessage, Tombstone[TMessage]]]:
         if not self._is_running:
             raise RuntimeError("Channel is not running. Call start() first.")
-        async for message in self._iter_messages(topic, consumer_group):
-            yield message
 
-    # Insane glitch: we need to use "def _iter_messages" instead of "async def _iter_messages"
+        key_fields = message_type.topic_config.get("key_fields")
+
+        async for key, value in self._iter_messages(topic, consumer_group):
+            if value is None:
+                assert key is not None, "Key must be provided for tombstone messages"
+                yield Tombstone(message_type, *key)
+            else:
+                if key_fields is None and key is not None:
+                    logger.warning(
+                        f"Message type {message_type.__name__} does not have key fields defined, "
+                        "but a key was provided. This may lead to unexpected behavior."
+                    )
+
+                yield message_type(**value)
+
+    # Insane Python quirk: we need to use "def _iter_messages" instead of "async def _iter_messages"
     # here, because the method doesn't use "yield" and so the type checker will assume that the
-    # actual type is Coroutine[AsyncIterable[Message], None, None].
+    # actual type is Coroutine[AsyncIterable[Message], None, None] instead of the type we want:
+    # AsyncIterable[Message].
     @abstractmethod
-    def _iter_messages(self, topic: str, consumer_group: str) -> AsyncIterable[Message]:
+    def _iter_messages(
+        self, topic: str, consumer_group: str
+    ) -> AsyncIterable[Tuple[Optional[tuple], Optional[dict]]]:
         pass
 
     #
     # SEND
     #
-    async def send(self, topic: str, message: Message) -> None:
+    async def send(self, topic: str, message: Union[TMessage, Tombstone[TMessage]]) -> None:
         if not self._is_running:
             raise RuntimeError("Channel is not running. Call start() first.")
-        await self._send(topic, message)
+
+        # extract key
+        if isinstance(message, Tombstone):
+            key_fields = message.message_type.topic_config.get("key_fields")
+        else:
+            key_fields = message.topic_config.get("key_fields")
+
+        if key_fields is None:
+            key = None
+        else:
+            key = tuple(getattr(message, field) for field in key_fields)
+
+        # extract value
+        if isinstance(message, Tombstone):
+            value = None
+        else:
+            value = message.model_dump()
+
+        await self._send(topic, key, value)
 
     @abstractmethod
-    async def _send(self, topic: str, message: Message) -> None:
+    async def _send(self, topic: str, key: Optional[tuple], value: Optional[dict]) -> None:
         pass
 
     #
     # TOPICS
     #
     def modules_topic(self) -> Topic[ModuleMessage]:
-        return Topic[ModuleMessage](self, "modules")
+        return Topic(self, "modules", ModuleMessage)
 
     def jobs_topic(self) -> Topic[JobMessage]:
-        return Topic[JobMessage](self, "jobs")
+        return Topic(self, "jobs", JobMessage)
 
     def checkpoints_topic(self, job_type_or_model: Union[str, Model]) -> Topic[CheckpointMessage]:
         job_type = get_job_type(job_type_or_model)
         topic_name = f"{job_type}-checkpoints"
-        return Topic[CheckpointMessage](self, topic_name)
+        return Topic(self, topic_name, CheckpointMessage)
 
     def results_topic(self) -> Topic[ResultMessage]:
-        return Topic[ResultMessage](self, "results")
+        return Topic(self, "results", ResultMessage)
 
     def result_checkpoints_topic(self) -> Topic[ResultCheckpointMessage]:
-        return Topic[ResultCheckpointMessage](self, "result-checkpoints")
+        return Topic(self, "result-checkpoints", ResultCheckpointMessage)
 
     def serialization_requests_topic(self) -> Topic[SerializationRequestMessage]:
-        return Topic[SerializationRequestMessage](self, "serialization-requests")
+        return Topic(self, "serialization-requests", SerializationRequestMessage)
 
     def serialization_results_topic(self) -> Topic[SerializationResultMessage]:
-        return Topic[SerializationResultMessage](self, "serialization-results")
+        return Topic(self, "serialization-results", SerializationResultMessage)
 
     def logs_topic(self) -> Topic[LogMessage]:
-        return Topic[LogMessage](self, "logs")
+        return Topic(self, "logs", LogMessage)
 
     def system_topic(self) -> Topic[SystemMessage]:
-        return Topic[SystemMessage](self, "system")
+        return Topic(self, "system", SystemMessage)
 
     #
     # META
