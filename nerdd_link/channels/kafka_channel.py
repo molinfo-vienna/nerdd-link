@@ -1,12 +1,11 @@
 import json
 import logging
 from asyncio import Lock
-from typing import AsyncIterable, Dict, Tuple
+from typing import Any, AsyncIterable, Dict, Optional, Tuple
 
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 from aiokafka.errors import CommitFailedError
 
-from ..types import Message
 from .channel import Channel
 
 __all__ = ["KafkaChannel"]
@@ -24,7 +23,7 @@ class KafkaChannel(Channel):
     async def _start(self) -> None:
         self._producer = AIOKafkaProducer(
             bootstrap_servers=[self._broker_url],
-            value_serializer=lambda v: json.dumps(v.model_dump()).encode("utf-8"),
+            key_serializer=lambda k: json.dumps(k, sort_keys=True).encode("utf-8"),
         )
         logger.info(f"Connecting to Kafka broker {self._broker_url} and starting a producer...")
         await self._producer.start()
@@ -37,10 +36,12 @@ class KafkaChannel(Channel):
         for consumer in self._consumers.values():
             await consumer.stop()
 
-    async def _iter_messages(self, topic: str, consumer_group: str) -> AsyncIterable[Message]:
-        key = (topic, consumer_group)
+    async def _iter_messages(
+        self, topic: str, consumer_group: str
+    ) -> AsyncIterable[Tuple[Optional[tuple], Optional[dict]]]:
+        consumer_key = (topic, consumer_group)
 
-        if key not in self._consumers:
+        if consumer_key not in self._consumers:
             async with self._kafka_lock:
                 # create consumer
                 consumer = AIOKafkaConsumer(
@@ -62,19 +63,27 @@ class KafkaChannel(Channel):
                     f"topic {topic}."
                 )
                 await consumer.start()
-                self._consumers[key] = consumer
+                self._consumers[consumer_key] = consumer
                 logger.info(f"Consumer started on topic {topic}.")
 
-        consumer = self._consumers[key]
+        consumer = self._consumers[consumer_key]
 
         try:
             async for message in consumer:
-                # be aware of tombstoned records with value = None
-                if message.value is not None:
-                    message_obj = json.loads(message.value)
-                    yield Message(**message_obj)
+                if message.key is None:
+                    key = None
                 else:
-                    logger.info(f"Received tombstoned record on {message.topic}")
+                    message_key: tuple[Any, ...] = json.loads(message.key)
+                    key = tuple(message_key)
+
+                # distinguish tombstoned records by checking if value is None
+                if message.value is None:
+                    value = None
+                else:
+                    value = json.loads(message.value)
+
+                yield key, value
+
                 try:
                     await consumer.commit()
                 except CommitFailedError as e:
@@ -110,8 +119,16 @@ class KafkaChannel(Channel):
         #     logger.error(e)
         #     logger.error(traceback.format_exc())
 
-    async def _send(self, topic: str, message: Message) -> None:
-        await self._producer.send_and_wait(
-            topic,
-            message,
-        )
+    async def _send(self, topic: str, key: Optional[tuple], value: Optional[dict]) -> None:
+        if key is None:
+            message_key = None
+        else:
+            message_key = json.dumps(key).encode("utf-8")
+
+        # fetch value
+        if value is None:
+            message_value = None
+        else:
+            message_value = json.dumps(value).encode("utf-8")
+
+        await self._producer.send_and_wait(topic, value=message_value, key=message_key)
