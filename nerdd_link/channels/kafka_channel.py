@@ -1,7 +1,7 @@
 import json
 import logging
 from asyncio import Lock
-from typing import Any, AsyncIterable, Dict, Optional, Tuple
+from typing import AsyncIterable, Dict, Optional, Tuple
 
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 from aiokafka.errors import CommitFailedError
@@ -73,7 +73,11 @@ class KafkaChannel(Channel):
                 if message.key is None:
                     key = None
                 else:
-                    message_key: tuple[Any, ...] = json.loads(message.key)
+                    try:
+                        message_key: list = json.loads(message.key)
+                    except json.JSONDecodeError:
+                        # if we can't decode the key as JSON, we assume it is a single string
+                        message_key = [message.key.decode("utf-8")]
                     key = tuple(message_key)
 
                 # distinguish tombstoned records by checking if value is None
