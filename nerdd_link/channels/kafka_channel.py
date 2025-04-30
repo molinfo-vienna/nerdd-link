@@ -23,7 +23,6 @@ class KafkaChannel(Channel):
     async def _start(self) -> None:
         self._producer = AIOKafkaProducer(
             bootstrap_servers=[self._broker_url],
-            key_serializer=lambda k: json.dumps(k, sort_keys=True).encode("utf-8"),
         )
         logger.info(f"Connecting to Kafka broker {self._broker_url} and starting a producer...")
         await self._producer.start()
