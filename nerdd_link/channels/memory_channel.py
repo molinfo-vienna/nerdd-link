@@ -2,7 +2,6 @@ import logging
 from asyncio import Lock
 from typing import AsyncIterable, Dict, List, Optional, Tuple
 
-from ..types import Message
 from ..utils import ObservableList
 from .channel import Channel
 
