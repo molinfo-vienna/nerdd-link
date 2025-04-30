@@ -39,6 +39,11 @@ def file_created(data_dir, path):
     full_path = os.path.join(data_dir, path)
     assert os.path.exists(full_path)
 
+@then(parsers.parse("the file '{path}' does not exist"))
+def file_does_not_exist(data_dir, path):
+    full_path = os.path.join(data_dir, path)
+    assert not os.path.exists(full_path)
+
 
 @when(parsers.parse("we wait for {seconds:d} seconds"))
 @async_step
