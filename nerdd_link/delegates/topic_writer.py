@@ -68,7 +68,10 @@ class TopicWriter(Writer):
                 job_id=self._job_id, property_name=k, record_id=record_id
             )
             with open(file_path, "wb") as f:
-                f.write(str(v).encode("utf-8"))
+                if isinstance(v, bytes):
+                    f.write(v)
+                else:
+                    f.write(str(v).encode("utf-8"))
 
             return f"file://{file_path}"
 
