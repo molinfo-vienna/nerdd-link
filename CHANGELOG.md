@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.2.24 (2025-05-21)
+
+### Fixes
+
+* fix: Check type of property before writing ([`bd4ee81`](https://github.com/molinfo-vienna/nerdd-link/commit/bd4ee813044cbd931df22da06858772b7a34c8ed))
+
+### Unknown
+
+* Merge pull request #46 from shirte/main
+
+fix: Check type of property before writing ([`c1f3329`](https://github.com/molinfo-vienna/nerdd-link/commit/c1f332959c62b0c7f7574852e2700d672a764829))
+
+
 ## v0.2.23 (2025-04-19)
 
 ### Fixes
