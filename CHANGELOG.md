@@ -1,7 +1,22 @@
 # CHANGELOG
 
 
+## v0.2.27 (2025-05-23)
+
+### Unknown
+
+* Merge pull request #49 from molinfo-vienna/arm64
+
+fix: in debian-slim containers wget needs to be installed ([`4f2f45f`](https://github.com/molinfo-vienna/nerdd-link/commit/4f2f45f1854bc3c99aace5ab011e590d33e2b413))
+
+* Merge branch 'main' into arm64 ([`512316d`](https://github.com/molinfo-vienna/nerdd-link/commit/512316d66cd82327754172aa68d4160f17d1946b))
+
+
 ## v0.2.26 (2025-05-23)
+
+### Fixes
+
+* fix: in debian-slim containers wget needs to be installed ([`fc9ed8b`](https://github.com/molinfo-vienna/nerdd-link/commit/fc9ed8b6df895a779ab8a79d415fe44857e7de67))
 
 ### Unknown
 
