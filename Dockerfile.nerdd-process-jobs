@@ -11,7 +11,7 @@ ENV PYTHONUNBUFFERED 1
 
 WORKDIR /app
 
-RUN apt-get install wget -qq
+RUN apt-get update && apt-get install wget -qq
 
 # Copy only the environment file first so that we can cache the dependencies
 COPY environment_processing.yml requirements_processing.txt ./
