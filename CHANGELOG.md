@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.2.25 (2025-05-23)
+
+### Fixes
+
+* fix: Update Actions workflow and Dockerfiles for arm64 compatibility ([`c75f299`](https://github.com/molinfo-vienna/nerdd-link/commit/c75f299298a190e71539407f8b48e9be3ae195f6))
+
+### Unknown
+
+* Merge pull request #47 from molinfo-vienna/arm64
+
+fix: Update Actions workflow and Dockerfiles for arm64 compatibility ([`74a9dc3`](https://github.com/molinfo-vienna/nerdd-link/commit/74a9dc3429683eedae22aa2db4bdda878ee22b18))
+
+
 ## v0.2.24 (2025-05-21)
 
 ### Fixes
