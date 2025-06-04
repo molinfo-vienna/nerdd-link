@@ -1,5 +1,5 @@
 from asyncio import AbstractEventLoop, Queue, run_coroutine_threadsafe
-from typing import Iterable
+from typing import Any, Iterable
 
 from nerdd_module import Writer, WriterConfig
 from nerdd_module.config import Module
@@ -48,7 +48,7 @@ class TopicWriter(Writer):
             record_id = str(record["mol_id"])
             sub_id = None
 
-        def _r(k):
+        def _r(k: str) -> Any:
             v = record[k]
 
             # never store None in a file
@@ -59,14 +59,15 @@ class TopicWriter(Writer):
             if k not in self._large_properties:
                 return v
 
-            # never store molecular properties in a file more than once (other than for sub_id = 0)
-            if k in self._molecular_properties and sub_id is not None and sub_id > 0:
-                return v
-
             # store large properties (images, molecules) on disk
             file_path = self._file_system.get_property_file_path(
                 job_id=self._job_id, property_name=k, record_id=record_id
             )
+
+            # never store molecular properties in a file more than once (other than for sub_id = 0)
+            if k in self._molecular_properties and sub_id is not None and sub_id > 0:
+                return f"file://{file_path}"
+
             with open(file_path, "wb") as f:
                 if isinstance(v, bytes):
                     f.write(v)
