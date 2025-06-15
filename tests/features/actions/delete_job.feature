@@ -4,10 +4,6 @@ Feature: Delete job
     Given a temporary data directory
     And a list of 100 random molecules
     And a file 'sources/456' with the molecules in format 'sdf'
-    
-    # process job action
-    And the checkpoint size is 40
-    And the maximum number of molecules is 10000
 
     # predict checkpoint action
     And the mol weight model (version 'mol_ids')
@@ -16,7 +12,15 @@ Feature: Delete job
     # First, job is processed normally
     #
     When the channel receives a message on topic 'jobs' with content
-        { "id": "123", "job_type": "mol-scale", "source_id": "456", "params": { "multiplier": 10 } }
+        { 
+            "id": "123", 
+            "job_type": 
+            "mol-scale", 
+            "source_id": "456", 
+            "params": { "multiplier": 10 },
+            "max_num_molecules": 10000,
+            "checkpoint_size": 40
+        }
     And the process job action is executed
     And the predict checkpoints action is executed
 
@@ -58,10 +62,6 @@ Feature: Delete job
     Given a temporary data directory
     And a list of 100 random molecules
     And a file 'sources/456' with the molecules in format 'sdf'
-    
-    # process job action
-    And the checkpoint size is 40
-    And the maximum number of molecules is 10000
 
     # predict checkpoint action
     And the mol weight model (version 'mol_ids')
@@ -70,7 +70,15 @@ Feature: Delete job
     # Job is processed, but checkpoints are not predicted
     #
     When the channel receives a message on topic 'jobs' with content
-        { "id": "123", "job_type": "mol-scale", "source_id": "456", "params": { "multiplier": 10 } }
+        { 
+            "id": "123", 
+            "job_type": 
+            "mol-scale", 
+            "source_id": "456", 
+            "params": { "multiplier": 10 },
+            "max_num_molecules": 10000,
+            "checkpoint_size": 40
+        }
     And the process job action is executed
 
     Then the channel sends a message on topic 'mol-scale-checkpoints' with content 
@@ -110,11 +118,16 @@ Feature: Delete job
     And a list of 100 random molecules
     And a file 'sources/456' with the molecules in format 'sdf'
     
-    And the checkpoint size is 40
-    And the maximum number of molecules is 10000
-    
     When the channel receives a message on topic 'jobs' with content
-        { "id": "123", "job_type": "mol-scale", "source_id": "456", "params": { "multiplier": 10 } }
+        { 
+            "id": "123", 
+            "job_type": 
+            "mol-scale", 
+            "source_id": "456", 
+            "params": { "multiplier": 10 },
+            "max_num_molecules": 10000,
+            "checkpoint_size": 40
+        }
     And the channel receives a tombstone on topic 'jobs' with key ("123", "mol-scale")
     And the channel receives a tombstone on topic 'jobs' with key ("123", "mol-scale")
     # The following line is important now: it should not cause an error for the second tombstone
