@@ -1,13 +1,13 @@
 from typing import Any, List
 
-from nerdd_module import SimpleModel
+from nerdd_module import Model
 from nerdd_module.config import Configuration, DictConfiguration
 from rdkit.Chem import Mol
 
 __all__ = ["SerializeJobModel"]
 
 
-class SerializeJobModel(SimpleModel):
+class SerializeJobModel(Model):
     def __init__(self, config: dict) -> None:
         super().__init__()
         self._config = config

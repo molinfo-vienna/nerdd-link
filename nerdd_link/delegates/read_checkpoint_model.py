@@ -1,7 +1,7 @@
 from asyncio import AbstractEventLoop, Queue
-from typing import Any, List, Optional
+from typing import Any, Iterable, List, Optional
 
-from nerdd_module import SimpleModel, Step
+from nerdd_module import Model, Step
 from nerdd_module.config import Configuration
 from rdkit.Chem import Mol
 
@@ -12,10 +12,10 @@ from .split_and_merge_step import SplitAndMergeStep
 __all__ = ["ReadCheckpointModel"]
 
 
-class ReadCheckpointModel(SimpleModel):
+class ReadCheckpointModel(Model):
     def __init__(
         self,
-        base_model: SimpleModel,
+        base_model: Model,
         job_id: str,
         file_system: FileSystem,
         checkpoint_id: int,
@@ -71,7 +71,7 @@ class ReadCheckpointModel(SimpleModel):
 
         return [SplitAndMergeStep(send_to_channel_steps, file_writing_steps)]
 
-    def _predict_mols(self, mols: List[Mol], **kwargs: Any) -> List[dict]:
+    def _predict_mols(self, mols: List[Mol], **kwargs: Any) -> Iterable[dict]:
         return self._base_model._predict_mols(mols, **kwargs)
 
     def _get_config(self) -> Configuration:

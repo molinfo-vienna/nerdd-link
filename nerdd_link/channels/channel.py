@@ -37,8 +37,7 @@ def get_job_type(job_type_or_model: Union[str, Model]) -> str:
         # * converting to spinal case, (e.g. "MyModel" -> "my-model")
         # * converting to lowercase (just to be sure) and
         # * removing all characters except dash and alphanumeric characters
-        # TODO: move to Module Id
-        topic_name = spinalcase(model.name)
+        topic_name = spinalcase(model.config.id)
         topic_name = topic_name.lower()
         topic_name = "".join([c for c in topic_name if str.isalnum(c) or c == "-"])
         return topic_name
