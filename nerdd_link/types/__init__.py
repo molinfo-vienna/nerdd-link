@@ -142,6 +142,8 @@ class JobMessage(Message):
     job_type: str
     source_id: str
     params: Dict[str, Any]
+    max_num_molecules: Optional[int] = None
+    checkpoint_size: Optional[int] = None
 
     topic_config: ClassVar[TopicConfig] = TopicConfig(key_fields=["id", "job_type"])
 
