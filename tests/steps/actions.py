@@ -8,27 +8,10 @@ from nerdd_link.actions import (PredictCheckpointsAction, ProcessJobsAction,
 from nerdd_link.tests import async_step
 
 
-@given(
-    parsers.parse("the maximum number of molecules is {value:d}"),
-    target_fixture="max_num_molecules",
-)
-def max_num_molecules(value):
-    return value
-
-
-@given(
-    parsers.parse("the checkpoint size is {value:d}"), target_fixture="checkpoint_size"
-)
-def checkpoint_size(value):
-    return value
-
-
 @pytest_asyncio.fixture(scope="function")
-async def process_job_action(channel, checkpoint_size, max_num_molecules, data_dir):
+async def process_job_action(channel, data_dir):
     action = ProcessJobsAction(
         channel=channel,
-        max_num_molecules=max_num_molecules,
-        checkpoint_size=checkpoint_size,
         data_dir=data_dir,
         num_test_entries=10,
         ratio_valid_entries=0.5,
