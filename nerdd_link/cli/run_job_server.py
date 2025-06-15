@@ -25,11 +25,6 @@ logger = logging.getLogger(__name__)
     help="Broker url to connect to.",
 )
 @click.option(
-    "--max-num-molecules",
-    default=10_000,
-    help="Maximum number of molecules in a job to process.",
-)
-@click.option(
     "--num-test-entries",
     default=10,
     help="Number of entries to use for guessing the format of the input file.",
@@ -55,11 +50,6 @@ logger = logging.getLogger(__name__)
     help="Directory containing structure files associated with the incoming jobs.",
 )
 @click.option(
-    "--checkpoint-size",
-    default=100,
-    help="Number of input entries that are put in a checkpoint file.",
-)
-@click.option(
     "--log-level",
     default="info",
     type=click.Choice(["debug", "info", "warning", "error", "critical"], case_sensitive=False),
@@ -71,14 +61,12 @@ async def run_job_server(
     channel: str,
     broker_url: str,
     # reading options for DepthFirstExplorer
-    max_num_molecules: int,
     num_test_entries: int,
     ratio_valid_entries: float,
     maximum_depth: int,
     # reading options for readers
     max_num_lines_mol_block: int,
     data_dir: str,
-    checkpoint_size: int,
     # log level
     log_level: str,
 ) -> None:
@@ -90,8 +78,6 @@ async def run_job_server(
 
     action = ProcessJobsAction(
         channel_instance,
-        checkpoint_size,
-        max_num_molecules,
         num_test_entries,
         ratio_valid_entries,
         maximum_depth,

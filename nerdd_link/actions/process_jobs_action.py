@@ -29,8 +29,6 @@ class ProcessJobsAction(Action[JobMessage]):
     def __init__(
         self,
         channel: Channel,
-        checkpoint_size: int,
-        max_num_molecules: int,
         num_test_entries: int,
         ratio_valid_entries: float,
         maximum_depth: int,
@@ -38,9 +36,6 @@ class ProcessJobsAction(Action[JobMessage]):
         data_dir: str,
     ) -> None:
         super().__init__(channel.jobs_topic())
-        # relevant for chunking
-        self._checkpoint_size = checkpoint_size
-        self._max_num_molecules = max_num_molecules
         # parameters of DepthFirstExplorer
         self._num_test_entries = num_test_entries
         self._ratio_valid_entries = ratio_valid_entries
@@ -52,6 +47,10 @@ class ProcessJobsAction(Action[JobMessage]):
     async def _process_message(self, message: JobMessage) -> None:
         job_id = message.id
         job_type = message.job_type
+        max_num_molecules = (
+            message.max_num_molecules if message.max_num_molecules is not None else 10_000
+        )
+        checkpoint_size = message.checkpoint_size if message.checkpoint_size is not None else 100
         logger.info(f"Received a new job {job_id} of type {job_type}")
 
         # the input file to the job is stored in a designated sources directory
@@ -78,12 +77,12 @@ class ProcessJobsAction(Action[JobMessage]):
         # iterate through the entries
         # create batches of size checkpoint_size
         # limit the number of molecules to max_num_molecules
-        batches = batched(entries, self._checkpoint_size)
+        batches = batched(entries, checkpoint_size)
         num_entries = 0
         num_checkpoints = 0
         for i, batch in enumerate(batches):
             # max_num_molecules might be reached within the batch
-            num_store = min(len(batch), self._max_num_molecules - num_entries)
+            num_store = min(len(batch), max_num_molecules - num_entries)
 
             # store batch in data_dir
             with self._file_system.get_checkpoint_file_handle(job_id, i, "wb") as f:
@@ -117,7 +116,7 @@ class ProcessJobsAction(Action[JobMessage]):
             num_entries += num_store
             num_checkpoints += 1
 
-            if num_entries >= self._max_num_molecules:
+            if num_entries >= max_num_molecules:
                 break
 
         logger.info(f"Wrote {i + 1} checkpoints containing {num_entries} entries for job {job_id}")
@@ -140,8 +139,8 @@ class ProcessJobsAction(Action[JobMessage]):
                     message_type="warning",
                     message=(
                         f"The provided job contains more than "
-                        f"{self._max_num_molecules} input structures. Only the "
-                        f"first {self._max_num_molecules} will be processed."
+                        f"{max_num_molecules} input structures. Only the "
+                        f"first {max_num_molecules} will be processed."
                     ),
                 )
             )
