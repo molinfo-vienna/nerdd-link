@@ -59,20 +59,32 @@ class TopicWriter(Writer):
             if k not in self._large_properties:
                 return v
 
+            #
             # store large properties (images, molecules) on disk
-            file_path = self._file_system.get_property_file_path(
-                job_id=self._job_id, property_name=k, record_id=record_id
-            )
+            #
 
-            # never store molecular properties in a file more than once (other than for sub_id = 0)
-            if k in self._molecular_properties and sub_id is not None and sub_id > 0:
-                return f"file://{file_path}"
+            # we store molecular properties exactly once and reference them in sub records
+            # -> if the property is a molecular property, we store the value in <mol_id>
+            #    and otherwise in <mol_id>-<sub_id>
+            if k in self._molecular_properties:
+                file_path = self._file_system.get_property_file_path(
+                    job_id=self._job_id, property_name=k, record_id=str(record["mol_id"])
+                )
+            else:
+                file_path = self._file_system.get_property_file_path(
+                    job_id=self._job_id, property_name=k, record_id=record_id
+                )
 
-            with open(file_path, "wb") as f:
-                if isinstance(v, bytes):
-                    f.write(v)
-                else:
-                    f.write(str(v).encode("utf-8"))
+            # write the property to a file
+            # case 1: atomic or derivative properties (k not in self._molecular_properties)
+            # case 2: molecular properties in molecular property prediction (sub_id = None)
+            # case 3: molecular properties in atom / derivative property prediction (sub_id = 0)
+            if k not in self._molecular_properties or sub_id is None or sub_id == 0:
+                with open(file_path, "wb") as f:
+                    if isinstance(v, bytes):
+                        f.write(v)
+                    else:
+                        f.write(str(v).encode("utf-8"))
 
             return f"file://{file_path}"
 
