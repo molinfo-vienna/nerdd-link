@@ -12,7 +12,7 @@ license-files = ["LICENSE"]
 authors = [{ name = "Steffen Hirte", email = "steffen.hirte@univie.ac.at" }]
 maintainers = [{ name = "Steffen Hirte", email = "steffen.hirte@univie.ac.at" }]
 dependencies = [
-    "nerdd-module>=0.3.36",
+    "nerdd-module>=0.3.38",
     "pandas>=1.2.1",
     "pyyaml~=6.0",
     "filetype~=1.2.0",
