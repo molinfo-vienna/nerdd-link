@@ -1,7 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
 from asyncio import CancelledError
-from typing import Generic, List, TypeVar, Union
+from typing import Generic, TypeVar
 
 from stringcase import spinalcase
 
