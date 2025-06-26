@@ -1,6 +1,7 @@
 import asyncio
 import concurrent.futures
 import logging
+import time
 from asyncio import Queue
 
 from nerdd_module import SimpleModel
@@ -30,6 +31,9 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         job_id = message.job_id
         checkpoint_id = message.checkpoint_id
         params = message.params
+
+        # Track the time it takes to process the message
+        start_time = time.time()
 
         logger.info(f"Predict checkpoint {checkpoint_id} of job {job_id}")
 
@@ -75,8 +79,14 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
                     await self.channel.results_topic().send(ResultMessage(job_id=job_id, **record))
                 else:
                     # None indicates the end of the queue (end of the prediction)
+                    end_time = time.time()
+
                     await self.channel.result_checkpoints_topic().send(
-                        ResultCheckpointMessage(job_id=job_id, checkpoint_id=checkpoint_id)
+                        ResultCheckpointMessage(
+                            job_id=job_id,
+                            checkpoint_id=checkpoint_id,
+                            elapsed_time_seconds=int(end_time - start_time),
+                        )
                     )
                     break
 
