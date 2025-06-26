@@ -1,6 +1,25 @@
 # CHANGELOG
 
 
+## v0.3.0 (2025-06-26)
+
+### Features
+
+* feat: Measure checkpoint processing time ([`75eba1c`](https://github.com/molinfo-vienna/nerdd-link/commit/75eba1c5c44f8cb0dca06a228d0a5c84b6b6ce5a))
+
+### Testing
+
+* test: Fix pytest-asyncio version for now ([`290256f`](https://github.com/molinfo-vienna/nerdd-link/commit/290256f01447c75559daddf67077611698bedb7d))
+
+* test: Ignore measured processing time in unit tests ([`71036c0`](https://github.com/molinfo-vienna/nerdd-link/commit/71036c0f4bfdb873d118fc63e5cc7eb01b58088d))
+
+### Unknown
+
+* Merge pull request #50 from shirte/main
+
+feat: Measure checkpoint processing time ([`43e2b9a`](https://github.com/molinfo-vienna/nerdd-link/commit/43e2b9a5f16c3005dd72f1c10df9e7e6c823ef44))
+
+
 ## v0.2.27 (2025-05-23)
 
 ### Unknown
