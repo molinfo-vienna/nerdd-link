@@ -1,6 +1,51 @@
 # CHANGELOG
 
 
+## v0.4.0 (2025-06-28)
+
+### Code Style
+
+* style: Make ruff happy on test files ([`ac16404`](https://github.com/molinfo-vienna/nerdd-link/commit/ac16404f6a78d3c815e28480031416ac4522f971))
+
+### Features
+
+* feat: Add tombstone messages ([`14df516`](https://github.com/molinfo-vienna/nerdd-link/commit/14df5166b57de3f8f3066529c39ca1dd4733fb29))
+
+### Fixes
+
+* fix: Let SerializeJobAction handle tombstones ([`67ae451`](https://github.com/molinfo-vienna/nerdd-link/commit/67ae451c827a3616fc518bba97a065bbe7739655))
+
+* fix: Let ProcessJobAction handle tombstones ([`f92872e`](https://github.com/molinfo-vienna/nerdd-link/commit/f92872ee529d0267f9cb97fd3cef70d787c55773))
+
+* fix: Let PredictCheckpointAction handle tombstones ([`d17bd94`](https://github.com/molinfo-vienna/nerdd-link/commit/d17bd94d4c07bdeddcee4d05e118c70d953efe8d))
+
+* fix: Let action class distinguish tombstones from messages ([`f7cd6b1`](https://github.com/molinfo-vienna/nerdd-link/commit/f7cd6b14b0d0fdf5cb34dcd6910e8971ffc4bd27))
+
+* fix: Add methods for iterating over checkpoint files ([`f4c3c4a`](https://github.com/molinfo-vienna/nerdd-link/commit/f4c3c4abcb26d1ef22ae983cf4adaf232ec352d8))
+
+* fix: Remove key_serializer in producer ([`a8686c6`](https://github.com/molinfo-vienna/nerdd-link/commit/a8686c61654d3047a27c8e7f4ddf5d32e88d760e))
+
+* fix: Handle errors when decoding message keys ([`4dfd12c`](https://github.com/molinfo-vienna/nerdd-link/commit/4dfd12c8fb31e2af7e65d5363694d62ae874cefb))
+
+* fix: Decouple channel implementations from Message classes ([`27bd7b1`](https://github.com/molinfo-vienna/nerdd-link/commit/27bd7b1386450dc6674faacf9d28219ea0de1a15))
+
+* fix: Enable receiving and sending tombstones ([`e0a66f9`](https://github.com/molinfo-vienna/nerdd-link/commit/e0a66f9af1eed4332f761d962f117a657a7ae427))
+
+* fix: Add typing-extensions dependency for old versions of Python ([`e3984f7`](https://github.com/molinfo-vienna/nerdd-link/commit/e3984f7b204053fc82a5b77ebf7dd66825940a54))
+
+### Testing
+
+* test: Add new tests for tombstones ([`b559a83`](https://github.com/molinfo-vienna/nerdd-link/commit/b559a8374ae9656426870ea67c636da17b15a8f9))
+
+* test: Adapt tests to tombstone messages ([`ea87ac5`](https://github.com/molinfo-vienna/nerdd-link/commit/ea87ac5f237355563ce5da5bf31d619d51709417))
+
+### Unknown
+
+* Merge pull request #51 from shirte/main
+
+Implement tombstone messages ([`8adf3cb`](https://github.com/molinfo-vienna/nerdd-link/commit/8adf3cbf5af406b159885605d96f036000b9c26c))
+
+
 ## v0.3.0 (2025-06-26)
 
 ### Features
