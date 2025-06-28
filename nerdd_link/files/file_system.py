@@ -1,5 +1,6 @@
 import os
-from typing import IO, Iterator, Union
+from glob import glob
+from typing import IO, Iterator, Tuple, Union
 
 __all__ = ["FileSystem"]
 
@@ -90,8 +91,18 @@ class FileSystem:
     def get_output_file_handle(self, job_id: str, output_format: str, mode: str) -> IO:
         return _get_handle_and_create_dirs(self.get_output_file(job_id, output_format), mode)
 
+    def iter_checkpoint_file_paths(self, job_id: str) -> Iterator[Tuple[int, str]]:
+        for path in glob(os.path.join(self.get_input_dir(job_id), "checkpoint_*.pickle")):
+            basename = os.path.basename(path)
+            checkpoint_id = basename[len("checkpoint_") : -len(".pickle")]
+            yield int(checkpoint_id), path
+
+    def iter_results_file_paths(self, job_id: str) -> Iterator[Tuple[int, str]]:
+        for path in glob(os.path.join(self.get_results_dir(job_id), "checkpoint_*.pickle")):
+            basename = os.path.basename(path)
+            checkpoint_id = basename[len("checkpoint_") : -len(".pickle")]
+            yield int(checkpoint_id), path
+
     def iter_results_file_handles(self, job_id: str, mode: str = "rb") -> Iterator[IO]:
-        i = 0
-        while os.path.exists(self.get_results_file_path(job_id, i)):
-            yield self.get_results_file_handle(job_id, i, mode)
-            i += 1
+        for _, file_path in self.iter_results_file_paths(job_id):
+            yield _get_handle_and_create_dirs(file_path, mode)

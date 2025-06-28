@@ -15,14 +15,14 @@ async def test_consumer_groups_in_memory_channel():
         # check that the message is received by both consumer groups
         #
         i = 0
-        async for _ in channel.iter_messages("topic", "group1"):
+        async for _ in channel.iter_messages("topic", "group1", Message):
             i += 1
             break
 
         assert i == 1
 
         i = 0
-        async for _ in channel.iter_messages("topic", "group2"):
+        async for _ in channel.iter_messages("topic", "group2", Message):
             i += 1
             break
 
@@ -32,7 +32,7 @@ async def test_consumer_groups_in_memory_channel():
         # check that the message is not received again
         #
         async def _receive():
-            async for _ in channel.iter_messages("topic", "group2"):
+            async for _ in channel.iter_messages("topic", "group2", Message):
                 return
 
         # the call to _receive should timeout

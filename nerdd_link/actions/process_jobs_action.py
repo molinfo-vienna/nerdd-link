@@ -1,4 +1,5 @@
 import logging
+import os
 from pickle import dump
 from typing import Any
 
@@ -9,7 +10,7 @@ from rdkit.Chem.PropertyMol import PropertyMol
 
 from ..channels import Channel
 from ..files import FileSystem
-from ..types import CheckpointMessage, JobMessage, LogMessage
+from ..types import CheckpointMessage, JobMessage, LogMessage, Tombstone
 from ..utils import batched
 from .action import Action
 
@@ -154,3 +155,23 @@ class ProcessJobsAction(Action[JobMessage]):
                 num_checkpoints=num_checkpoints,
             )
         )
+
+    async def _process_tombstone(self, message: Tombstone[JobMessage]) -> None:
+        job_id = message.id
+        job_type = message.job_type
+        logger.info(f"Received a tombstone for job {job_id}")
+
+        for i, path in self._file_system.iter_checkpoint_file_paths(job_id):
+            await self.channel.checkpoints_topic(job_type).send(
+                Tombstone(
+                    CheckpointMessage,
+                    job_id=job_id,
+                    checkpoint_id=i,
+                )
+            )
+
+            # delete the checkpoint file if it exists
+            # note: it is important that we delete the file at the end of the loop, because we don't
+            # want to delete the file without propagating the tombstone first
+            if os.path.exists(path):
+                os.remove(path)

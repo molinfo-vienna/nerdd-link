@@ -6,7 +6,7 @@ from typing import Generic, TypeVar
 from stringcase import spinalcase
 
 from ..channels import Channel, Topic
-from ..types import Message
+from ..types import Message, Tombstone
 
 logger = logging.getLogger(__name__)
 
@@ -21,16 +21,32 @@ class Action(ABC, Generic[T]):
         consumer_group = spinalcase(self._get_group_name())
         async for message in self._input_topic.receive(consumer_group):
             try:
-                await self._process_message(message)
+                if isinstance(message, Tombstone):
+                    await self._process_tombstone(message)
+                else:
+                    await self._process_message(message)
             except CancelledError:
                 # the consumer was cancelled, stop processing messages
                 break
-            except Exception:
-                # log the error and continue processing the next message
-                logger.error("Error processing message", exc_info=True)
+            except Exception as e:
+                # If any exception is raised in _process_message, we will stop processing messages.
+                # Especially, the message won't be committed.
+                logger.exception(
+                    "An error occurred while processing message %s: %s",
+                    message,
+                    e,
+                )
+                raise
+
+    async def _process_messages(self, messages: list[T]) -> None:
+        for message in messages:
+            await self._process_message(message)
 
     @abstractmethod
     async def _process_message(self, message: T) -> None:
+        pass
+
+    async def _process_tombstone(self, message: Tombstone[T]) -> None:
         pass
 
     @property
