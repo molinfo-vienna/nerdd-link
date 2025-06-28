@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.4.1 (2025-06-28)
+
+### Fixes
+
+* fix: Use SPDX license expression ([`9c3a0a1`](https://github.com/molinfo-vienna/nerdd-link/commit/9c3a0a1ffcab1e23a6c1f968629eaf7ce6448e55))
+
+### Unknown
+
+* Merge pull request #52 from shirte/main
+
+fix: Use SPDX license expression ([`f2d0934`](https://github.com/molinfo-vienna/nerdd-link/commit/f2d0934023c1d9d88dcc53f5652b9eb0f6d77c8f))
+
+
 ## v0.4.0 (2025-06-28)
 
 ### Code Style
