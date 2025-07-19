@@ -2,7 +2,7 @@ from typing import Any
 from xml.dom import Node, minidom
 
 from nerdd_module import Converter, ConverterConfig
-from rdkit.Chem import KekulizeException, Mol
+from rdkit.Chem import AllChem, KekulizeException, Mol
 from rdkit.Chem.Draw import MolDraw2DSVG
 
 __all__ = ["MolToImageConverter"]
@@ -21,11 +21,14 @@ class MolToImageConverter(Converter):
         if height is None:
             height = default_height
 
-        mol = input
-        if mol is None:
+        if input is None:
             return None
 
-        assert isinstance(mol, Mol), f"Expected RDKit Mol object, but got {type(mol)}"
+        assert isinstance(input, Mol), f"Expected RDKit Mol object, but got {type(input)}"
+
+        # clean up 2d coordinates
+        mol = Mol(input)  # create a copy to avoid modifying the input molecule
+        AllChem.Compute2DCoords(mol, clearConfs=True)
 
         # If the module does atom property prediction, the user should be able to hover over the
         # preprocessed molecule and interactively select atoms.
