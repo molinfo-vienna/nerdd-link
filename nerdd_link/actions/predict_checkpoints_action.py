@@ -5,7 +5,7 @@ import os
 import time
 from asyncio import Queue
 
-from nerdd_module import SimpleModel
+from nerdd_module import Model
 
 from ..channels import Channel
 from ..delegates import ReadCheckpointModel
@@ -23,7 +23,7 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
     # (generated in the previous step) and process them. Results are written to
     # the "results" topic.
 
-    def __init__(self, channel: Channel, model: SimpleModel, data_dir: str) -> None:
+    def __init__(self, channel: Channel, model: Model, data_dir: str) -> None:
         super().__init__(channel.checkpoints_topic(model))
         self._model = model
         self.file_system = FileSystem(data_dir)

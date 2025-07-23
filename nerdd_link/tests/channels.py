@@ -4,7 +4,7 @@ from ast import literal_eval
 import pytest_asyncio
 from pytest_bdd import parsers, then, when
 
-from nerdd_link import (JobMessage, MemoryChannel, Message,
+from nerdd_link import (JobMessage, MemoryChannel, Message, ModuleMessage,
                         ResultCheckpointMessage, SerializationRequestMessage,
                         SystemMessage, Tombstone)
 
@@ -22,6 +22,8 @@ def get_message_type_from_topic(topic: str) -> type[Message]:
         return SystemMessage
     elif topic == "serialization-requests":
         return SerializationRequestMessage
+    elif topic == "modules":
+        return ModuleMessage
     else:
         raise ValueError(f"Unknown topic: {topic}")
 
