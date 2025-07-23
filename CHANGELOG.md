@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.4.2 (2025-07-23)
+
+### Fixes
+
+* fix: Replace all large properties with file paths ([`956f016`](https://github.com/molinfo-vienna/nerdd-link/commit/956f0166f6b7164acf481cb23bf62babc4fc3d92))
+
+### Unknown
+
+* Merge pull request #53 from shirte/main
+
+fix: Replace all large properties with file paths ([`f6b0e45`](https://github.com/molinfo-vienna/nerdd-link/commit/f6b0e4551a7403fae48a571cc25cab1108e4a19c))
+
+
 ## v0.4.1 (2025-06-28)
 
 ### Fixes
