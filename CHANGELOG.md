@@ -1,6 +1,25 @@
 # CHANGELOG
 
 
+## v0.4.4 (2025-07-23)
+
+### Fixes
+
+* fix: Derive from Model base class (instead of SimpleModel) ([`66e0021`](https://github.com/molinfo-vienna/nerdd-link/commit/66e0021b75ddbc1552c9328abcae665e9b692068))
+
+* fix: Bump version of nerdd-module ([`04c7869`](https://github.com/molinfo-vienna/nerdd-link/commit/04c7869504f6239c11d14ec745a22d16e1aeb7ba))
+
+### Testing
+
+* test: Process module messages in tests ([`343cf6d`](https://github.com/molinfo-vienna/nerdd-link/commit/343cf6dd2d4305c98bb450ec589208e8ce0d82b3))
+
+### Unknown
+
+* Merge pull request #55 from shirte/main
+
+Adapt to most recent version of nerdd-module ([`b43b0cc`](https://github.com/molinfo-vienna/nerdd-link/commit/b43b0cce1462a86ad6f89afa63d052d02f45ecc2))
+
+
 ## v0.4.3 (2025-07-23)
 
 ### Fixes
