@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.4.3 (2025-07-23)
+
+### Fixes
+
+* fix: Simplify logic for writing property files ([`2d0f785`](https://github.com/molinfo-vienna/nerdd-link/commit/2d0f785ee3348bb20a5c8593394bb9c99912392e))
+
+### Unknown
+
+* Merge pull request #54 from shirte/main
+
+fix: Simplify logic for writing property files ([`ff85b7b`](https://github.com/molinfo-vienna/nerdd-link/commit/ff85b7b8979f790b641568d8b623f5b8854f807c))
+
+
 ## v0.4.2 (2025-07-23)
 
 ### Fixes
