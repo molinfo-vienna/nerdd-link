@@ -1,6 +1,33 @@
 # CHANGELOG
 
 
+## v0.5.0 (2025-07-24)
+
+### Features
+
+* feat: Add fields max_num_molecules and checkpoint_size to JobMessage ([`20528d3`](https://github.com/molinfo-vienna/nerdd-link/commit/20528d3c8a2b574b9f5fb6688798098d81fc4532))
+
+### Fixes
+
+* fix: Make ruff happy ([`6c667ce`](https://github.com/molinfo-vienna/nerdd-link/commit/6c667cec54fc60c7cd113aca8fbdd81a617b786f))
+
+* fix: Uncomment batching code ([`94d4866`](https://github.com/molinfo-vienna/nerdd-link/commit/94d48663b27929945561cbfcc336e3e6fdbae076))
+
+* fix: Remove max_num_molecules and checkpoint_size from CLI args ([`7df8e5a`](https://github.com/molinfo-vienna/nerdd-link/commit/7df8e5a0e1a790719b6fd2b538f023e66ae4f6b1))
+
+### Testing
+
+* test: Adapt test features ([`83d499d`](https://github.com/molinfo-vienna/nerdd-link/commit/83d499d6791afb20c2e742db8af1930a4db50ad3))
+
+* test: Adapt test action fixture ([`1055a2c`](https://github.com/molinfo-vienna/nerdd-link/commit/1055a2c586b7ecf93edc376fd2ec052a1ffd5bdf))
+
+### Unknown
+
+* Merge pull request #56 from shirte/main
+
+Add additional fields to JobMessage for controlling job size ([`aaf701b`](https://github.com/molinfo-vienna/nerdd-link/commit/aaf701b7afc56e384067334ffa788a308b577cf8))
+
+
 ## v0.4.4 (2025-07-23)
 
 ### Fixes
