@@ -38,9 +38,12 @@ class Action(ABC, Generic[T]):
                 )
                 raise
 
-    async def _process_messages(self, messages: list[T]) -> None:
-        for message in messages:
-            await self._process_message(message)
+    # async def _process_messages(self, messages: List[Union[T, Tombstone[T]]]) -> None:
+    #     for message in messages:
+    #         if isinstance(message, Tombstone):
+    #             await self._process_tombstone(message)
+    #         else:
+    #             await self._process_message(message)
 
     @abstractmethod
     async def _process_message(self, message: T) -> None:

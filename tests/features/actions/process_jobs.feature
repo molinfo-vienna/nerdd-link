@@ -4,12 +4,17 @@ Feature: Process job action
     Given a temporary data directory
     And a list of 100 random molecules
     And a file 'sources/456' with the molecules in format 'sdf'
-    
-    And the checkpoint size is 40
-    And the maximum number of molecules is 10000
 
     When the channel receives a message on topic 'jobs' with content
-        { "id": "123", "job_type": "mol-scale", "source_id": "456", "params": { "multiplier": 10 } }
+        { 
+            "id": "123", 
+            "job_type": 
+            "mol-scale", 
+            "source_id": "456", 
+            "params": { "multiplier": 10 },
+            "max_num_molecules": 10000,
+            "checkpoint_size": 40
+        }
     And the process job action is executed
 
     # files
@@ -31,12 +36,17 @@ Feature: Process job action
     Given a temporary data directory
     And a list of 100 random molecules
     And a file 'sources/456' with the molecules in format 'sdf'
-    
-    And the checkpoint size is 100
-    And the maximum number of molecules is 10
 
     When the channel receives a message on topic 'jobs' with content
-        { "id": "123", "job_type": "mol-scale", "source_id": "456", "params": { "multiplier": 10 } }
+        { 
+            "id": "123", 
+            "job_type": 
+            "mol-scale", 
+            "source_id": "456", 
+            "params": { "multiplier": 10 },
+            "max_num_molecules": 10,
+            "checkpoint_size": 100
+        }
     And the process job action is executed
 
     # files
