@@ -91,9 +91,23 @@ class TopicWriter(Writer):
         return {k: _r(k) for k, v in record.items()}
 
     def write(self, records: Iterable[dict]) -> None:
+        job_id = self._job_id
         for record in records:
             # store large properties (images, molecules) on disk
             modified_record = self._replace_properties(record)
+
+            # generate an id for the result
+            mol_id = record["mol_id"]
+            if "atom_id" in modified_record:
+                atom_id = record["atom_id"]
+                id = f"{job_id}-{mol_id}-{atom_id}"
+            elif "derivative_id" in record:
+                derivative_id = record["derivative_id"]
+                id = f"{job_id}-{mol_id}-{derivative_id}"
+            else:
+                id = f"{job_id}-{mol_id}"
+
+            modified_record["id"] = id
 
             run_coroutine_threadsafe(self._queue.put(modified_record), self._loop)
 
