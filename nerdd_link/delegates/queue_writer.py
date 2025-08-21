@@ -6,10 +6,10 @@ from nerdd_module.config import Module
 
 from ..files import FileSystem
 
-__all__ = ["TopicWriter"]
+__all__ = ["QueueWriter"]
 
 
-class TopicWriter(Writer):
+class QueueWriter(Writer):
     def __init__(
         self,
         config: Module,
