@@ -1,7 +1,7 @@
 import json
 import logging
 from asyncio import Lock
-from typing import AsyncIterable, Dict, Optional, Tuple
+from typing import AsyncIterable, Dict, List, Optional, Tuple
 
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 from aiokafka.errors import CommitFailedError
@@ -36,8 +36,8 @@ class KafkaChannel(Channel):
             await consumer.stop()
 
     async def _iter_messages(
-        self, topic: str, consumer_group: str
-    ) -> AsyncIterable[Tuple[Optional[tuple], Optional[dict]]]:
+        self, topic: str, consumer_group: str, batch_size: int = 1
+    ) -> AsyncIterable[List[Tuple[Optional[tuple], Optional[dict]]]]:
         consumer_key = (topic, consumer_group)
 
         if consumer_key not in self._consumers:
@@ -50,7 +50,7 @@ class KafkaChannel(Channel):
                     group_id=consumer_group,
                     enable_auto_commit=False,
                     # consume only one message at a time
-                    max_poll_records=1,
+                    max_poll_records=batch_size,
                     # max_poll_interval_ms: Time between polls (in milliseconds) before the consumer
                     # is considered dead. Prediction tasks can take a long time, so we set this to 1
                     # hour.
@@ -75,24 +75,39 @@ class KafkaChannel(Channel):
         consumer = self._consumers[consumer_key]
 
         try:
-            async for message in consumer:
-                if message.key is None:
-                    key = None
-                else:
-                    try:
-                        message_key: list = json.loads(message.key)
-                    except json.JSONDecodeError:
-                        # if we can't decode the key as JSON, we assume it is a single string
-                        message_key = [message.key.decode("utf-8")]
-                    key = tuple(message_key)
+            while True:
+                # use timeout of 500ms (default value of the async iterator of AIOKafkaConsumer)
+                batch = await consumer.getmany(timeout_ms=500)
+                key_value_pairs = []
+                for _, messages in batch.items():
+                    for message in messages:
+                        if message.key is None:
+                            key = None
+                        else:
+                            try:
+                                message_key: list = json.loads(message.key)
+                            except json.JSONDecodeError:
+                                # if we can't decode the key as JSON, we assume it is a string
+                                message_key = [message.key.decode("utf-8")]
+                            key = tuple(message_key)
 
-                # distinguish tombstoned records by checking if value is None
-                if message.value is None:
-                    value = None
-                else:
-                    value = json.loads(message.value)
+                        # distinguish tombstoned records by checking if value is None
+                        if message.value is None:
+                            value = None
+                        else:
+                            value = json.loads(message.value)
 
-                yield key, value
+                        key_value_pairs.append((key, value))
+
+                if len(key_value_pairs) == 0:
+                    continue
+
+                try:
+                    yield key_value_pairs
+                except Exception as e:
+                    logger.error(f"Error while yielding messages: {e}")
+                    # do not commit the message, but retry
+                    continue
 
                 try:
                     await consumer.commit()
@@ -100,34 +115,6 @@ class KafkaChannel(Channel):
                     logger.error(f"Commit failed: {e}... trying again.")
         finally:
             await consumer.stop()
-
-        # try:
-        #     while True:
-        #         # we use polling (instead of iterating through the consumer messages)
-        #         # to be able to cancel the consumer
-        #         messages = await self.kafka_consumer.getmany(timeout_ms=1000)
-
-        #         if messages:
-        #             for _, message_list in messages.items():
-        #                 for message in message_list:
-        #                     result = json.loads(message.value)
-        #                     logger.info(f"Received message on {message.topic}")
-
-        #                     try:
-        #                         for consumer in self.consumers:
-        #                             await consumer.consume(result)
-
-        #                         logger.info("Committing message")
-        #                         await self.kafka_consumer.commit()
-        #                     except Exception:
-        #                         logger.info("Rolling back message")
-        #                         logger.error(traceback.format_exc())
-        # except asyncio.CancelledError:
-        #     logger.info("Stopping ConsumeKafkaTopicLifespan")
-        #     await self.kafka_consumer.stop()
-        # except Exception as e:
-        #     logger.error(e)
-        #     logger.error(traceback.format_exc())
 
     async def _send(self, topic: str, key: Optional[tuple], value: Optional[dict]) -> None:
         if key is None:
