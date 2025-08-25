@@ -4,6 +4,7 @@ from asyncio import Lock
 from typing import AsyncIterable, Dict, List, Optional, Tuple
 
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
+from aiokafka.coordinator.assignors.sticky.sticky_assignor import StickyPartitionAssignor
 from aiokafka.errors import CommitFailedError
 
 from .channel import Channel
@@ -62,6 +63,9 @@ class KafkaChannel(Channel):
                     # coordinator when using Kafka's group management facilities. The recommended
                     # value is 1/3 of session_timeout_ms, so we set this to 20 seconds.
                     heartbeat_interval_ms=20_000,
+                    # use cooperative sticky assignor to avoid being kicked out of the group during
+                    # rebalances (-> decreases probability to interrupt long-running tasks)
+                    partition_assignment_strategy=(StickyPartitionAssignor,),
                 )
 
                 logger.info(
