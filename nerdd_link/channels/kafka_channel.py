@@ -55,6 +55,13 @@ class KafkaChannel(Channel):
                     # is considered dead. Prediction tasks can take a long time, so we set this to 1
                     # hour.
                     max_poll_interval_ms=60 * 60 * 1000,
+                    # session_timeout_ms: The timeout used to detect failures when using Kafka's
+                    # group management. We set this to 1 minute.
+                    session_timeout_ms=60_000,
+                    # heartbeat_interval_ms: The expected time between heartbeats to the consumer
+                    # coordinator when using Kafka's group management facilities. The recommended
+                    # value is 1/3 of session_timeout_ms, so we set this to 20 seconds.
+                    heartbeat_interval_ms=20_000,
                 )
 
                 logger.info(
