@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.5.2 (2025-08-27)
+
+### Fixes
+
+* fix: Increase heartbeat and session timeout ([`7156c25`](https://github.com/molinfo-vienna/nerdd-link/commit/7156c259c42f16d71d77766d11423a1b82a7ea4f))
+
+### Unknown
+
+* Merge pull request #58 from shirte/main
+
+fix: Increase heartbeat and session timeout ([`cf67536`](https://github.com/molinfo-vienna/nerdd-link/commit/cf67536e544e079064a8edf335515c67bbda02f5))
+
+
 ## v0.5.1 (2025-08-27)
 
 ### Fixes
