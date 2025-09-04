@@ -1,0 +1,34 @@
+FROM mambaorg/micromamba:2.0.5
+
+# necessary to display the image on Github
+LABEL org.opencontainers.image.source="https://github.com/molinfo-vienna/nerdd-link"
+
+# using the root user during the build stage
+USER root
+
+# keep Docker from buffering the output so we can see the output of the application in real-time
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install wget -qq
+
+# Copy only the environment file first so that we can cache the dependencies
+COPY environment_processing.yml requirements_processing.txt ./
+RUN --mount=type=cache,target=/root/.cache/pip \
+    micromamba env create -f environment_processing.yml && \
+    # Fix a problem with the RDKit installation
+    wget https://gist.githubusercontent.com/shirte/e1734e51dbc72984b2d918a71b68c25b/raw/ae4afece11980f5d7da9e7668a651abe349c357a/rdkit_installation_fix.sh && \
+    chmod +x rdkit_installation_fix.sh && \
+    micromamba run -n nerdd_process_jobs ./rdkit_installation_fix.sh nerdd_process_jobs && \
+    # install the pip dependencies
+    micromamba run -n nerdd_process_jobs pip install -r requirements_processing.txt
+
+# copy the rest of the source code directory and install the main package
+COPY . .
+RUN micromamba run -n nerdd_process_jobs pip install --no-deps -e .
+
+ENTRYPOINT micromamba run -n nerdd_process_jobs \
+    nerdd_job_server \
+    --broker-url $KAFKA_BROKER_URL \
+    --data-dir /data
