@@ -108,8 +108,8 @@ class KafkaChannel(Channel):
 
                 try:
                     yield key_value_pairs
-                except Exception as e:
-                    logger.error(f"Error while yielding messages: {e}")
+                except Exception:
+                    logger.error("Error while yielding messages", exc_info=True)
                     # do not commit the message, but retry
                     continue
 
@@ -118,7 +118,12 @@ class KafkaChannel(Channel):
                 except CommitFailedError as e:
                     logger.error(f"Commit failed: {e}... trying again.")
         finally:
-            await consumer.stop()
+            try:
+                await consumer.stop()
+            except Exception:
+                logger.error("Error while stopping consumer", exc_info=True)
+            finally:
+                self._consumers.pop(consumer_key, None)
 
     async def _send(self, topic: str, key: Optional[tuple], value: Optional[dict]) -> None:
         if key is None:
