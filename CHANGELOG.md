@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.5.3 (2025-09-08)
+
+### Fixes
+
+* fix: Compute new 2D coordinates before rendering a molecule ([`52dce38`](https://github.com/molinfo-vienna/nerdd-link/commit/52dce38954a6e891cf1b499f690530b8cbc6acfb))
+
+### Unknown
+
+* Merge pull request #59 from shirte/main
+
+fix: Compute new 2D coordinates before rendering a molecule ([`872ff2e`](https://github.com/molinfo-vienna/nerdd-link/commit/872ff2e51b40da68c0e4e30510133a899e9fa2eb))
+
+
 ## v0.5.2 (2025-08-27)
 
 ### Fixes
