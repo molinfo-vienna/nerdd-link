@@ -2,7 +2,7 @@ from functools import reduce
 from itertools import tee
 from queue import Queue
 from threading import Barrier, Lock, Thread
-from typing import Any, Iterator, List
+from typing import Any, Iterator, List, cast
 
 from nerdd_module import OutputStep, Step
 
@@ -42,33 +42,35 @@ class SplitAndMergeStep(OutputStep):
                 # continuing, because one thread might be faster than the others.
                 barrier.wait()
 
-        adapted_step_lists = [[sync_step, *steps] for steps in self._step_lists]
+        # concatenate the steps to form pipelines
+        for steps, source in zip(self._step_lists, source_copies):
+            # put the sync step at the beginning of each step list
+            synced_step_list = [sync_step, *steps]
+
+            # Concatenate the steps in each step list.
+            # e.g. reduce(..., [step1, step2, step3], source)
+            # --> step3(step2(step1(source)))
+            reduce(lambda x, y: y(x), synced_step_list, source)
+
+        for steps in self._step_lists:
+            assert isinstance(
+                steps[-1], OutputStep
+            ), "The last step in each step list must be an OutputStep."
+
+        output_steps = [cast(OutputStep, steps[-1]) for steps in self._step_lists]
 
         # When a thread throws an exception, it won't be caught by the main thread. That is why
         # we create an exception bucket and add the exceptions to it. The main thread will then
         # raise the first exception in the bucket.
         exception_bucket: Queue = Queue()
 
-        def _run_steps(steps: List[Step], source: Iterator[dict]) -> Any:
+        def _run_steps(output_step: OutputStep) -> Any:
             try:
-                assert len(steps) > 0, "There must be at least one step."
-
-                output_step = steps[-1]
-                assert isinstance(output_step, OutputStep), "The last step must be an OutputStep."
-
-                # Concatenate the steps in each step list.
-                # e.g. step_list = [step1, step2, step3]
-                # --> step3(step2(step1(source)))
-                reduce(lambda x, y: y(x), steps, source)
-
                 return output_step.get_result()
             except Exception as e:
                 exception_bucket.put(e)
 
-        threads = [
-            Thread(target=_run_steps, args=(step_list, source_copy))
-            for step_list, source_copy in zip(adapted_step_lists, source_copies)
-        ]
+        threads = [Thread(target=_run_steps, args=(output_step,)) for output_step in output_steps]
 
         for thread in threads:
             thread.start()
