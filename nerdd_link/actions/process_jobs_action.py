@@ -1,17 +1,14 @@
 import logging
 import os
-from pickle import dump
-from typing import Any
+from asyncio import get_running_loop
+from concurrent.futures import ThreadPoolExecutor
 
-from nerdd_module.input import DepthFirstExplorer
-from nerdd_module.model import ReadInputStep
-from rdkit.Chem import Mol
-from rdkit.Chem.PropertyMol import PropertyMol
+from nerdd_module import DepthFirstExplorer, OutputStep, ReadInputStep, WriteOutputStep
 
 from ..channels import Channel
 from ..files import FileSystem
-from ..types import CheckpointMessage, JobMessage, LogMessage, Tombstone
-from ..utils import batched
+from ..steps import WriteCheckpointsStep
+from ..types import CheckpointMessage, JobMessage, Tombstone
 from .action import Action
 
 __all__ = ["ProcessJobsAction"]
@@ -53,12 +50,6 @@ class ProcessJobsAction(Action[JobMessage]):
         checkpoint_size = message.checkpoint_size if message.checkpoint_size is not None else 100
         logger.info(f"Received a new job {job_id} of type {job_type}")
 
-        # the input file to the job is stored in a designated sources directory
-        # (the file is allowed to reference other files, but setting the data_dir
-        # to the sources directory ensures that we never read files outside of the
-        # sources directory)
-        data_dir = self._file_system.get_sources_dir()
-
         # create a reader (explorer) for the input file
         explorer = DepthFirstExplorer(
             num_test_entries=self._num_test_entries,
@@ -66,94 +57,53 @@ class ProcessJobsAction(Action[JobMessage]):
             maximum_depth=self._maximum_depth,
             # extra args
             max_num_lines_mol_block=self._max_num_lines_mol_block,
-            data_dir=data_dir,
+            # The input file to the job is stored in a designated sources directory. The file is
+            # allowed to reference other files, but setting the data_dir to the sources directory
+            # ensures that we never read files outside of the sources directory.
+            data_dir=self._file_system.get_sources_dir(),
         )
 
-        read_input_step = ReadInputStep(explorer, message.source_id)
+        loop = get_running_loop()
 
-        # read the input file
-        entries = read_input_step()
-
-        # iterate through the entries
-        # create batches of size checkpoint_size
-        # limit the number of molecules to max_num_molecules
-        batches = batched(entries, checkpoint_size)
-        num_entries = 0
-        num_checkpoints = 0
-        for i, batch in enumerate(batches):
-            # max_num_molecules might be reached within the batch
-            num_store = min(len(batch), max_num_molecules - num_entries)
-
-            # store batch in data_dir
-            with self._file_system.get_checkpoint_file_handle(job_id, i, "wb") as f:
-                results = list(batch[:num_store])
-
-                # TODO: use a model for storing the batches
-
-                # check all items for mol values and use PropertyMol for those
-                # in order to keep molecular properties (thanks, RDKit! :/ )
-                def _check_value(value: Any) -> Any:
-                    if isinstance(value, Mol):
-                        return PropertyMol(value)
-                    return value
-
-                def _check_item(item: dict) -> dict:
-                    return {key: _check_value(value) for key, value in item.items()}
-
-                results = [_check_item(item) for item in results]
-
-                dump(results, f)
-
-            # send a tuple to checkpoints topic
-            await self.channel.checkpoints_topic(job_type).send(
-                CheckpointMessage(
-                    job_id=job_id,
-                    checkpoint_id=i,
-                    params=message.params,
-                )
-            )
-
-            num_entries += num_store
-            num_checkpoints += 1
-
-            if num_entries >= max_num_molecules:
-                break
-
-        logger.info(f"Wrote {i + 1} checkpoints containing {num_entries} entries for job {job_id}")
-
-        # send a warning message if there were more molecules in the job than allowed
-        too_many_molecules = num_store < len(batch)
-        try:
-            # try to get another entry
-            next(entries)
-
-            # if we get here, there was another entry and we need to send a warning
-            too_many_molecules = True
-        except StopIteration:
-            pass
-
-        if too_many_molecules:
-            await self.channel.logs_topic().send(
-                LogMessage(
-                    job_id=job_id,
-                    message_type="warning",
-                    message=(
-                        f"The provided job contains more than "
-                        f"{max_num_molecules} input structures. Only the "
-                        f"first {max_num_molecules} will be processed."
-                    ),
-                )
-            )
-
-        # send a tuple to topic "logs" with the overall size of the job
-        await self.channel.logs_topic().send(
-            LogMessage(
+        # create a pipeline for reading and chunking the input
+        steps = [
+            # read the input file (given by source_id)
+            ReadInputStep(explorer, message.source_id),
+            # write checkpoints
+            WriteCheckpointsStep(
+                filesystem=self._file_system,
                 job_id=job_id,
-                message_type="report_job_size",
-                num_entries=num_entries,
-                num_checkpoints=num_checkpoints,
+                job_type=job_type,
+                checkpoint_size=checkpoint_size,
+                max_num_molecules=max_num_molecules,
+                params=message.params,
+            ),
+            # send messages to the corresponding topics
+            WriteOutputStep(
+                output_format="json",
+                config=None,
+                channel=self.channel,
+                loop=loop,
+            ),
+        ]
+
+        pipeline = None
+        for t in steps:
+            pipeline = t(pipeline)
+
+        output_step = steps[-1]
+        assert isinstance(output_step, OutputStep), "The last step must be an OutputStep."
+
+        # run the pipeline in a thread to not block the event loop
+        with ThreadPoolExecutor() as executor:
+            future = loop.run_in_executor(
+                executor,
+                output_step.get_result,
             )
-        )
+
+            # we don't need to look out for exceptions, because any exception raised in the thread
+            # will be re-raised by asyncio here
+            await future
 
     async def _process_tombstone(self, message: Tombstone[JobMessage]) -> None:
         job_id = message.id
