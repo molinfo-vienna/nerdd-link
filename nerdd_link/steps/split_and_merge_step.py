@@ -2,7 +2,7 @@ from functools import reduce
 from itertools import tee
 from queue import Queue
 from threading import Barrier, Lock, Thread
-from typing import Any, Iterator, List, cast
+from typing import Any, Callable, Iterator, List, cast
 
 from nerdd_module import OutputStep, Step
 
@@ -45,7 +45,7 @@ class SplitAndMergeStep(OutputStep):
         # concatenate the steps to form pipelines
         for steps, source in zip(self._step_lists, source_copies):
             # put the sync step at the beginning of each step list
-            synced_step_list = [sync_step, *steps]
+            synced_step_list: List[Callable[[Iterator[dict]], Iterator[dict]]] = [sync_step, *steps]
 
             # Concatenate the steps in each step list.
             # e.g. reduce(..., [step1, step2, step3], source)

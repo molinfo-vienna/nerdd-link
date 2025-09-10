@@ -11,6 +11,8 @@ class WrapResultsStep(Step):
     def __init__(self) -> None:
         super().__init__()
 
-    def _run(self, source: Optional[Iterator[dict]] = None) -> Iterator[dict]:
+    def _run(self, source: Optional[Iterator[dict]]) -> Iterator[dict]:
+        assert source is not None, "Source iterator cannot be None."
+
         for record in source:
             yield {"topic": "results", "message": ResultMessage(**record)}

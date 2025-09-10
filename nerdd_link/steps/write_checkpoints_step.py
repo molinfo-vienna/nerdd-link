@@ -31,7 +31,9 @@ class WriteCheckpointsStep(Step):
         self._max_num_molecules = max_num_molecules
         self._params = params
 
-    def _run(self, source: Optional[Iterator[dict]] = None) -> Iterator[dict]:
+    def _run(self, source: Optional[Iterator[dict]]) -> Iterator[dict]:
+        assert source is not None, "Source iterator cannot be None."
+
         # iterate through the entries
         # create batches of size checkpoint_size
         # limit the number of molecules to max_num_molecules

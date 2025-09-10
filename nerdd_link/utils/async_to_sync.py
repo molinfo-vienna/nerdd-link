@@ -1,13 +1,13 @@
 import asyncio
 from functools import wraps
-from typing import Any, Awaitable, Callable, TypeVar
+from typing import Any, Callable, Coroutine, TypeVar
 
 __all__ = ["async_to_sync"]
 
 T = TypeVar("T")
 
 
-def async_to_sync(func: Callable[..., Awaitable[T]]) -> Callable[..., T]:
+def async_to_sync(func: Callable[..., Coroutine[Any, Any, T]]) -> Callable[..., T]:
     """
     A decorator to convert an async function to a sync function.
     """

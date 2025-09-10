@@ -63,7 +63,7 @@ class SerializeJobAction(Action[SerializationRequestMessage]):
             # send messages to the corresponding topics
             WriteOutputStep(
                 output_format="json",
-                config=None,
+                config=None,  # type: ignore[arg-type]
                 channel=self.channel,
                 loop=loop,
             ),

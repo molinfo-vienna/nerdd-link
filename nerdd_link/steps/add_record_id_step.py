@@ -13,7 +13,9 @@ class AddRecordIdStep(Step):
         super().__init__()
         self._job_id = job_id
 
-    def _run(self, source: Optional[Iterator[dict]] = None) -> Iterator[dict]:
+    def _run(self, source: Optional[Iterator[dict]]) -> Iterator[dict]:
+        assert source is not None, "Source iterator cannot be None."
+
         job_id = self._job_id
         for record in source:
             # generate an id for the result
