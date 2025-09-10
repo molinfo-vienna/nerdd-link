@@ -1,25 +1,31 @@
-from asyncio import AbstractEventLoop, Queue
+from asyncio import AbstractEventLoop
 from typing import Any, Iterable, List, Optional
 
 from nerdd_module import Model, Step
 from nerdd_module.config import Configuration
 from rdkit.Chem import Mol
 
+from ..channels import Channel
 from ..files import FileSystem
-from .read_pickle_step import ReadPickleStep
-from .split_and_merge_step import SplitAndMergeStep
+from ..steps import (
+    AddRecordIdStep,
+    ReadPickleStep,
+    ReplaceLargePropertiesStep,
+    SplitAndMergeStep,
+    WrapResultsStep,
+)
 
-__all__ = ["ReadCheckpointModel"]
+__all__ = ["PredictCheckpointModel"]
 
 
-class ReadCheckpointModel(Model):
+class PredictCheckpointModel(Model):
     def __init__(
         self,
         base_model: Model,
         job_id: str,
         file_system: FileSystem,
         checkpoint_id: int,
-        queue: Queue,
+        channel: Channel,
         loop: AbstractEventLoop,
     ) -> None:
         super().__init__()
@@ -27,21 +33,18 @@ class ReadCheckpointModel(Model):
         self._job_id = job_id
         self._file_system = file_system
         self._checkpoint_id = checkpoint_id
-        self._queue = queue
+        self._channel = channel
         self._loop = loop
 
     def _get_input_steps(
         self, input: Any, input_format: Optional[str], **kwargs: Any
     ) -> List[Step]:
-        # we ignore the "input" argument and read from the checkpoint file
-        checkpoints_file = self._file_system.get_checkpoint_file_handle(
-            self._job_id, self._checkpoint_id, "rb"
-        )
-        return [ReadPickleStep(checkpoints_file)]
+        return [ReadPickleStep(input)]
 
     def _get_preprocessing_steps(
         self, input: Any, input_format: Optional[str], **kwargs: Any
     ) -> List[Step]:
+        # do preprocessing as the encapsulated model would do
         return self._base_model._get_preprocessing_steps(input, input_format, **kwargs)
 
     def _get_postprocessing_steps(self, output_format: Optional[str], **kwargs: Any) -> List[Step]:
@@ -53,13 +56,28 @@ class ReadCheckpointModel(Model):
         #
         send_to_channel_steps = self._base_model._get_postprocessing_steps(
             output_format="json",
-            model=self._base_model,
-            queue=self._queue,
+            # necessary for ChannelWriter:
+            channel=self._channel,
             loop=self._loop,
-            file_system=self._file_system,
-            job_id=self._job_id,
+            # necessary for other preprocessing steps:
+            model=self._base_model,
             **kwargs,
         )
+
+        # we have to insert additional steps before sending to channel
+        send_to_channel_steps = [
+            *send_to_channel_steps[:-1],
+            # replace large properties with file references
+            ReplaceLargePropertiesStep(
+                self._base_model._get_config().get_dict(), self._file_system, self._job_id
+            ),
+            # add record ids
+            AddRecordIdStep(self._job_id),
+            # wrap results in ResultMessage
+            WrapResultsStep(),
+            # send to results topic
+            send_to_channel_steps[-1],
+        ]
 
         results_file = self._file_system.get_results_file_handle(
             self._job_id, self._checkpoint_id, "wb"
@@ -72,7 +90,9 @@ class ReadCheckpointModel(Model):
         return [SplitAndMergeStep(send_to_channel_steps, file_writing_steps)]
 
     def _predict_mols(self, mols: List[Mol], **kwargs: Any) -> Iterable[dict]:
+        # do prediction as the encapsulated model would do
         return self._base_model._predict_mols(mols, **kwargs)
 
     def _get_config(self) -> Configuration:
+        # return the configuration of the encapsulated model
         return self._base_model._get_config()
