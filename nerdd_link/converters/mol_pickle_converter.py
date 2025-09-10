@@ -9,6 +9,7 @@ __all__ = ["MolPickleConverter"]
 
 class MolPickleConverter(Converter):
     def _convert(self, input: Any, context: dict) -> Any:
+        # use PropertyMol in order to keep molecular properties (thanks, RDKit! :/ )
         if isinstance(input, Mol):
             return PropertyMol(input)
         else:
