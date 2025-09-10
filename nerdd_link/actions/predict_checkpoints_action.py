@@ -3,14 +3,13 @@ import concurrent.futures
 import logging
 import os
 import time
-from asyncio import Queue
 
 from nerdd_module import Model
 
 from ..channels import Channel
-from ..delegates import ReadCheckpointModel
+from ..delegates import PredictCheckpointModel
 from ..files import FileSystem
-from ..types import CheckpointMessage, ResultCheckpointMessage, ResultMessage, Tombstone
+from ..types import CheckpointMessage, ResultCheckpointMessage, Tombstone
 from .action import Action
 
 __all__ = ["PredictCheckpointsAction"]
@@ -26,7 +25,7 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
     def __init__(self, channel: Channel, model: Model, data_dir: str) -> None:
         super().__init__(channel.checkpoints_topic(model))
         self._model = model
-        self.file_system = FileSystem(data_dir)
+        self._file_system = FileSystem(data_dir)
 
     async def _process_message(self, message: CheckpointMessage) -> None:
         job_id = message.job_id
@@ -34,26 +33,22 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         params = message.params
 
         # job might have been deleted in the meantime, so we check if the job exists
-        if not os.path.exists(self.file_system.get_checkpoint_file_path(job_id, checkpoint_id)):
+        if not os.path.exists(self._file_system.get_checkpoint_file_path(job_id, checkpoint_id)):
             logger.warning(
                 f"Received a checkpoint message for job {job_id} and checkpoint {checkpoint_id}, "
                 "but the checkpoint file does not exist. Skipping."
             )
             return
 
-        # Track the time it takes to process the message
-        start_time = time.time()
-
         logger.info(f"Predict checkpoint {checkpoint_id} of job {job_id}")
 
-        # The Kafka consumers and producers run in the current asyncio event loop and (by
-        # observation) it seems that calling the produce method of a Kafka producer in a
-        # different event loop / thread / process doesn't seem to work (hangs indefinitely).
-        # Therefore, we create a queue in this event loop / thread and other tasks send messages
-        # to the queue instead of directly to the Kafka producer. This event loop will wait for
-        # new messages in this queue and forward them to the Kafka producer.
-        queue: Queue = Queue()
+        # track the time it takes to process the message
+        start_time = time.time()
 
+        # remove specific parameter keys that could induce vulnerabilities
+        params.pop("input", None)
+
+        # get the current event loop
         loop = asyncio.get_running_loop()
 
         # create a wrapper model that
@@ -61,57 +56,39 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         # * does preprocessing, prediction, and postprocessing like the encapsulated model
         # * does not write to the specified results file, but to the checkpoints file instead
         # * sends the results to the results topic
-        model = ReadCheckpointModel(
+        model = PredictCheckpointModel(
             base_model=self._model,
             job_id=job_id,
-            file_system=self.file_system,
+            file_system=self._file_system,
             checkpoint_id=checkpoint_id,
-            queue=queue,
+            channel=self.channel,
             loop=loop,
         )
 
-        def _predict() -> None:
-            try:
-                model.predict(input=None, **params)
-            except Exception as e:
-                queue.put_nowait(e)
-                # indicate the end of the computation
-                queue.put_nowait(None)
+        # read from the checkpoint file
+        checkpoints_file = self._file_system.get_checkpoint_file_handle(job_id, checkpoint_id, "rb")
 
         # Run the prediction in a separate thread to avoid blocking the event loop.
         with concurrent.futures.ThreadPoolExecutor() as executor:
             # predict the checkpoint
-            # * assign input=None, because the checkpoint file is provided in ReadCheckpointModel
             future = loop.run_in_executor(
-                executor,
-                _predict,
+                executor, lambda: model.predict(input=checkpoints_file, **params)
             )
 
-            # Wait for the prediction to finish and the results to be sent.
-            while True:
-                record = await queue.get()
-                if record is not None:
-                    if isinstance(record, Exception):
-                        exception = record
-                        # an error occurred during prediction
-                        logger.error(f"Error during prediction of job {job_id}", exc_info=exception)
-
-                        # TODO: send an error message to the logs topic
-                    await self.channel.results_topic().send(ResultMessage(job_id=job_id, **record))
-                else:
-                    # None indicates the end of the queue (end of the prediction)
-                    end_time = time.time()
-
-                    await self.channel.result_checkpoints_topic().send(
-                        ResultCheckpointMessage(
-                            job_id=job_id,
-                            checkpoint_id=checkpoint_id,
-                            elapsed_time_seconds=int(end_time - start_time),
-                        )
-                    )
-                    break
-
+            # we don't need to look out for exceptions, because any exception raised in the thread
+            # will be re-raised by asyncio here
             await future
+
+        # None indicates the end of the queue (end of the prediction)
+        end_time = time.time()
+
+        await self.channel.result_checkpoints_topic().send(
+            ResultCheckpointMessage(
+                job_id=job_id,
+                checkpoint_id=checkpoint_id,
+                elapsed_time_seconds=int(end_time - start_time),
+            )
+        )
 
     async def _process_tombstone(self, message: Tombstone[CheckpointMessage]) -> None:
         job_id = message.job_id
@@ -119,7 +96,7 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         logger.info(f"Received a tombstone for checkpoint {checkpoint_id} of job {job_id}")
 
         # delete result checkpoint file if it exists
-        path = self.file_system.get_results_file_path(job_id, checkpoint_id)
+        path = self._file_system.get_results_file_path(job_id, checkpoint_id)
         if os.path.exists(path):
             os.remove(path)
 
