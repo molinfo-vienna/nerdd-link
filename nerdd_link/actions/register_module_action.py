@@ -16,8 +16,6 @@ logger = logging.getLogger(__name__)
 class RegisterModuleAction(Action[SystemMessage]):
     def __init__(self, channel: Channel, model: Model, data_dir: str):
         super().__init__(channel.system_topic())
-        # TODO: do this differently
-        assert hasattr(model, "config")
         self._model = model
         self._file_system = FileSystem(data_dir)
 
