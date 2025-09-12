@@ -1,7 +1,6 @@
 import logging
 import os
-from asyncio import get_running_loop
-from concurrent.futures import ThreadPoolExecutor
+from asyncio import get_running_loop, to_thread
 
 from nerdd_module import DepthFirstExplorer, ReadInputStep, WriteOutputStep
 
@@ -64,8 +63,6 @@ class ProcessJobsAction(Action[JobMessage]):
             data_dir=self._file_system.get_sources_dir(),
         )
 
-        loop = get_running_loop()
-
         # create a pipeline for reading and chunking the input
         steps = [
             # read the input file (given by source_id)
@@ -84,20 +81,13 @@ class ProcessJobsAction(Action[JobMessage]):
                 output_format="json",
                 config=None,  # type: ignore[arg-type]
                 channel=self.channel,
-                loop=loop,
+                loop=get_running_loop(),
             ),
         ]
 
-        # run the pipeline in a thread to not block the event loop
-        with ThreadPoolExecutor() as executor:
-            future = loop.run_in_executor(
-                executor,
-                lambda: run_pipeline(*steps),
-            )
-
-            # we don't need to look out for exceptions, because any exception raised in the thread
-            # will be re-raised by asyncio here
-            await future
+        # Run the pipeline in a thread to not block the event loop. We don't need to look out for
+        # exceptions, because any exception raised in the thread will be re-raised by asyncio here.
+        await to_thread(lambda: run_pipeline(*steps))
 
     async def _process_tombstone(self, message: Tombstone[JobMessage]) -> None:
         job_id = message.id

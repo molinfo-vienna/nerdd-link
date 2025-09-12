@@ -1,8 +1,7 @@
-import asyncio
-import concurrent.futures
 import logging
 import os
 import time
+from asyncio import get_running_loop, to_thread
 
 from nerdd_module import Model
 
@@ -48,9 +47,6 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         # remove specific parameter keys that could induce vulnerabilities
         params.pop("input", None)
 
-        # get the current event loop
-        loop = asyncio.get_running_loop()
-
         # create a wrapper model that
         # * reads the checkpoint file instead of normal input
         # * does preprocessing, prediction, and postprocessing like the encapsulated model
@@ -62,22 +58,16 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
             file_system=self._file_system,
             checkpoint_id=checkpoint_id,
             channel=self.channel,
-            loop=loop,
+            loop=get_running_loop(),
         )
 
         # read from the checkpoint file
         checkpoints_file = self._file_system.get_checkpoint_file_handle(job_id, checkpoint_id, "rb")
 
-        # Run the prediction in a separate thread to avoid blocking the event loop.
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            # predict the checkpoint
-            future = loop.run_in_executor(
-                executor, lambda: model.predict(input=checkpoints_file, **params)
-            )
-
-            # we don't need to look out for exceptions, because any exception raised in the thread
-            # will be re-raised by asyncio here
-            await future
+        # Run the prediction in a separate thread to avoid blocking the event loop. We don't need to
+        # look out for exceptions, because any exception raised in the thread will be re-raised by
+        # asyncio here.
+        await to_thread(lambda: model.predict(input=checkpoints_file, **params))
 
         # None indicates the end of the queue (end of the prediction)
         end_time = time.time()
