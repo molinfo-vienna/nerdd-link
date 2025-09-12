@@ -2,9 +2,8 @@ import logging
 import os
 from asyncio import get_running_loop
 from concurrent.futures import ThreadPoolExecutor
-from typing import List
 
-from nerdd_module import DepthFirstExplorer, ReadInputStep, Step, WriteOutputStep
+from nerdd_module import DepthFirstExplorer, ReadInputStep, WriteOutputStep
 
 from ..channels import Channel
 from ..files import FileSystem
