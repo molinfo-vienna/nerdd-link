@@ -4,12 +4,13 @@ import os
 from asyncio import get_running_loop
 from concurrent.futures import ThreadPoolExecutor
 
-from nerdd_module import OutputStep, WriteOutputStep
+from nerdd_module import WriteOutputStep
 
 from ..channels import Channel
 from ..files import FileSystem
 from ..steps import PostprocessFromConfigStep, ReadPickleStep
 from ..types import SerializationRequestMessage, SerializationResultMessage, Tombstone
+from ..utils import run_pipeline
 from .action import Action
 
 __all__ = ["SerializeJobAction"]
@@ -69,20 +70,11 @@ class SerializeJobAction(Action[SerializationRequestMessage]):
             ),
         ]
 
-        # build the pipeline from the list of steps
-        pipeline = None
-        for t in steps:
-            pipeline = t(pipeline)
-
-        # we will run the pipeline using the last step
-        output_step = steps[-1]
-        assert isinstance(output_step, OutputStep), "The last step must be an OutputStep."
-
         # Run the serialization in a separate thread to avoid blocking the event loop.
         with ThreadPoolExecutor() as executor:
             future = loop.run_in_executor(
                 executor,
-                output_step.get_result,
+                lambda: run_pipeline(*steps),
             )
 
             # we don't need to look out for exceptions, because any exception raised in the thread

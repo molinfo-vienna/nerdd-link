@@ -1,10 +1,11 @@
-from functools import reduce
 from itertools import tee
 from queue import Queue
 from threading import Barrier, Lock, Thread
-from typing import Any, Callable, Iterator, List, cast
+from typing import Any, Callable, Iterator, List, Optional
 
 from nerdd_module import OutputStep, Step
+
+from ..utils import run_pipeline
 
 __all__ = ["SplitAndMergeStep"]
 
@@ -42,35 +43,21 @@ class SplitAndMergeStep(OutputStep):
                 # continuing, because one thread might be faster than the others.
                 barrier.wait()
 
-        # concatenate the steps to form pipelines
-        for steps, source in zip(self._step_lists, source_copies):
-            # put the sync step at the beginning of each step list
-            synced_step_list: List[Callable[[Iterator[dict]], Iterator[dict]]] = [sync_step, *steps]
-
-            # Concatenate the steps in each step list.
-            # e.g. reduce(..., [step1, step2, step3], source)
-            # --> step3(step2(step1(source)))
-            reduce(lambda x, y: y(x), synced_step_list, source)
-
-        for steps in self._step_lists:
-            assert isinstance(
-                steps[-1], OutputStep
-            ), "The last step in each step list must be an OutputStep."
-
-        output_steps = [cast(OutputStep, steps[-1]) for steps in self._step_lists]
-
         # When a thread throws an exception, it won't be caught by the main thread. That is why
         # we create an exception bucket and add the exceptions to it. The main thread will then
         # raise the first exception in the bucket.
         exception_bucket: Queue = Queue()
 
-        def _run_steps(output_step: OutputStep) -> Any:
+        def _run_steps(steps: List[Callable[[Optional[Iterator[dict]]], Iterator[dict]]]) -> Any:
             try:
-                return output_step.get_result()
+                return run_pipeline(*steps)
             except Exception as e:
                 exception_bucket.put(e)
 
-        threads = [Thread(target=_run_steps, args=(output_step,)) for output_step in output_steps]
+        threads = [
+            Thread(target=_run_steps, args=([source, sync_step, *steps],))
+            for steps, source in zip(self._step_lists, source_copies)
+        ]
 
         for thread in threads:
             thread.start()

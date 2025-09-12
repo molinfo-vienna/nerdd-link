@@ -2,13 +2,15 @@ import logging
 import os
 from asyncio import get_running_loop
 from concurrent.futures import ThreadPoolExecutor
+from typing import List
 
-from nerdd_module import DepthFirstExplorer, OutputStep, ReadInputStep, WriteOutputStep
+from nerdd_module import DepthFirstExplorer, ReadInputStep, Step, WriteOutputStep
 
 from ..channels import Channel
 from ..files import FileSystem
 from ..steps import WriteCheckpointsStep
 from ..types import CheckpointMessage, JobMessage, Tombstone
+from ..utils import run_pipeline
 from .action import Action
 
 __all__ = ["ProcessJobsAction"]
@@ -87,18 +89,11 @@ class ProcessJobsAction(Action[JobMessage]):
             ),
         ]
 
-        pipeline = None
-        for t in steps:
-            pipeline = t(pipeline)
-
-        output_step = steps[-1]
-        assert isinstance(output_step, OutputStep), "The last step must be an OutputStep."
-
         # run the pipeline in a thread to not block the event loop
         with ThreadPoolExecutor() as executor:
             future = loop.run_in_executor(
                 executor,
-                output_step.get_result,
+                lambda: run_pipeline(*steps),
             )
 
             # we don't need to look out for exceptions, because any exception raised in the thread

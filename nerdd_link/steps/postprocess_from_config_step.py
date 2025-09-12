@@ -1,10 +1,11 @@
 from typing import Any, Iterator, List, Optional
 
-from nerdd_module import Model, OutputStep, Step
+from nerdd_module import Model, Step
 from nerdd_module.config import Configuration, DictConfiguration
 from rdkit.Chem import Mol
 
 from ..types import SerializationResultMessage
+from ..utils import run_pipeline
 
 __all__ = ["PostprocessFromConfigStep"]
 
@@ -48,15 +49,7 @@ class PostprocessFromConfigStep(Step):
             self._output_format, output_file=self._output_file, **self._params
         )
 
-        # build the pipeline from the list of steps
-        pipeline = source
-        for t in postprocessing_steps:
-            pipeline = t(pipeline)
-
-        output_step = postprocessing_steps[-1]
-        assert isinstance(output_step, OutputStep), "The last step must be an OutputStep."
-
-        output_step.get_result()
+        run_pipeline(source, *postprocessing_steps)
 
         # send a message that the serialization is done
         yield {
