@@ -23,6 +23,7 @@ Feature: Delete job
         }
     And the process job action is executed
     And the predict checkpoints action is executed
+    And we wait for 1 seconds
 
     Then the channel sends a message on topic 'mol-scale-checkpoints' with content 
         { "job_id": "123", "checkpoint_id": 0, "params": { "multiplier": 10 } }
@@ -80,6 +81,7 @@ Feature: Delete job
             "checkpoint_size": 40
         }
     And the process job action is executed
+    And we wait for 1 seconds
 
     Then the channel sends a message on topic 'mol-scale-checkpoints' with content 
         { "job_id": "123", "checkpoint_id": 0, "params": { "multiplier": 10 } }
@@ -132,6 +134,7 @@ Feature: Delete job
     And the channel receives a tombstone on topic 'jobs' with key ("123", "mol-scale")
     # The following line is important now: it should not cause an error for the second tombstone
     And the process job action is executed
+    And we wait for 1 seconds
 
     # Check that tombstones were sent at least once (twice would be fine)
     Then the channel sends a tombstone on topic 'mol-scale-checkpoints' with key ("123", 0)

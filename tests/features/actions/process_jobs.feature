@@ -16,6 +16,7 @@ Feature: Process job action
             "checkpoint_size": 40
         }
     And the process job action is executed
+    And we wait for 1 seconds
 
     # files
     Then the file 'jobs/123/inputs/checkpoint_0.pickle' is created
@@ -48,6 +49,7 @@ Feature: Process job action
             "checkpoint_size": 100
         }
     And the process job action is executed
+    And we wait for 1 seconds
 
     # files
     Then the file 'jobs/123/inputs/checkpoint_0.pickle' is created
