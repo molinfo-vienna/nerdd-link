@@ -3,7 +3,7 @@ import logging
 from asyncio import Lock
 from typing import AsyncIterable, Dict, List, Optional, Tuple
 
-from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
+from aiokafka import AIOKafkaConsumer, AIOKafkaProducer, ConsumerRebalanceListener
 from aiokafka.coordinator.assignors.sticky.sticky_assignor import StickyPartitionAssignor
 from aiokafka.errors import CommitFailedError
 
@@ -14,12 +14,29 @@ __all__ = ["KafkaChannel"]
 logger = logging.getLogger(__name__)
 
 
+class RebalanceListener(ConsumerRebalanceListener):
+    def __init__(self, rebalance_lock: Lock):
+        super().__init__()
+        self._rebalance_lock = rebalance_lock
+
+    async def on_partitions_revoked(self, revoked: List) -> None:
+        # keeps kafka from rebalancing while we are processing a message
+        logger.info("Finish processing current messge before partitions are revoked...")
+        async with self._rebalance_lock:
+            pass
+        logger.info("Message was processed and partitions can be revoked now.")
+
+    async def on_partitions_assigned(self, assigned: List) -> None:
+        pass
+
+
 class KafkaChannel(Channel):
     def __init__(self, broker_url: str) -> None:
         super().__init__()
         self._broker_url = broker_url
         self._consumers: Dict[Tuple[str, str], AIOKafkaConsumer] = {}
         self._kafka_lock = Lock()
+        self._rebalance_locks: Dict[Tuple[str, str], Lock] = {}
 
     async def _start(self) -> None:
         self._producer = AIOKafkaProducer(
@@ -41,11 +58,15 @@ class KafkaChannel(Channel):
     ) -> AsyncIterable[List[Tuple[Optional[tuple], Optional[dict]]]]:
         consumer_key = (topic, consumer_group)
 
+        if consumer_key not in self._rebalance_locks:
+            self._rebalance_locks[consumer_key] = Lock()
+        rebalance_lock = self._rebalance_locks[consumer_key]
+
         if consumer_key not in self._consumers:
+            # make sure that only one consumer is created at a time
             async with self._kafka_lock:
                 # create consumer
                 consumer = AIOKafkaConsumer(
-                    topic,
                     bootstrap_servers=[self._broker_url],
                     auto_offset_reset="earliest",
                     group_id=consumer_group,
@@ -68,6 +89,11 @@ class KafkaChannel(Channel):
                     partition_assignment_strategy=(StickyPartitionAssignor,),
                 )
 
+                consumer.subscribe(
+                    [topic],
+                    listener=RebalanceListener(rebalance_lock),
+                )
+
                 logger.info(
                     f"Connecting to Kafka broker {self._broker_url} and starting a consumer on "
                     f"topic {topic}."
@@ -82,41 +108,45 @@ class KafkaChannel(Channel):
             while True:
                 # use timeout of 500ms (default value of the async iterator of AIOKafkaConsumer)
                 batch = await consumer.getmany(timeout_ms=500)
-                key_value_pairs = []
-                for _, messages in batch.items():
-                    for message in messages:
-                        if message.key is None:
-                            key = None
-                        else:
-                            try:
-                                message_key: list = json.loads(message.key)
-                            except json.JSONDecodeError:
-                                # if we can't decode the key as JSON, we assume it is a string
-                                message_key = [message.key.decode("utf-8")]
-                            key = tuple(message_key)
 
-                        # distinguish tombstoned records by checking if value is None
-                        if message.value is None:
-                            value = None
-                        else:
-                            value = json.loads(message.value)
+                # this lock makes sure that rebalancing does not destroy progress
+                async with rebalance_lock:
+                    key_value_pairs = []
+                    for _, messages in batch.items():
+                        for message in messages:
+                            if message.key is None:
+                                key = None
+                            else:
+                                try:
+                                    message_key: list = json.loads(message.key)
+                                except json.JSONDecodeError:
+                                    # if we can't decode the key as JSON, we assume it is a string
+                                    message_key = [message.key.decode("utf-8")]
+                                key = tuple(message_key)
 
-                        key_value_pairs.append((key, value))
+                            # distinguish tombstoned records by checking if value is None
+                            if message.value is None:
+                                value = None
+                            else:
+                                value = json.loads(message.value)
 
-                if len(key_value_pairs) == 0:
-                    continue
+                            key_value_pairs.append((key, value))
 
-                try:
-                    yield key_value_pairs
-                except Exception:
-                    logger.error("Error while yielding messages", exc_info=True)
-                    # do not commit the message, but retry
-                    continue
+                    if len(key_value_pairs) == 0:
+                        continue
 
-                try:
-                    await consumer.commit()
-                except CommitFailedError as e:
-                    logger.error(f"Commit failed: {e}... trying again.")
+                    try:
+                        yield key_value_pairs
+                    except Exception:
+                        logger.error("Error while yielding messages", exc_info=True)
+                        # do not commit the message, but retry
+                        continue
+
+                    try:
+                        logger.info(f"COMMITTING OFFSETS... for {key_value_pairs}")
+                        await consumer.commit()
+                    except CommitFailedError as e:
+                        logger.error("Commit failed, trying again.", exc_info=e)
         finally:
             try:
                 await consumer.stop()
