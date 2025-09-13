@@ -15,16 +15,22 @@ logger = logging.getLogger(__name__)
 
 
 class RebalanceListener(ConsumerRebalanceListener):
-    def __init__(self, rebalance_lock: Lock):
+    def __init__(self, topic: str, rebalance_lock: Lock):
         super().__init__()
+        self._topic = topic
         self._rebalance_lock = rebalance_lock
 
     async def on_partitions_revoked(self, revoked: List) -> None:
         # keeps kafka from rebalancing while we are processing a message
-        logger.info("Finish processing current messge before partitions are revoked...")
+        logger.info(
+            f"Finish processing current message on topic {self._topic} before partitions are "
+            f"revoked..."
+        )
         async with self._rebalance_lock:
             pass
-        logger.info("Message was processed and partitions can be revoked now.")
+        logger.info(
+            f"Message on topic {self._topic} was processed and partitions can be revoked now."
+        )
 
     async def on_partitions_assigned(self, assigned: List) -> None:
         pass
@@ -49,9 +55,16 @@ class KafkaChannel(Channel):
             await consumer.start()
 
     async def _stop(self) -> None:
-        await self._producer.stop()
+        logger.info("Waiting for all consumers to finish...")
+        for _, rebalance_lock in self._rebalance_locks.items():
+            async with rebalance_lock:
+                pass
+
+        logger.info("Stopping all consumers...")
         for consumer in self._consumers.values():
             await consumer.stop()
+
+        await self._producer.stop()
 
     async def _iter_messages(
         self, topic: str, consumer_group: str, batch_size: int = 1
@@ -91,7 +104,7 @@ class KafkaChannel(Channel):
 
                 consumer.subscribe(
                     [topic],
-                    listener=RebalanceListener(rebalance_lock),
+                    listener=RebalanceListener(topic, rebalance_lock),
                 )
 
                 logger.info(
@@ -104,12 +117,17 @@ class KafkaChannel(Channel):
 
         consumer = self._consumers[consumer_key]
 
+        # main loop
         try:
             while True:
+                if not self.is_running:
+                    logger.info(f"Shutdown event set {topic}, stopping consumer...")
+                    break
+
                 # use timeout of 500ms (default value of the async iterator of AIOKafkaConsumer)
                 batch = await consumer.getmany(timeout_ms=500)
 
-                # this lock makes sure that rebalancing does not destroy progress
+                # this lock ensures that rebalancing does not destroy progress
                 async with rebalance_lock:
                     key_value_pairs = []
                     for _, messages in batch.items():
@@ -143,7 +161,6 @@ class KafkaChannel(Channel):
                         continue
 
                     try:
-                        logger.info(f"COMMITTING OFFSETS... for {key_value_pairs}")
                         await consumer.commit()
                     except CommitFailedError as e:
                         logger.error("Commit failed, trying again.", exc_info=e)
