@@ -51,18 +51,11 @@ class KafkaChannel(Channel):
         logger.info(f"Connecting to Kafka broker {self._broker_url} and starting a producer...")
         await self._producer.start()
 
-        for consumer in self._consumers.values():
-            await consumer.start()
-
     async def _stop(self) -> None:
         logger.info("Waiting for all consumers to finish...")
         for _, rebalance_lock in self._rebalance_locks.items():
             async with rebalance_lock:
                 pass
-
-        logger.info("Stopping all consumers...")
-        for consumer in self._consumers.values():
-            await consumer.stop()
 
         await self._producer.stop()
 
