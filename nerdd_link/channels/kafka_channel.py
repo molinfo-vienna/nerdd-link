@@ -50,9 +50,6 @@ class KafkaChannel(Channel):
         await self._producer.start()
 
     async def _stop(self) -> None:
-        logger.info("Waiting for all consumers to finish...")
-        # TODO: use semaphore here
-
         await self._producer.stop()
 
     async def _iter_messages(
