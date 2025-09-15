@@ -3,6 +3,8 @@ import pickle
 from typing import Iterator, Optional
 
 from nerdd_module import Step
+from rdkit.Chem import Mol
+from rdkit.Chem.PropertyMol import PropertyMol
 
 from ..files import FileSystem
 from ..types import CheckpointMessage, LogMessage
@@ -47,6 +49,15 @@ class WriteCheckpointsStep(Step):
             # store batch in data_dir
             with self._file_system.get_checkpoint_file_handle(self._job_id, i, "wb") as f:
                 results = list(batch[:num_store])
+
+                # Convert Mol to PropertyMol to keep properties. Unfortunately, this code is
+                # redundant with the code in mol_pickle_converter, but we need it here, because
+                # converters are not applied in the short pipeline using this step.
+                for result in results:
+                    for k, v in result.items():
+                        if isinstance(v, Mol):
+                            result[k] = PropertyMol(v)
+
                 pickle.dump(results, f)
 
             # send a tuple to checkpoints topic
