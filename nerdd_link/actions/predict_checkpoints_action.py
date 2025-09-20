@@ -70,19 +70,33 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
             loop=loop,
         )
 
+        def _predict() -> None:
+            try:
+                model.predict(input=None, **params)
+            except Exception as e:
+                queue.put_nowait(e)
+                # indicate the end of the computation
+                queue.put_nowait(None)
+
         # Run the prediction in a separate thread to avoid blocking the event loop.
         with concurrent.futures.ThreadPoolExecutor() as executor:
             # predict the checkpoint
             # * assign input=None, because the checkpoint file is provided in ReadCheckpointModel
             future = loop.run_in_executor(
                 executor,
-                lambda: model.predict(input=None, **params),
+                _predict,
             )
 
             # Wait for the prediction to finish and the results to be sent.
             while True:
                 record = await queue.get()
                 if record is not None:
+                    if isinstance(record, Exception):
+                        exception = record
+                        # an error occurred during prediction
+                        logger.error(f"Error during prediction of job {job_id}", exc_info=exception)
+
+                        # TODO: send an error message to the logs topic
                     await self.channel.results_topic().send(ResultMessage(job_id=job_id, **record))
                 else:
                     # None indicates the end of the queue (end of the prediction)
