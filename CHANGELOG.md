@@ -1,6 +1,21 @@
 # CHANGELOG
 
 
+## v0.5.4 (2025-09-20)
+
+### Fixes
+
+* fix: Log errors in PredictCheckpointsAction ([`91b41b8`](https://github.com/molinfo-vienna/nerdd-link/commit/91b41b885e39f111cb709ca0a5b6c71376052a7c))
+
+* fix: Bump nerdd-module dependency ([`cc1693b`](https://github.com/molinfo-vienna/nerdd-link/commit/cc1693bf0c239bb859c5dd582bb5b20c32fd2b7c))
+
+### Unknown
+
+* Merge pull request #60 from shirte/main
+
+Log errors in PredictCheckpointsAction ([`5f2f5c5`](https://github.com/molinfo-vienna/nerdd-link/commit/5f2f5c5ce0044ffa4bd5ac72dd92b65b42387374))
+
+
 ## v0.5.3 (2025-09-08)
 
 ### Fixes
