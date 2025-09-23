@@ -1,6 +1,25 @@
 # CHANGELOG
 
 
+## v0.5.5 (2025-09-23)
+
+### Fixes
+
+* fix: Bump dependencies ([`7319abe`](https://github.com/molinfo-vienna/nerdd-link/commit/7319abea09360a9398659241e112c8a1d41c72c1))
+
+* fix: Rename TopicWriter to QueueWriter ([`a740f5c`](https://github.com/molinfo-vienna/nerdd-link/commit/a740f5cd162046b888c542dd6bdda09cd29050e6))
+
+* fix: Add id to results ([`9d6f7ff`](https://github.com/molinfo-vienna/nerdd-link/commit/9d6f7ffc9ea5f64ba35832dbf723a298601eab4d))
+
+* fix: Enable message batching in channel ([`304aa3e`](https://github.com/molinfo-vienna/nerdd-link/commit/304aa3e7d5fcee1eaacaf5498bb636c0172ea602))
+
+### Unknown
+
+* Merge pull request #61 from shirte/main
+
+Enable message batching ([`ca6379c`](https://github.com/molinfo-vienna/nerdd-link/commit/ca6379cbcc5c794390cc00494147bf246559fb86))
+
+
 ## v0.5.4 (2025-09-20)
 
 ### Fixes
