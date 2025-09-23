@@ -2,7 +2,18 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, AsyncIterable, Dict, Generic, Optional, Tuple, Type, TypeVar, Union
+from typing import (
+    Any,
+    AsyncIterable,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from nerdd_module import Model
 from nerdd_module.util import call_with_mappings
@@ -52,12 +63,15 @@ class Topic(Generic[TMessage]):
         self._message_type = message_type
 
     async def receive(
-        self, consumer_group: str
-    ) -> AsyncIterable[Union[TMessage, Tombstone[TMessage]]]:
-        async for msg in self.channel.iter_messages(
-            self._name, consumer_group=consumer_group, message_type=self._message_type
+        self, consumer_group: str, batch_size: int = 1
+    ) -> AsyncIterable[List[Union[TMessage, Tombstone[TMessage]]]]:
+        async for message_batch in self.channel.iter_messages(
+            self._name,
+            consumer_group=consumer_group,
+            message_type=self._message_type,
+            batch_size=batch_size,
         ):
-            yield msg
+            yield message_batch
 
     async def send(self, message: Union[TMessage, Tombstone[TMessage]]) -> None:
         await self.channel.send(self._name, message)
@@ -103,24 +117,29 @@ class Channel(ABC):
         topic: str,
         consumer_group: str,
         message_type: Type[TMessage],
-    ) -> AsyncIterable[Union[TMessage, Tombstone[TMessage]]]:
+        batch_size: int = 1,
+    ) -> AsyncIterable[List[Union[TMessage, Tombstone[TMessage]]]]:
         if not self._is_running:
             raise RuntimeError("Channel is not running. Call start() first.")
 
         key_fields = message_type.topic_config.get("key_fields")
 
-        async for key, value in self._iter_messages(topic, consumer_group):
-            if value is None:
-                assert key is not None, "Key must be provided for tombstone messages"
-                yield Tombstone(message_type, *key)
-            else:
-                if key_fields is None and key is not None:
-                    logger.warning(
-                        f"Message type {message_type.__name__} does not have key fields defined, "
-                        "but a key was provided. This may lead to unexpected behavior."
-                    )
+        async for key_value_pairs in self._iter_messages(topic, consumer_group, batch_size):
+            message_batch: List[Union[TMessage, Tombstone[TMessage]]] = []
+            for key, value in key_value_pairs:
+                if value is None:
+                    assert key is not None, "Key must be provided for tombstone messages"
+                    message_batch.append(Tombstone(message_type, *key))
+                else:
+                    if key_fields is None and key is not None:
+                        logger.warning(
+                            f"Message type {message_type.__name__} does not have key fields "
+                            "defined, but a key was provided. This may lead to unexpected behavior."
+                        )
 
-                yield message_type(**value)
+                    message_batch.append(message_type(**value))
+
+            yield message_batch
 
     # Insane Python quirk: we need to use "def _iter_messages" instead of "async def _iter_messages"
     # here, because the method doesn't use "yield" and so the type checker will assume that the
@@ -128,8 +147,8 @@ class Channel(ABC):
     # AsyncIterable[Message].
     @abstractmethod
     def _iter_messages(
-        self, topic: str, consumer_group: str
-    ) -> AsyncIterable[Tuple[Optional[tuple], Optional[dict]]]:
+        self, topic: str, consumer_group: str, batch_size: int
+    ) -> AsyncIterable[List[Tuple[Optional[tuple], Optional[dict]]]]:
         pass
 
     #

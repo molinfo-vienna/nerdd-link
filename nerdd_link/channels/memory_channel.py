@@ -21,8 +21,8 @@ class MemoryChannel(Channel):
         return self._messages.get_items()
 
     async def _iter_messages(
-        self, topic: str, consumer_group: str
-    ) -> AsyncIterable[Tuple[Optional[tuple], Optional[dict]]]:
+        self, topic: str, consumer_group: str, batch_size: int = 1
+    ) -> AsyncIterable[List[Tuple[Optional[tuple], Optional[dict]]]]:
         num_retrieved = 0
         async for _, new in self._messages.changes():
             assert new is not None
@@ -35,8 +35,9 @@ class MemoryChannel(Channel):
                         # message was already consumed by another member of the consumer_group
                         # -> skip this message
                         continue
+
                     try:
-                        yield key, value
+                        yield [(key, value)]
                     finally:
                         self._watermarks[(topic, consumer_group)] = num_consumed + 1
 
