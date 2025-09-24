@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.5.6 (2025-09-24)
+
+### Fixes
+
+* fix: Switch to sticky partition assignor ([`6c0395b`](https://github.com/molinfo-vienna/nerdd-link/commit/6c0395b1b3be728593fbe76f9ff49200b59fe903))
+
+### Unknown
+
+* Merge pull request #62 from shirte/main
+
+Switch to sticky partition assignor ([`2ee1ca8`](https://github.com/molinfo-vienna/nerdd-link/commit/2ee1ca871efe8cfeb942f7e81054858fb3c35665))
+
+
 ## v0.5.5 (2025-09-23)
 
 ### Fixes
