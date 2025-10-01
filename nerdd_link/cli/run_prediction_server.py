@@ -1,13 +1,17 @@
 import asyncio
+import json
 import logging
+import os
 import signal
 from importlib import import_module
 from typing import Any, List
 
 import rich_click as click
 
-from ..actions import Action, PredictCheckpointsAction, RegisterModuleAction
+from ..actions import Action, PredictCheckpointsAction
 from ..channels import Channel
+from ..files import FileSystem
+from ..types import ModuleMessage
 from ..utils import async_to_sync
 
 __all__ = ["run_prediction_server"]
@@ -67,15 +71,34 @@ async def run_prediction_server(
     Model = getattr(package, class_name)
     model = Model()
 
-    register_module = RegisterModuleAction(channel=channel_instance, model=model, data_dir=data_dir)
+    #
+    # register the module
+    #
+    file_system = FileSystem(data_dir)
+    module_file_path = file_system.get_module_file_path(model.config.id)
 
+    # compare old json with new one, only write if changed
+    new_config_json = model.config.model_dump()
+    if os.path.exists(module_file_path):
+        old_config_json = json.load(open(module_file_path, "r"))
+    else:
+        old_config_json = None
+    if new_config_json != old_config_json:
+        logger.info(f"Registering module {model.config.id}")
+        json.dump(new_config_json, open(module_file_path, "w"))
+        await channel_instance.modules_topic().send(ModuleMessage(id=model.config.id))
+
+    #
+    # run prediction
+    #
     predict_checkpoints = PredictCheckpointsAction(
         channel=channel_instance,
         model=model,
         data_dir=data_dir,
     )
 
-    actions: List[Action] = [register_module, predict_checkpoints]
+    # enable running multiple actions in the future
+    actions: List[Action] = [predict_checkpoints]
 
     tasks = [asyncio.create_task(action.run()) for action in actions]
     try:
