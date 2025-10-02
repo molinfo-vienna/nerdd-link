@@ -7,6 +7,7 @@ from importlib import import_module
 from typing import Any, List
 
 import rich_click as click
+from nerdd_module import Model
 
 from ..actions import Action, PredictCheckpointsAction
 from ..channels import Channel
@@ -14,9 +15,64 @@ from ..files import FileSystem
 from ..types import ModuleMessage
 from ..utils import async_to_sync
 
-__all__ = ["run_prediction_server"]
-
 logger = logging.getLogger(__name__)
+
+
+async def _run_prediction_server(model: Model, channel: Channel, data_dir: str) -> None:
+    await channel.start()
+
+    # enable graceful shutdown on SIGTERM
+    loop = asyncio.get_running_loop()
+
+    def handle_termination_signal(*args: Any) -> None:
+        logger.info("Received termination signal, shutting down...")
+        asyncio.run_coroutine_threadsafe(channel.stop(), loop)
+
+    loop.add_signal_handler(signal.SIGTERM, handle_termination_signal)
+
+    #
+    # register the module
+    #
+    file_system = FileSystem(data_dir)
+    module_file_path = file_system.get_module_file_path(model.config.id)
+
+    # compare old json with new one, only write if changed
+    new_config_json = model.config.model_dump()
+    if os.path.exists(module_file_path):
+        old_config_json = json.load(open(module_file_path, "r"))
+    else:
+        old_config_json = None
+    if new_config_json != old_config_json:
+        logger.info(f"Registering module {model.config.id}")
+        json.dump(new_config_json, open(module_file_path, "w"))
+        await channel.modules_topic().send(ModuleMessage(id=model.config.id))
+
+    #
+    # run prediction
+    #
+    predict_checkpoints = PredictCheckpointsAction(
+        channel=channel,
+        model=model,
+        data_dir=data_dir,
+    )
+
+    # enable running multiple actions in the future
+    actions: List[Action] = [predict_checkpoints]
+
+    tasks = [asyncio.create_task(action.run()) for action in actions]
+    try:
+        for task in tasks:
+            logging.info(f"Running action {task}")
+        await asyncio.gather(*tasks)
+    except KeyboardInterrupt:
+        logger.info("Shutting down server")
+        for task in tasks:
+            task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
+
+        await channel.stop()
+
+    logger.info("Server shut down successfully")
 
 
 @click.command(context_settings={"show_default": True})
@@ -54,63 +110,14 @@ async def run_prediction_server(
 
     channel_instance = Channel.create_channel(channel, broker_url=broker_url)
 
-    await channel_instance.start()
-
-    # enable graceful shutdown on SIGTERM
-    loop = asyncio.get_running_loop()
-
-    def handle_termination_signal(*args: Any) -> None:
-        logger.info("Received termination signal, shutting down...")
-        asyncio.run_coroutine_threadsafe(channel_instance.stop(), loop)
-
-    loop.add_signal_handler(signal.SIGTERM, handle_termination_signal)
-
     # import the model class
     package_name, class_name = model_name.rsplit(".", 1)
     package = import_module(package_name)
     Model = getattr(package, class_name)
     model = Model()
 
-    #
-    # register the module
-    #
-    file_system = FileSystem(data_dir)
-    module_file_path = file_system.get_module_file_path(model.config.id)
-
-    # compare old json with new one, only write if changed
-    new_config_json = model.config.model_dump()
-    if os.path.exists(module_file_path):
-        old_config_json = json.load(open(module_file_path, "r"))
-    else:
-        old_config_json = None
-    if new_config_json != old_config_json:
-        logger.info(f"Registering module {model.config.id}")
-        json.dump(new_config_json, open(module_file_path, "w"))
-        await channel_instance.modules_topic().send(ModuleMessage(id=model.config.id))
-
-    #
-    # run prediction
-    #
-    predict_checkpoints = PredictCheckpointsAction(
-        channel=channel_instance,
+    await _run_prediction_server(
         model=model,
+        channel=channel_instance,
         data_dir=data_dir,
     )
-
-    # enable running multiple actions in the future
-    actions: List[Action] = [predict_checkpoints]
-
-    tasks = [asyncio.create_task(action.run()) for action in actions]
-    try:
-        for task in tasks:
-            logging.info(f"Running action {task}")
-        await asyncio.gather(*tasks)
-    except KeyboardInterrupt:
-        logger.info("Shutting down server")
-        for task in tasks:
-            task.cancel()
-        await asyncio.gather(*tasks, return_exceptions=True)
-
-        await channel_instance.stop()
-
-    logger.info("Server shut down successfully")

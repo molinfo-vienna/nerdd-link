@@ -8,9 +8,31 @@ from ..actions import Action, SerializeJobAction
 from ..channels import Channel
 from ..utils import async_to_sync
 
-__all__ = ["run_serialization_server"]
-
 logger = logging.getLogger(__name__)
+
+
+async def _run_serialization_server(channel: Channel, data_dir: str) -> None:
+    await channel.start()
+
+    serialize_job = SerializeJobAction(
+        channel=channel,
+        data_dir=data_dir,
+    )
+
+    actions: List[Action] = [serialize_job]
+
+    tasks = [asyncio.create_task(action.run()) for action in actions]
+    try:
+        for task in tasks:
+            logging.info(f"Running action {task}")
+        await asyncio.gather(*tasks)
+    except KeyboardInterrupt:
+        logger.info("Shutting down server")
+        for task in tasks:
+            task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
+
+        await channel.stop()
 
 
 @click.command(context_settings={"show_default": True})
@@ -46,24 +68,7 @@ async def run_serialization_server(
 
     channel_instance = Channel.create_channel(channel, broker_url=broker_url)
 
-    await channel_instance.start()
-
-    serialize_job = SerializeJobAction(
+    await _run_serialization_server(
         channel=channel_instance,
         data_dir=data_dir,
     )
-
-    actions: List[Action] = [serialize_job]
-
-    tasks = [asyncio.create_task(action.run()) for action in actions]
-    try:
-        for task in tasks:
-            logging.info(f"Running action {task}")
-        await asyncio.gather(*tasks)
-    except KeyboardInterrupt:
-        logger.info("Shutting down server")
-        for task in tasks:
-            task.cancel()
-        await asyncio.gather(*tasks, return_exceptions=True)
-
-        await channel_instance.stop()
