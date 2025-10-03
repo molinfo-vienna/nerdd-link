@@ -7,7 +7,11 @@ Feature: Predict checkpoints action
     # predict checkpoint action
     And the mol weight model (version 'mol_ids')
 
-    When the channel receives a message on topic 'jobs' with content
+    # start all participating servers
+    When the job server is running
+    And the prediction server is running
+    
+    And the channel receives a message on topic 'jobs' with content
         { "id": "123", 
           "job_type": "mol-scale", 
           "source_id": "456", 
@@ -15,8 +19,6 @@ Feature: Predict checkpoints action
           "max_num_molecules": 10000, 
           "checkpoint_size": 40 
         }
-    And the process job action is executed
-    And the predict checkpoints action is executed
     And we wait for 1 seconds
 
     # files

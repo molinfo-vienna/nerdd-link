@@ -3,13 +3,14 @@ Feature: Serialize job action
     Given a temporary data directory
     And a list of 100 random molecules
     And a file 'sources/456' with the molecules in format 'sdf'
-
-    # predict checkpoint action
     And the mol weight model (version 'mol_ids')
 
-    When the channel receives a message on topic 'system' with content
-        { "action-type": "init" }
-    And the register module action is executed
+    # start all participating servers
+    When the prediction server is running
+    And the job server is running
+    And the serialization server is running
+
+    # predict checkpoint action    
     And the channel receives a message on topic 'jobs' with content
         { 
             "id": "123", 
@@ -20,12 +21,9 @@ Feature: Serialize job action
             "max_num_molecules": 10000,
             "checkpoint_size": 40
         }
-    And the process job action is executed
-    And the predict checkpoints action is executed
     And we wait for 1 seconds
     And the channel receives a message on topic 'serialization-requests' with content
         { "job_id": "123", "job_type": "mol-scale", "params": { "multiplier": 10 }, "output_format": "sdf" }
-    And the serialize job action is executed
     And we wait for 1 seconds
 
     Then the file 'jobs/123/outputs/result.sdf' is created
