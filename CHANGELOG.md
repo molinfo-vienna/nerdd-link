@@ -1,6 +1,21 @@
 # CHANGELOG
 
 
+## v0.5.7 (2025-10-04)
+
+### Fixes
+
+* fix: Add development docker files ([`5edacb7`](https://github.com/molinfo-vienna/nerdd-link/commit/5edacb72ba3d13a7205473f05e53881ff2c9458b))
+
+* fix: Avoid deprecated syntax in docker files ([`722adec`](https://github.com/molinfo-vienna/nerdd-link/commit/722adec9ba26b87b3b07b40d651adc64b0679cef))
+
+### Unknown
+
+* Merge pull request #63 from shirte/main
+
+Add development docker files ([`02d487e`](https://github.com/molinfo-vienna/nerdd-link/commit/02d487e3605330c26cbfd6ca07c9aba5dae551ea))
+
+
 ## v0.5.6 (2025-09-24)
 
 ### Fixes
