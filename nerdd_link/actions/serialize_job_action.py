@@ -1,8 +1,7 @@
 import json
 import logging
 import os
-from asyncio import get_running_loop
-from concurrent.futures import ThreadPoolExecutor
+from asyncio import get_running_loop, to_thread
 
 from nerdd_module import WriteOutputStep
 
@@ -48,8 +47,6 @@ class SerializeJobAction(Action[SerializationRequestMessage]):
         config_file = self._file_system.get_module_file_path(job_type)
         config = json.load(open(config_file, "r"))
 
-        loop = get_running_loop()
-
         steps = [
             # read the result checkpoint files in the correct order
             ReadPickleStep(self._file_system.iter_results_file_handles(job_id, mode="rb")),
@@ -66,20 +63,14 @@ class SerializeJobAction(Action[SerializationRequestMessage]):
                 output_format="json",
                 config=None,  # type: ignore[arg-type]
                 channel=self.channel,
-                loop=loop,
+                loop=get_running_loop(),
             ),
         ]
 
-        # Run the serialization in a separate thread to avoid blocking the event loop.
-        with ThreadPoolExecutor() as executor:
-            future = loop.run_in_executor(
-                executor,
-                lambda: run_pipeline(*steps),
-            )
-
-            # we don't need to look out for exceptions, because any exception raised in the thread
-            # will be re-raised by asyncio here
-            await future
+        # Run the serialization in a separate thread to avoid blocking the event loop. We don't need
+        # to look out for exceptions, because any exception raised in the thread will be re-raised
+        # by asyncio here.
+        await to_thread(lambda: run_pipeline(*steps))
 
     async def _process_tombstone(self, message: Tombstone[SerializationRequestMessage]) -> None:
         job_id = message.job_id
