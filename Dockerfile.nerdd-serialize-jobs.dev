@@ -14,21 +14,21 @@ WORKDIR /app
 RUN apt-get update && apt-get install wget -qq
 
 # Copy only the environment file first so that we can cache the dependencies
-COPY environment_processing.yml requirements_processing.txt ./
+COPY environment_serialization.yml requirements_serialization.txt ./
 RUN --mount=type=cache,target=/root/.cache/pip \
-    micromamba env create -f environment_processing.yml && \
+    micromamba env create -f environment_serialization.yml && \
     # Fix a problem with the RDKit installation
     wget https://gist.githubusercontent.com/shirte/e1734e51dbc72984b2d918a71b68c25b/raw/ae4afece11980f5d7da9e7668a651abe349c357a/rdkit_installation_fix.sh && \
     chmod +x rdkit_installation_fix.sh && \
-    micromamba run -n nerdd_process_jobs ./rdkit_installation_fix.sh nerdd_process_jobs && \
+    micromamba run -n nerdd_serialize_jobs ./rdkit_installation_fix.sh nerdd_serialize_jobs && \
     # install the pip dependencies
-    micromamba run -n nerdd_process_jobs pip install -r requirements_processing.txt
+    micromamba run -n nerdd_serialize_jobs pip install -r requirements_serialization.txt
 
 # copy the rest of the source code directory and install the main package
 COPY . .
-RUN micromamba run -n nerdd_process_jobs pip install --no-deps .
+RUN micromamba run -n nerdd_serialize_jobs pip install --no-deps -e .
 
-ENTRYPOINT micromamba run -n nerdd_process_jobs \
-    nerdd_job_server \
+ENTRYPOINT micromamba run -n nerdd_serialize_jobs \
+    nerdd_serialization_server \
     --broker-url $KAFKA_BROKER_URL \
     --data-dir /data
