@@ -22,6 +22,7 @@ Feature: Serialize job action
         }
     And the process job action is executed
     And the predict checkpoints action is executed
+    And we wait for 1 seconds
     And the channel receives a message on topic 'serialization-requests' with content
         { "job_id": "123", "job_type": "mol-scale", "params": { "multiplier": 10 }, "output_format": "sdf" }
     And the serialize job action is executed

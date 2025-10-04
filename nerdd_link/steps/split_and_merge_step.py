@@ -1,10 +1,11 @@
-from functools import reduce
 from itertools import tee
 from queue import Queue
 from threading import Barrier, Lock, Thread
-from typing import Any, Iterator, List
+from typing import Any, Callable, Iterator, List, Optional
 
 from nerdd_module import OutputStep, Step
+
+from ..utils import run_pipeline
 
 __all__ = ["SplitAndMergeStep"]
 
@@ -42,32 +43,20 @@ class SplitAndMergeStep(OutputStep):
                 # continuing, because one thread might be faster than the others.
                 barrier.wait()
 
-        adapted_step_lists = [[sync_step, *steps] for steps in self._step_lists]
-
         # When a thread throws an exception, it won't be caught by the main thread. That is why
         # we create an exception bucket and add the exceptions to it. The main thread will then
         # raise the first exception in the bucket.
         exception_bucket: Queue = Queue()
 
-        def _run_steps(steps: List[Step], source: Iterator[dict]) -> Any:
+        def _run_steps(steps: List[Callable[[Optional[Iterator[dict]]], Iterator[dict]]]) -> Any:
             try:
-                assert len(steps) > 0, "There must be at least one step."
-
-                output_step = steps[-1]
-                assert isinstance(output_step, OutputStep), "The last step must be an OutputStep."
-
-                # Concatenate the steps in each step list.
-                # e.g. step_list = [step1, step2, step3]
-                # --> step3(step2(step1(source)))
-                reduce(lambda x, y: y(x), steps, source)
-
-                return output_step.get_result()
+                return run_pipeline(*steps)
             except Exception as e:
                 exception_bucket.put(e)
 
         threads = [
-            Thread(target=_run_steps, args=(step_list, source_copy))
-            for step_list, source_copy in zip(adapted_step_lists, source_copies)
+            Thread(target=_run_steps, args=([source, sync_step, *steps],))
+            for steps, source in zip(self._step_lists, source_copies)
         ]
 
         for thread in threads:

@@ -1,13 +1,16 @@
 import json
 import logging
 import os
+from asyncio import get_running_loop
+from concurrent.futures import ThreadPoolExecutor
 
-from nerdd_module import OutputStep
+from nerdd_module import WriteOutputStep
 
 from ..channels import Channel
-from ..delegates import ReadPickleStep, SerializeJobModel
 from ..files import FileSystem
+from ..steps import PostprocessFromConfigStep, ReadPickleStep
 from ..types import SerializationRequestMessage, SerializationResultMessage, Tombstone
+from ..utils import run_pipeline
 from .action import Action
 
 __all__ = ["SerializeJobAction"]
@@ -45,30 +48,38 @@ class SerializeJobAction(Action[SerializationRequestMessage]):
         config_file = self._file_system.get_module_file_path(job_type)
         config = json.load(open(config_file, "r"))
 
-        # create a fake model instance to get the postprocessing steps
-        model = SerializeJobModel(config)
+        loop = get_running_loop()
 
         steps = [
             # read the result checkpoint files in the correct order
             ReadPickleStep(self._file_system.iter_results_file_handles(job_id, mode="rb")),
-            # don't preprocess, don't do prediction, only post-process
-            *model._get_postprocessing_steps(output_format, output_file=output_file, **params),
+            # don't preprocess, don't do prediction, only post-process based on config
+            PostprocessFromConfigStep(
+                config=config,
+                job_id=job_id,
+                output_format=output_format,
+                output_file=output_file,
+                **params,
+            ),
+            # send messages to the corresponding topics
+            WriteOutputStep(
+                output_format="json",
+                config=None,  # type: ignore[arg-type]
+                channel=self.channel,
+                loop=loop,
+            ),
         ]
 
-        output_step = steps[-1]
-        assert isinstance(output_step, OutputStep), "The last step must be an OutputStep."
+        # Run the serialization in a separate thread to avoid blocking the event loop.
+        with ThreadPoolExecutor() as executor:
+            future = loop.run_in_executor(
+                executor,
+                lambda: run_pipeline(*steps),
+            )
 
-        # build the pipeline from the list of steps
-        pipeline = None
-        for t in steps:
-            pipeline = t(pipeline)
-
-        # run the pipeline by calling the get_result method of the last step
-        output_step.get_result()
-
-        await self.channel.serialization_results_topic().send(
-            SerializationResultMessage(job_id=job_id, output_format=output_format)
-        )
+            # we don't need to look out for exceptions, because any exception raised in the thread
+            # will be re-raised by asyncio here
+            await future
 
     async def _process_tombstone(self, message: Tombstone[SerializationRequestMessage]) -> None:
         job_id = message.job_id

@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from typing import (
     Any,
     AsyncIterable,
+    Callable,
     Dict,
     Generic,
     List,
@@ -75,6 +76,10 @@ class Topic(Generic[TMessage]):
 
     async def send(self, message: Union[TMessage, Tombstone[TMessage]]) -> None:
         await self.channel.send(self._name, message)
+
+    @property
+    def message_type(self) -> Type[TMessage]:
+        return self._message_type
 
     @property
     def channel(self) -> Channel:
@@ -212,6 +217,27 @@ class Channel(ABC):
 
     def system_topic(self) -> Topic[SystemMessage]:
         return Topic(self, "system", SystemMessage)
+
+    def topic_by_name(self, name: str) -> Topic[Any]:
+        # static topics
+        topic_mapping: Dict[str, Callable[[], Topic[Any]]] = {
+            "modules": self.modules_topic,
+            "jobs": self.jobs_topic,
+            "results": self.results_topic,
+            "result-checkpoints": self.result_checkpoints_topic,
+            "serialization-requests": self.serialization_requests_topic,
+            "serialization-results": self.serialization_results_topic,
+            "logs": self.logs_topic,
+            "system": self.system_topic,
+        }
+
+        if name in topic_mapping:
+            return topic_mapping[name]()
+        elif name.endswith("-checkpoints"):
+            job_type = name[: -len("-checkpoints")]
+            return self.checkpoints_topic(job_type)
+        else:
+            raise ValueError(f"Unknown topic name: {name}")
 
     #
     # META

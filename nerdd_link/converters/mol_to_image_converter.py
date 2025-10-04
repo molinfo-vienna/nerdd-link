@@ -72,6 +72,7 @@ class MolToImageConverter(Converter):
 
                 # remove highlight circle from parent
                 parent = ellipse.parentNode
+                assert parent is not None, "Parent node cannot be None."
                 parent.removeChild(ellipse)
 
                 # add highlight circle at the end of parent
