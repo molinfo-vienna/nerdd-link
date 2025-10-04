@@ -1,6 +1,65 @@
 # CHANGELOG
 
 
+## v0.5.8 (2025-10-04)
+
+### Fixes
+
+* fix: Remove unused types ([`a8f5c99`](https://github.com/molinfo-vienna/nerdd-link/commit/a8f5c993b171b8d2af6a64ed489cefb3601c5ddd))
+
+* fix: Adapt tests ([`96078c8`](https://github.com/molinfo-vienna/nerdd-link/commit/96078c8442dfc950152fdd51c809dcfad4b3f235))
+
+* fix: Use run_pipeline whenever possible ([`78af7c5`](https://github.com/molinfo-vienna/nerdd-link/commit/78af7c58d5c05fc98d983e9ac6eb437a2edda6a3))
+
+* fix: Implement helper function run_pipeline ([`f04836d`](https://github.com/molinfo-vienna/nerdd-link/commit/f04836de952754ea2662449f83dabe00e2252355))
+
+* fix: Make mypy and ruff happy ([`bdc211b`](https://github.com/molinfo-vienna/nerdd-link/commit/bdc211b60cfee58cd4d313e98cafd74f09f46b06))
+
+* fix: Remove deprecated assert in RegisterModuleAction ([`3ba5e12`](https://github.com/molinfo-vienna/nerdd-link/commit/3ba5e124cb6e695413c8aef03cf0a1426d3ddad8))
+
+* fix: Move checkpoint creation into pipeline steps ([`0ca5ad4`](https://github.com/molinfo-vienna/nerdd-link/commit/0ca5ad49cf740507f563b3350fcf7c1a96e505d6))
+
+* fix: Improve PredictCheckpointsAction ([`69430cb`](https://github.com/molinfo-vienna/nerdd-link/commit/69430cb6438ed9fe8d22cd8060b961fc55b59a0f))
+
+* fix: Improve SerializeJobAction ([`a1fd9ef`](https://github.com/molinfo-vienna/nerdd-link/commit/a1fd9efe5856dab4a07cdb79c204cdfa39a894de))
+
+* fix: Always convert to PropertyMol when using pickle ([`f834c8d`](https://github.com/molinfo-vienna/nerdd-link/commit/f834c8d722e1aa523a31e7b1dcb410cd25f5513e))
+
+* fix: Delete SerializeJobModel ([`b4c151d`](https://github.com/molinfo-vienna/nerdd-link/commit/b4c151d2db4515d8b0ace34cd7e85c609ae44551))
+
+* fix: Rename ReadCheckpointModel and add additional steps ([`28a32ca`](https://github.com/molinfo-vienna/nerdd-link/commit/28a32ca1be2995d7df686761c656631544b59abd))
+
+* fix: Move ReadPickleStep ([`69d08e2`](https://github.com/molinfo-vienna/nerdd-link/commit/69d08e2f896e74e80c21faa3cab4cbd6a3270f8e))
+
+* fix: Move code to WriteCheckpointsStep ([`b31d4ba`](https://github.com/molinfo-vienna/nerdd-link/commit/b31d4ba27e30588cf509432e18f9f1c80e08c0de))
+
+* fix: Make SplitAndMergeStep more concise ([`98c9d60`](https://github.com/molinfo-vienna/nerdd-link/commit/98c9d60942c4f3905abbcd5bd47580a0177d0b9c))
+
+* fix: Implement WrapResultsStep ([`e75ad5f`](https://github.com/molinfo-vienna/nerdd-link/commit/e75ad5fa5df307914dd99d54148bacc0f6e2d1b0))
+
+* fix: Extract code to PostprocessFromConfigStep ([`d3fdcb3`](https://github.com/molinfo-vienna/nerdd-link/commit/d3fdcb357fb851dd76f1a9cabd67a2a87f74f462))
+
+* fix: Extract code to ReplaceLargePropertiesStep ([`6a8a687`](https://github.com/molinfo-vienna/nerdd-link/commit/6a8a687a4270775b374225634ff155453c4f1a55))
+
+* fix: Extract code to AddRecordIdStep ([`ea7f4ee`](https://github.com/molinfo-vienna/nerdd-link/commit/ea7f4ee4f7d853f752cc23dde2ae696ca7691538))
+
+* fix: Import output submodule ([`b72e99b`](https://github.com/molinfo-vienna/nerdd-link/commit/b72e99baaaaaa3ade8d8c57e1bd8521f69fb1d6b))
+
+* fix: Implement ChannelWriter based on QueueWriter ([`3bce3d9`](https://github.com/molinfo-vienna/nerdd-link/commit/3bce3d972922e9211149fe93a165726e97865476))
+
+* fix: Move PickleWriter to output submodule ([`ebf7449`](https://github.com/molinfo-vienna/nerdd-link/commit/ebf74496c7038c006a254a6c52b29e42cf22df9c))
+
+* fix: Delete consumer when an error occurs in _iter_messages ([`ce5bee0`](https://github.com/molinfo-vienna/nerdd-link/commit/ce5bee0ff50fa1708b1b82c70bda373472d1bc0d))
+
+* fix: Add utility methods to channel and topic classes ([`6435f85`](https://github.com/molinfo-vienna/nerdd-link/commit/6435f85be0fc5fc0725bd034e471e715a67af6d8))
+
+### Unknown
+
+* Merge pull request #64 from shirte/main
+
+Refactor code and run blocking code in separate thread ([`947ff01`](https://github.com/molinfo-vienna/nerdd-link/commit/947ff01bdbe9e23fbb5a48d8bc64aeba2418febc))
+
+
 ## v0.5.7 (2025-10-04)
 
 ### Fixes
