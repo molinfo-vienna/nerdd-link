@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.5.9 (2025-10-04)
+
+### Fixes
+
+* fix: Use to_thread instead of run_in_executor ([`3af558b`](https://github.com/molinfo-vienna/nerdd-link/commit/3af558b1ff638cf989c8822cc655bb71c59c3abd))
+
+### Unknown
+
+* Merge pull request #65 from shirte/main
+
+Use to_thread instead of run_in_executor ([`1b651bc`](https://github.com/molinfo-vienna/nerdd-link/commit/1b651bc75c2f70327e25d896bdcfd973b7a9c6ed))
+
+
 ## v0.5.8 (2025-10-04)
 
 ### Fixes
