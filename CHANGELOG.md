@@ -1,6 +1,25 @@
 # CHANGELOG
 
 
+## v0.5.10 (2025-10-07)
+
+### Fixes
+
+* fix: Handle SIGTERM in prediction action ([`a494924`](https://github.com/molinfo-vienna/nerdd-link/commit/a494924b6168f30a79bb93a66041e1186ce29ae2))
+
+* fix: Shut down consumers gracefully ([`ecf1582`](https://github.com/molinfo-vienna/nerdd-link/commit/ecf158251091eeff9678f400c7ea79f3e96f11cb))
+
+* fix: Use asyncio.Event to track Channel.is_running ([`2984628`](https://github.com/molinfo-vienna/nerdd-link/commit/29846282f7c4ae08647985a339be4e39d53640c2))
+
+* fix: Delay revoking partitions until current message is processed ([`616fe94`](https://github.com/molinfo-vienna/nerdd-link/commit/616fe9462ace4ab2fe7484440c71265c418c4359))
+
+### Unknown
+
+* Merge pull request #66 from shirte/main
+
+Shutdown gracefully when receiving SIGTERM ([`89bbeea`](https://github.com/molinfo-vienna/nerdd-link/commit/89bbeeaefd3827a4d97fe97cfa7c9f472e700b7c))
+
+
 ## v0.5.9 (2025-10-04)
 
 ### Fixes
