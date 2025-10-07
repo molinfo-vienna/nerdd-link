@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
+from asyncio import Event
 from typing import (
     Any,
     AsyncIterable,
@@ -91,18 +92,20 @@ class Topic(Generic[TMessage]):
 
 class Channel(ABC):
     def __init__(self) -> None:
-        self._is_running = False
+        self._is_running = Event()
 
     async def start(self) -> None:
-        self._is_running = True
+        self._is_running.set()
         await self._start()
 
     async def _start(self) -> None:  # noqa: B027
         pass
 
     async def stop(self) -> None:
+        if not self.is_running:
+            return
+        self._is_running.clear()
         await self._stop()
-        self._is_running = False
 
     async def _stop(self) -> None:  # noqa: B027
         pass
@@ -114,6 +117,10 @@ class Channel(ABC):
     async def __aexit__(self, exc_type: type, exc_value: Exception, traceback: object) -> None:
         await self.stop()
 
+    @property
+    def is_running(self) -> bool:
+        return self._is_running.is_set()
+
     #
     # RECEIVE
     #
@@ -124,7 +131,7 @@ class Channel(ABC):
         message_type: Type[TMessage],
         batch_size: int = 1,
     ) -> AsyncIterable[List[Union[TMessage, Tombstone[TMessage]]]]:
-        if not self._is_running:
+        if not self.is_running:
             raise RuntimeError("Channel is not running. Call start() first.")
 
         key_fields = message_type.topic_config.get("key_fields")
@@ -160,9 +167,6 @@ class Channel(ABC):
     # SEND
     #
     async def send(self, topic: str, message: Union[TMessage, Tombstone[TMessage]]) -> None:
-        if not self._is_running:
-            raise RuntimeError("Channel is not running. Call start() first.")
-
         # extract key
         if isinstance(message, Tombstone):
             key_fields = message.message_type.topic_config.get("key_fields")

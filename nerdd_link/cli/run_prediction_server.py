@@ -1,7 +1,8 @@
 import asyncio
 import logging
+import signal
 from importlib import import_module
-from typing import List
+from typing import Any, List
 
 import rich_click as click
 
@@ -51,6 +52,15 @@ async def run_prediction_server(
 
     await channel_instance.start()
 
+    # enable graceful shutdown on SIGTERM
+    loop = asyncio.get_running_loop()
+
+    def handle_termination_signal(*args: Any) -> None:
+        logger.info("Received termination signal, shutting down...")
+        asyncio.run_coroutine_threadsafe(channel_instance.stop(), loop)
+
+    loop.add_signal_handler(signal.SIGTERM, handle_termination_signal)
+
     # import the model class
     package_name, class_name = model_name.rsplit(".", 1)
     package = import_module(package_name)
@@ -79,3 +89,5 @@ async def run_prediction_server(
         await asyncio.gather(*tasks, return_exceptions=True)
 
         await channel_instance.stop()
+
+    logger.info("Server shut down successfully")
