@@ -1,6 +1,23 @@
 # CHANGELOG
 
 
+## v0.5.11 (2025-10-08)
+
+### Fixes
+
+* fix: Handle consumer shutdown in Channel superclass ([`fb0596f`](https://github.com/molinfo-vienna/nerdd-link/commit/fb0596f544613dd25cb8f3be514955919aaf6802))
+
+* fix: Remove kafka consumer caching ([`9b9e0d0`](https://github.com/molinfo-vienna/nerdd-link/commit/9b9e0d0fc212999c19157b1b07d9d761a4387bb9))
+
+* fix: Start and stop consumers only in _iter_messages ([`7738d81`](https://github.com/molinfo-vienna/nerdd-link/commit/7738d81523ea60d674048a28d3713b492b365537))
+
+### Unknown
+
+* Merge pull request #67 from shirte/main
+
+Improve graceful termination of consumers ([`32c4b78`](https://github.com/molinfo-vienna/nerdd-link/commit/32c4b78f5c5c802325a5961552a9861c274be1e2))
+
+
 ## v0.5.10 (2025-10-07)
 
 ### Fixes
