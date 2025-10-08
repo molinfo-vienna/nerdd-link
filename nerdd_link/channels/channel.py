@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from asyncio import Event
+from asyncio import Event, Lock
 from typing import (
     Any,
     AsyncIterable,
@@ -94,6 +94,10 @@ class Channel(ABC):
     def __init__(self) -> None:
         self._is_running = Event()
 
+        self._num_consumers_lock = Lock()
+        self._num_consumers = 0
+        self._no_active_consumers = Event()
+
     async def start(self) -> None:
         self._is_running.set()
         await self._start()
@@ -104,7 +108,13 @@ class Channel(ABC):
     async def stop(self) -> None:
         if not self.is_running:
             return
+
+        # notify that we aim to stop
         self._is_running.clear()
+
+        # wait for all consumers to stop
+        await self._no_active_consumers.wait()
+
         await self._stop()
 
     async def _stop(self) -> None:  # noqa: B027
@@ -134,24 +144,37 @@ class Channel(ABC):
         if not self.is_running:
             raise RuntimeError("Channel is not running. Call start() first.")
 
-        key_fields = message_type.topic_config.get("key_fields")
+        # increase number of active consumers
+        async with self._num_consumers_lock:
+            self._num_consumers += 1
+            self._no_active_consumers.clear()
 
-        async for key_value_pairs in self._iter_messages(topic, consumer_group, batch_size):
-            message_batch: List[Union[TMessage, Tombstone[TMessage]]] = []
-            for key, value in key_value_pairs:
-                if value is None:
-                    assert key is not None, "Key must be provided for tombstone messages"
-                    message_batch.append(Tombstone(message_type, *key))
-                else:
-                    if key_fields is None and key is not None:
-                        logger.warning(
-                            f"Message type {message_type.__name__} does not have key fields "
-                            "defined, but a key was provided. This may lead to unexpected behavior."
-                        )
+        try:
+            key_fields = message_type.topic_config.get("key_fields")
 
-                    message_batch.append(message_type(**value))
+            async for key_value_pairs in self._iter_messages(topic, consumer_group, batch_size):
+                message_batch: List[Union[TMessage, Tombstone[TMessage]]] = []
+                for key, value in key_value_pairs:
+                    if value is None:
+                        assert key is not None, "Key must be provided for tombstone messages"
+                        message_batch.append(Tombstone(message_type, *key))
+                    else:
+                        if key_fields is None and key is not None:
+                            logger.warning(
+                                f"Message type {message_type.__name__} does not have key fields "
+                                f"defined, but a key was provided. This may lead to unexpected "
+                                f"behavior."
+                            )
 
-            yield message_batch
+                        message_batch.append(message_type(**value))
+
+                yield message_batch
+        finally:
+            # decrease number of active consumers
+            async with self._num_consumers_lock:
+                self._num_consumers -= 1
+                if self._num_consumers <= 0:
+                    self._no_active_consumers.set()
 
     # Insane Python quirk: we need to use "def _iter_messages" instead of "async def _iter_messages"
     # here, because the method doesn't use "yield" and so the type checker will assume that the
