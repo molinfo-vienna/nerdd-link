@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.5.13 (2025-10-09)
+
+### Fixes
+
+* fix: Keep mol properties when writing checkpoints ([`75e8ac8`](https://github.com/molinfo-vienna/nerdd-link/commit/75e8ac801fe6ec413cd8ede1ca7c381a38bdc520))
+
+### Unknown
+
+* Merge pull request #69 from shirte/main
+
+Keep mol properties when writing checkpoints ([`45724b5`](https://github.com/molinfo-vienna/nerdd-link/commit/45724b54ff2be3e90bf44f7aa3f0d7d82dc91916))
+
+
 ## v0.5.12 (2025-10-09)
 
 ### Fixes
