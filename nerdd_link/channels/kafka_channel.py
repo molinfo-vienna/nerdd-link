@@ -1,11 +1,11 @@
 import json
 import logging
-from asyncio import Lock
+from asyncio import Lock, sleep
 from typing import AsyncIterable, List, Optional, Tuple
 
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer, ConsumerRebalanceListener
 from aiokafka.coordinator.assignors.sticky.sticky_assignor import StickyPartitionAssignor
-from aiokafka.errors import CommitFailedError
+from aiokafka.errors import CommitFailedError, NotLeaderForPartitionError
 
 from .channel import Channel
 
@@ -72,6 +72,9 @@ class KafkaChannel(Channel):
                 # is considered dead. Prediction tasks can take a long time, so we set this to 1
                 # hour.
                 max_poll_interval_ms=60 * 60 * 1000,
+                # when a rebalance happens, we would like to finish the current task
+                # --> use same value as in max_poll_interval_ms
+                rebalance_timeout_ms=60 * 60 * 1000,
                 # session_timeout_ms: The timeout used to detect failures when using Kafka's
                 # group management. We set this to 1 minute.
                 session_timeout_ms=60_000,
@@ -161,4 +164,22 @@ class KafkaChannel(Channel):
         else:
             message_value = json.dumps(value).encode("utf-8")
 
-        await self._producer.send_and_wait(topic, value=message_value, key=message_key)
+        retries = 5
+        last_exception = None
+        while retries > 0:
+            try:
+                await self._producer.send_and_wait(topic, value=message_value, key=message_key)
+                return
+            except NotLeaderForPartitionError as e:
+                # refreshing the metadata (and try again)
+                last_exception = e
+                await self._producer.client.fetch_all_metadata()
+            except Exception as e:
+                # there is nothing left to do except waiting and praying
+                await sleep(1)
+                last_exception = e
+            finally:
+                retries -= 1
+
+        assert last_exception is not None, "After a retry, this exception should be set"
+        raise last_exception
