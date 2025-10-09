@@ -1,6 +1,21 @@
 # CHANGELOG
 
 
+## v0.5.12 (2025-10-09)
+
+### Fixes
+
+* fix: Retry sending on error ([`016045b`](https://github.com/molinfo-vienna/nerdd-link/commit/016045bcc3cb05f0fecd568d7c098eddcd8fd091))
+
+* fix: Set rebalance_timeout_ms ([`99315d0`](https://github.com/molinfo-vienna/nerdd-link/commit/99315d067c286eae164271547f439f1f79ea07e7))
+
+### Unknown
+
+* Merge pull request #68 from shirte/main
+
+Set rebalance_timeout_ms ([`ed715ca`](https://github.com/molinfo-vienna/nerdd-link/commit/ed715ca4902633e45486a1c2606f7e149da5b7d8))
+
+
 ## v0.5.11 (2025-10-08)
 
 ### Fixes
