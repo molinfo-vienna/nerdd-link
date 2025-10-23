@@ -5,7 +5,10 @@ Feature: Process job action
     And a list of 100 random molecules
     And a file 'sources/456' with the molecules in format 'sdf'
 
-    When the channel receives a message on topic 'jobs' with content
+    # start all participating servers
+    When the job server is running
+    
+    And the channel receives a message on topic 'jobs' with content
         { 
             "id": "123", 
             "job_type": 
@@ -15,7 +18,6 @@ Feature: Process job action
             "max_num_molecules": 10000,
             "checkpoint_size": 40
         }
-    And the process job action is executed
     And we wait for 1 seconds
 
     # files
@@ -38,7 +40,10 @@ Feature: Process job action
     And a list of 100 random molecules
     And a file 'sources/456' with the molecules in format 'sdf'
 
-    When the channel receives a message on topic 'jobs' with content
+    # start all participating servers
+    When the job server is running 
+    
+    And the channel receives a message on topic 'jobs' with content
         { 
             "id": "123", 
             "job_type": 
@@ -48,7 +53,6 @@ Feature: Process job action
             "max_num_molecules": 10,
             "checkpoint_size": 100
         }
-    And the process job action is executed
     And we wait for 1 seconds
 
     # files
