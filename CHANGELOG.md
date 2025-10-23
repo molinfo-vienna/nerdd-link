@@ -1,6 +1,33 @@
 # CHANGELOG
 
 
+## v0.5.14 (2025-10-23)
+
+### Fixes
+
+* fix: Extract code to improve testing ([`1de7594`](https://github.com/molinfo-vienna/nerdd-link/commit/1de7594983bf2d55c35a4eac12fa3e200a8e5e0c))
+
+* fix: Remove command for initializing the system ([`3b96a22`](https://github.com/molinfo-vienna/nerdd-link/commit/3b96a2253ff41c4414a75f0dcb9e76b817458a54))
+
+* fix: Remove old module registration code ([`661fab8`](https://github.com/molinfo-vienna/nerdd-link/commit/661fab85536c867cad032c8f07e710df95a021fe))
+
+* fix: Always check for changes in module configuration ([`c77e011`](https://github.com/molinfo-vienna/nerdd-link/commit/c77e0115d21e56755327a28236c31f7e3911daa6))
+
+### Testing
+
+* test: Adapt tests ([`99889ee`](https://github.com/molinfo-vienna/nerdd-link/commit/99889ee712f3ef5361042458492a17b4fb867c57))
+
+* test: Add steps to run server commands ([`1bc1097`](https://github.com/molinfo-vienna/nerdd-link/commit/1bc109729749605e28757246233c3bdac8eefe3a))
+
+* test: Remove deprecated code ([`039f6c7`](https://github.com/molinfo-vienna/nerdd-link/commit/039f6c73f2d4a02ec82dbc59238bb99b3fe848f5))
+
+### Unknown
+
+* Merge pull request #70 from shirte/main
+
+Always check for changes in module configuration ([`d4466f9`](https://github.com/molinfo-vienna/nerdd-link/commit/d4466f97a75eb7ada7431016319fb3e21e64f99b))
+
+
 ## v0.5.13 (2025-10-09)
 
 ### Fixes
