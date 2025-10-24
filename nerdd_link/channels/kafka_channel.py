@@ -1,11 +1,10 @@
 import json
 import logging
-from asyncio import Lock, sleep
+from asyncio import Lock
 from typing import AsyncIterable, List, Optional, Tuple
 
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer, ConsumerRebalanceListener
 from aiokafka.coordinator.assignors.sticky.sticky_assignor import StickyPartitionAssignor
-from aiokafka.errors import NotLeaderForPartitionError
 
 from .channel import Channel
 
@@ -45,6 +44,10 @@ class KafkaChannel(Channel):
     async def _start(self) -> None:
         self._producer = AIOKafkaProducer(
             bootstrap_servers=[self._broker_url],
+            # ensure no messages are lost
+            acks="all",
+            # time until sending is considered failed (includes retries)
+            request_timeout_ms=300_000,
         )
         logger.info(f"Connecting to Kafka broker {self._broker_url} and starting a producer...")
         await self._producer.start()
@@ -66,7 +69,7 @@ class KafkaChannel(Channel):
                 auto_offset_reset="earliest",
                 group_id=consumer_group,
                 enable_auto_commit=False,
-                # consume only one message at a time
+                # number of messages to fetch in one poll
                 max_poll_records=batch_size,
                 # max_poll_interval_ms: Time between polls (in milliseconds) before the consumer
                 # is considered dead. Prediction tasks can take a long time, so we set this to 1
@@ -150,33 +153,17 @@ class KafkaChannel(Channel):
                 logger.error("Error while stopping consumer", exc_info=True)
 
     async def _send(self, topic: str, key: Optional[tuple], value: Optional[dict]) -> None:
+        # compute key
         if key is None:
             message_key = None
         else:
             message_key = json.dumps(key).encode("utf-8")
 
-        # fetch value
+        # compute value
         if value is None:
             message_value = None
         else:
             message_value = json.dumps(value).encode("utf-8")
 
-        retries = 5
-        last_exception = None
-        while retries > 0:
-            try:
-                await self._producer.send_and_wait(topic, value=message_value, key=message_key)
-                return
-            except NotLeaderForPartitionError as e:
-                # refreshing the metadata (and try again)
-                last_exception = e
-                await self._producer.client.fetch_all_metadata()
-            except Exception as e:
-                # there is nothing left to do except waiting and praying
-                await sleep(1)
-                last_exception = e
-            finally:
-                retries -= 1
-
-        assert last_exception is not None, "After a retry, this exception should be set"
-        raise last_exception
+        # send (note: _producer.send_and_wait retries on failures internally)
+        await self._producer.send_and_wait(topic, value=message_value, key=message_key)
