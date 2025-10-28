@@ -47,7 +47,7 @@ async def _run_job_server(
 @click.command(context_settings={"show_default": True})
 @click.option(
     "--channel",
-    type=click.Choice(["kafka"], case_sensitive=False),
+    type=click.Choice(Channel.get_channel_names(), case_sensitive=False),
     default="kafka",
     help="Channel to use for communication with the model.",
 )

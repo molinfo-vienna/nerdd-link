@@ -79,7 +79,7 @@ async def _run_prediction_server(model: Model, channel: Channel, data_dir: str) 
 @click.argument("model-name")
 @click.option(
     "--channel",
-    type=click.Choice(["kafka"], case_sensitive=False),
+    type=click.Choice(Channel.get_channel_names(), case_sensitive=False),
     default="kafka",
     help="Channel to use for communication with the model.",
 )
