@@ -289,10 +289,6 @@ class Channel(ABC):
         Channel._channel_registry[name] = cls
 
     @classmethod
-    def get_channel(cls, name: str) -> Channel:
-        return cls._channel_registry[name]()
-
-    @classmethod
     def create_channel(cls, name: str, **kwargs: Any) -> Channel:
         return call_with_mappings(cls._channel_registry[name], kwargs)
 
