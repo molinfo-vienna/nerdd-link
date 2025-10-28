@@ -72,12 +72,12 @@ class KafkaChannel(Channel):
                 # number of messages to fetch in one poll
                 max_poll_records=batch_size,
                 # max_poll_interval_ms: Time between polls (in milliseconds) before the consumer
-                # is considered dead. Prediction tasks can take a long time, so we set this to 1
-                # hour.
-                max_poll_interval_ms=60 * 60 * 1000,
+                # is considered dead. Prediction tasks can take a long time, so we set this to 6
+                # hours.
+                max_poll_interval_ms=6 * 60 * 60 * 1000,
                 # when a rebalance happens, we would like to finish the current task
                 # --> use same value as in max_poll_interval_ms
-                rebalance_timeout_ms=60 * 60 * 1000,
+                rebalance_timeout_ms=6 * 60 * 60 * 1000,
                 # session_timeout_ms: The timeout used to detect failures when using Kafka's
                 # group management. We set this to 1 minute.
                 session_timeout_ms=60_000,
