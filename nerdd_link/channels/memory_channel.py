@@ -11,7 +11,11 @@ logger = logging.getLogger(__name__)
 
 
 class MemoryChannel(Channel):
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        broker_username: Optional[str] = None,
+        broker_password: Optional[str] = None,
+    ) -> None:
         super().__init__()
         self._messages = ObservableList[Tuple[str, Optional[tuple], Optional[dict]]]()
         self._watermarks: Dict[Tuple[str, str], int] = dict()
