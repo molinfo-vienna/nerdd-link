@@ -178,4 +178,6 @@ class LogMessage(Message):
 
 
 class SystemMessage(Message):
-    pass
+    id: int = 0
+
+    topic_config: ClassVar[TopicConfig] = TopicConfig(key_fields=["id"])
