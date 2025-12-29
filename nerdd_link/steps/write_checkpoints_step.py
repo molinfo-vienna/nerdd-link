@@ -1,12 +1,12 @@
 import logging
-import pickle
-from typing import Iterator, Optional
+from typing import BinaryIO, Iterator, Optional, cast
 
 from nerdd_module import Step
 from rdkit.Chem import Mol
 from rdkit.Chem.PropertyMol import PropertyMol
 
 from ..files import FileSystem
+from ..output import PickleWriter
 from ..types import CheckpointMessage, LogMessage
 from ..utils import batched
 
@@ -58,7 +58,7 @@ class WriteCheckpointsStep(Step):
                         if isinstance(v, Mol):
                             result[k] = PropertyMol(v)
 
-                pickle.dump(results, f)
+                PickleWriter(cast(BinaryIO, f)).write(results)
 
             # send a tuple to checkpoints topic
             yield {
