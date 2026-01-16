@@ -33,23 +33,6 @@ __all__ = ["ConfluentKafkaChannel"]
 logger = logging.getLogger(__name__)
 
 
-class RebalanceListener:
-    def __init__(self, topic: str):
-        self._topic = topic
-
-    def on_assign(self, consumer: Any, partitions: list[Any]) -> None:
-        logger.info(f"Partitions assigned on topic {self._topic}: {partitions}")
-        consumer.incremental_assign(partitions)
-
-    def on_revoke(self, consumer: Any, partitions: list[Any]) -> None:
-        logger.info(f"Partitions revoked on topic {self._topic}: {partitions}")
-        consumer.incremental_unassign(partitions)
-
-    def on_lost(self, consumer: Any, partitions: list[Any]) -> None:
-        logger.info(f"Partitions lost on topic {self._topic}: {partitions}")
-        consumer.incremental_unassign(partitions)
-
-
 class ConfluentKafkaChannel(Channel):
     def __init__(
         self,
@@ -107,8 +90,6 @@ class ConfluentKafkaChannel(Channel):
     async def _iter_messages(
         self, topic: str, consumer_group: str, batch_size: int = 1
     ) -> AsyncIterable[List[Tuple[Optional[tuple], Optional[dict]]]]:
-        rebalance_listener = RebalanceListener(topic)
-
         auth_config = {}
         if self._broker_username is not None and self._broker_password is not None:
             auth_config = {
@@ -145,9 +126,6 @@ class ConfluentKafkaChannel(Channel):
             await asyncio.to_thread(
                 consumer.subscribe,
                 [topic],
-                on_assign=rebalance_listener.on_assign,
-                on_revoke=rebalance_listener.on_revoke,
-                on_lost=rebalance_listener.on_lost,
             )
 
             logger.info(
