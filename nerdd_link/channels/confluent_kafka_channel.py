@@ -196,6 +196,11 @@ class ConfluentKafkaChannel(Channel):
                         if error is not None:
                             raise RuntimeError(f"Error while committing Kafka message: {error}")
         finally:
+            logger.warning(
+                "Kafka consumer stopped on topic %s with group %s",
+                topic,
+                consumer_group,
+            )
             try:
                 await asyncio.to_thread(consumer.close)
             except Exception:
