@@ -1,10 +1,9 @@
-import asyncio
 import logging
 from typing import List, Optional
 
 import rich_click as click
 
-from ..actions import Action, SerializeJobAction
+from ..actions import Action, SerializeJobAction, supervise_actions
 from ..channels import Channel
 from ..utils import async_to_sync
 
@@ -12,27 +11,21 @@ logger = logging.getLogger(__name__)
 
 
 async def _run_serialization_server(channel: Channel, data_dir: str) -> None:
-    await channel.start()
-
-    serialize_job = SerializeJobAction(
-        channel=channel,
-        data_dir=data_dir,
-    )
-
-    actions: List[Action] = [serialize_job]
-
-    tasks = [asyncio.create_task(action.run()) for action in actions]
     try:
-        for task in tasks:
-            logging.info(f"Running action {task}")
-        await asyncio.gather(*tasks)
-    except KeyboardInterrupt:
-        logger.info("Shutting down server")
-        for task in tasks:
-            task.cancel()
-        await asyncio.gather(*tasks, return_exceptions=True)
+        async with channel:
+            serialize_job = SerializeJobAction(
+                channel=channel,
+                data_dir=data_dir,
+            )
 
-        await channel.stop()
+            actions: List[Action] = [serialize_job]
+
+            await supervise_actions(actions)
+    except KeyboardInterrupt:
+        # we catch KeyboardInterrupt so it is not displayed to the user
+        pass
+    finally:
+        logger.info("Server shut down successfully")
 
 
 @click.command(context_settings={"show_default": True})

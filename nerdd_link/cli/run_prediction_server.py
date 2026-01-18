@@ -9,7 +9,7 @@ from typing import Any, List, Optional
 import rich_click as click
 from nerdd_module import Model
 
-from ..actions import Action, PredictCheckpointsAction
+from ..actions import Action, PredictCheckpointsAction, supervise_actions
 from ..channels import Channel
 from ..files import FileSystem
 from ..types import ModuleMessage
@@ -19,8 +19,6 @@ logger = logging.getLogger(__name__)
 
 
 async def _run_prediction_server(model: Model, channel: Channel, data_dir: str) -> None:
-    await channel.start()
-
     # enable graceful shutdown on SIGTERM
     loop = asyncio.get_running_loop()
 
@@ -30,49 +28,43 @@ async def _run_prediction_server(model: Model, channel: Channel, data_dir: str) 
 
     loop.add_signal_handler(signal.SIGTERM, handle_termination_signal)
 
-    #
-    # register the module
-    #
-    file_system = FileSystem(data_dir)
-    module_file_path = file_system.get_module_file_path(model.config.id)
-
-    # compare old json with new one, only write if changed
-    new_config_json = model.config.model_dump()
-    if os.path.exists(module_file_path):
-        old_config_json = json.load(open(module_file_path, "r"))
-    else:
-        old_config_json = None
-    if new_config_json != old_config_json:
-        logger.info(f"Registering module {model.config.id}")
-        json.dump(new_config_json, open(module_file_path, "w"))
-        await channel.modules_topic().send(ModuleMessage(id=model.config.id))
-
-    #
-    # run prediction
-    #
-    predict_checkpoints = PredictCheckpointsAction(
-        channel=channel,
-        model=model,
-        data_dir=data_dir,
-    )
-
-    # enable running multiple actions in the future
-    actions: List[Action] = [predict_checkpoints]
-
-    tasks = [asyncio.create_task(action.run()) for action in actions]
     try:
-        for task in tasks:
-            logging.info(f"Running action {task}")
-        await asyncio.gather(*tasks)
+        async with channel:
+            #
+            # register the module
+            #
+            file_system = FileSystem(data_dir)
+            module_file_path = file_system.get_module_file_path(model.config.id)
+
+            # compare old json with new one, only write if changed
+            new_config_json = model.config.model_dump()
+            if os.path.exists(module_file_path):
+                old_config_json = json.load(open(module_file_path, "r"))
+            else:
+                old_config_json = None
+            if new_config_json != old_config_json:
+                logger.info(f"Registering module {model.config.id}")
+                json.dump(new_config_json, open(module_file_path, "w"))
+                await channel.modules_topic().send(ModuleMessage(id=model.config.id))
+
+            #
+            # run prediction
+            #
+            predict_checkpoints = PredictCheckpointsAction(
+                channel=channel,
+                model=model,
+                data_dir=data_dir,
+            )
+
+            # run actions in parallel
+            actions: List[Action] = [predict_checkpoints]
+
+            await supervise_actions(actions)
     except KeyboardInterrupt:
-        logger.info("Shutting down server")
-        for task in tasks:
-            task.cancel()
-        await asyncio.gather(*tasks, return_exceptions=True)
-
-        await channel.stop()
-
-    logger.info("Server shut down successfully")
+        # we catch KeyboardInterrupt so it is not displayed to the user
+        pass
+    finally:
+        logger.info("Server shut down successfully")
 
 
 @click.command(context_settings={"show_default": True})
