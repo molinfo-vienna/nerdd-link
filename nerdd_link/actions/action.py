@@ -28,14 +28,8 @@ class Action(ABC, Generic[T]):
             except CancelledError:
                 # the consumer was cancelled, stop processing messages
                 break
-            except Exception as e:
-                # If any exception is raised in _process_message, we will stop processing messages.
-                # Especially, the message won't be committed.
-                logger.exception(
-                    f"An error occurred while processing message batch {message_batch}",
-                    exc_info=e,
-                )
-                raise
+
+            # Let all other exceptions pass through and stop processing messages.
 
     async def _process_message_batch(self, message_batch: List[Union[T, Tombstone[T]]]) -> None:
         messages = []
