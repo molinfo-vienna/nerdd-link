@@ -181,20 +181,54 @@ class ConfluentKafkaChannel(Channel):
 
                 yield key_value_pairs
 
-                partitions = await asyncio.to_thread(
-                    consumer.commit,
-                    asynchronous=False,
-                )
+                # Commit message offsets. During this process, we often encounter errors that might
+                # be retriable. Therefore, we retry committing multiple times before giving up.
+                n_trials = 5
+                for trial in range(n_trials):
+                    # In confluent-kafka, errors can be raised during consumer.commit() or
+                    # returned in the list of partitions. We check both cases and store the
+                    # error here.
+                    commit_error = None
 
-                # check for errors during commit
-                if partitions is not None:
-                    for partition in partitions:
-                        error = getattr(partition, "error", None)
-                        if callable(error):
-                            error = error()
+                    # try consumer.commit() and check errors
+                    try:
+                        partitions = await asyncio.to_thread(
+                            consumer.commit,
+                            asynchronous=False,
+                        )
+                    except KafkaException as error:
+                        commit_error = error.args[0]
+                    else:
+                        # Check errors in the list of partitions. We store the most critical error
+                        # (non-retriable > retriable) in the variable commit_error.
+                        if partitions is not None:
+                            for partition in partitions:
+                                if partition.error is None:
+                                    continue
 
-                        if error is not None:
-                            raise RuntimeError(f"Error while committing Kafka message: {error}")
+                                commit_error = partition.error
+
+                                # If this error is retriable, there might still be a non-retriable
+                                # error later, so we continue checking. Otherwise, we break early.
+                                if not partition.error.retriable():
+                                    break
+
+                    if commit_error is None:
+                        # neither consumer.commit() nor the partitions contained an error
+                        # -> we can break the retry loop
+                        break
+                    elif not commit_error.retriable() or trial + 1 >= n_trials:
+                        # there was a non-retriable error or we have no trials left
+                        raise RuntimeError(f"Error while committing Kafka message: {commit_error}")
+                    else:
+                        # error is retriable and we have trials left
+                        logger.warning(
+                            "Error while committing Kafka message. Retrying... (%s/%s): %s",
+                            trial + 1,
+                            n_trials,
+                            commit_error,
+                        )
+                        await asyncio.sleep(1)
         finally:
             logger.warning(
                 "Kafka consumer stopped on topic %s with group %s",
