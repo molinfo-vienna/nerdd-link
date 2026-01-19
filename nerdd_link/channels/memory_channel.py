@@ -49,5 +49,5 @@ class MemoryChannel(Channel):
         logger.info(f"Send message to topic {topic}")
         self._messages.append((topic, key, value))
 
-    async def stop(self) -> None:
+    async def _stop(self) -> None:
         await self._messages.stop()
