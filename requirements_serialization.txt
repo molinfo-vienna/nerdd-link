@@ -1,6 +1,6 @@
 aiokafka==0.12.0
 importlib_metadata==8.6.1
-nerdd_module==0.3.50
+nerdd_module==0.3.52
 pydantic==2.10.6
 rdkit==2024.9.4
 rich_click==1.8.5
