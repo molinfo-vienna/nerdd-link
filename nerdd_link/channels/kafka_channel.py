@@ -5,7 +5,7 @@ from typing import AsyncIterable, List, Optional, Tuple
 
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer, ConsumerRebalanceListener
 from aiokafka.coordinator.assignors.sticky.sticky_assignor import StickyPartitionAssignor
-from aiokafka.errors import CommitFailedError, NotLeaderForPartitionError
+from aiokafka.errors import NotLeaderForPartitionError
 
 from .channel import Channel
 
@@ -142,10 +142,7 @@ class KafkaChannel(Channel):
                         # do not commit the message, but retry
                         continue
 
-                    try:
-                        await consumer.commit()
-                    except CommitFailedError as e:
-                        logger.error("Commit failed, trying again.", exc_info=e)
+                    await consumer.commit()
         finally:
             try:
                 await consumer.stop()
