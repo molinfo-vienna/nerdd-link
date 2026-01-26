@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.5.15 (2026-01-26)
+
+### Fixes
+
+* fix: Stop consuming on errors ([`7e4503a`](https://github.com/molinfo-vienna/nerdd-link/commit/7e4503aade8ec80faff8e98294a899f066821344))
+
+### Unknown
+
+* Merge pull request #71 from shirte/main
+
+Stop consuming on errors ([`3ccdba8`](https://github.com/molinfo-vienna/nerdd-link/commit/3ccdba8bd9b08b5460d073605488b8a9647591e6))
+
+
 ## v0.5.14 (2025-10-23)
 
 ### Fixes
