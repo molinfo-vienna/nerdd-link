@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.5.17 (2026-01-28)
+
+### Fixes
+
+* fix: Simplify code for sending messages ([`e36ba91`](https://github.com/molinfo-vienna/nerdd-link/commit/e36ba91c12f53c9b88fa151154ee2a8caf36e092))
+
+### Unknown
+
+* Merge pull request #73 from shirte/main
+
+Simplify code for sending messages ([`ca7dbab`](https://github.com/molinfo-vienna/nerdd-link/commit/ca7dbabe2fa7604414d650cd497265ac1581d0fd))
+
+
 ## v0.5.16 (2026-01-26)
 
 ### Fixes
