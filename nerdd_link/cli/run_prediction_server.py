@@ -11,7 +11,7 @@ from nerdd_module import Model
 
 from ..actions import Action, PredictCheckpointsAction, supervise_actions
 from ..channels import Channel
-from ..files import FileSystem
+from ..storage import FileSystemStorage
 from ..types import ModuleMessage
 from ..utils import async_to_sync
 
@@ -33,7 +33,7 @@ async def _run_prediction_server(model: Model, channel: Channel, data_dir: str) 
             #
             # register the module
             #
-            file_system = FileSystem(data_dir)
+            file_system = FileSystemStorage(data_dir)
             module_file_path = file_system.get_module_file_path(model.config.id)
 
             # compare old json with new one, only write if changed

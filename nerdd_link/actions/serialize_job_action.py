@@ -6,8 +6,8 @@ from asyncio import get_running_loop, to_thread
 from nerdd_module import WriteOutputStep
 
 from ..channels import Channel
-from ..files import FileSystem
 from ..steps import PostprocessFromConfigStep, ReadPickleStep
+from ..storage import FileSystemStorage
 from ..types import SerializationRequestMessage, SerializationResultMessage, Tombstone
 from ..utils import run_pipeline
 from .action import Action
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 class SerializeJobAction(Action[SerializationRequestMessage]):
     def __init__(self, channel: Channel, data_dir: str) -> None:
         super().__init__(channel.serialization_requests_topic())
-        self._file_system = FileSystem(data_dir)
+        self._file_system = FileSystemStorage(data_dir)
 
     async def _process_message(self, message: SerializationRequestMessage) -> None:
         job_id = message.job_id

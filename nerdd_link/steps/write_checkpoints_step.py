@@ -5,8 +5,8 @@ from nerdd_module import Step
 from rdkit.Chem import Mol
 from rdkit.Chem.PropertyMol import PropertyMol
 
-from ..files import FileSystem
 from ..output import PickleWriter
+from ..storage import Storage
 from ..types import CheckpointMessage, LogMessage
 from ..utils import batched
 
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class WriteCheckpointsStep(Step):
     def __init__(
         self,
-        filesystem: FileSystem,
+        filesystem: Storage,
         job_id: str,
         job_type: str,
         checkpoint_size: int,

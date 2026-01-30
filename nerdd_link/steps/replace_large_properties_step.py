@@ -3,7 +3,7 @@ from typing import Any, Iterator, Optional
 from nerdd_module import Step
 from nerdd_module.config import Module
 
-from ..files import FileSystem
+from ..storage import Storage
 
 __all__ = ["ReplaceLargePropertiesStep"]
 
@@ -12,7 +12,7 @@ class ReplaceLargePropertiesStep(Step):
     def __init__(
         self,
         config: Module,
-        file_system: FileSystem,
+        file_system: Storage,
         job_id: str,
     ) -> None:
         super().__init__()

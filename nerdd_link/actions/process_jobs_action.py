@@ -5,8 +5,8 @@ from asyncio import get_running_loop, to_thread
 from nerdd_module import DepthFirstExplorer, ReadInputStep, WriteOutputStep
 
 from ..channels import Channel
-from ..files import FileSystem
 from ..steps import WriteCheckpointsStep
+from ..storage import FileSystemStorage
 from ..types import CheckpointMessage, JobMessage, Tombstone
 from ..utils import run_pipeline
 from .action import Action
@@ -39,7 +39,7 @@ class ProcessJobsAction(Action[JobMessage]):
         self._maximum_depth = maximum_depth
         # used as kwargs in DepthFirstExplorer
         self._max_num_lines_mol_block = max_num_lines_mol_block
-        self._file_system = FileSystem(data_dir)
+        self._file_system = FileSystemStorage(data_dir)
 
     async def _process_message(self, message: JobMessage) -> None:
         job_id = message.id
@@ -60,7 +60,7 @@ class ProcessJobsAction(Action[JobMessage]):
             # The input file to the job is stored in a designated sources directory. The file is
             # allowed to reference other files, but setting the data_dir to the sources directory
             # ensures that we never read files outside of the sources directory.
-            data_dir=self._file_system.get_sources_dir(),
+            data_dir=self._file_system._get_sources_dir(),
         )
 
         # create a pipeline for reading and chunking the input

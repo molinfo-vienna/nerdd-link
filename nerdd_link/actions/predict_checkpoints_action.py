@@ -7,7 +7,7 @@ from nerdd_module import Model
 
 from ..channels import Channel
 from ..delegates import PredictCheckpointModel
-from ..files import FileSystem
+from ..storage import FileSystemStorage
 from ..types import CheckpointMessage, ResultCheckpointMessage, Tombstone
 from .action import Action
 
@@ -24,7 +24,7 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
     def __init__(self, channel: Channel, model: Model, data_dir: str) -> None:
         super().__init__(channel.checkpoints_topic(model))
         self._model = model
-        self._file_system = FileSystem(data_dir)
+        self._file_system = FileSystemStorage(data_dir)
 
     async def _process_message(self, message: CheckpointMessage) -> None:
         job_id = message.job_id

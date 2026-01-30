@@ -6,7 +6,6 @@ from nerdd_module.config import Configuration
 from rdkit.Chem import Mol
 
 from ..channels import Channel
-from ..files import FileSystem
 from ..steps import (
     AddRecordIdStep,
     ReadPickleStep,
@@ -14,6 +13,7 @@ from ..steps import (
     SplitAndMergeStep,
     WrapResultsStep,
 )
+from ..storage import Storage
 
 __all__ = ["PredictCheckpointModel"]
 
@@ -23,7 +23,7 @@ class PredictCheckpointModel(Model):
         self,
         base_model: Model,
         job_id: str,
-        file_system: FileSystem,
+        file_system: Storage,
         checkpoint_id: int,
         channel: Channel,
         loop: AbstractEventLoop,
