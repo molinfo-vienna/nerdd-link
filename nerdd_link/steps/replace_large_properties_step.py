@@ -12,11 +12,11 @@ class ReplaceLargePropertiesStep(Step):
     def __init__(
         self,
         config: Module,
-        file_system: Storage,
+        storage: Storage,
         job_id: str,
     ) -> None:
         super().__init__()
-        self._file_system = file_system
+        self._storage = storage
         self._job_id = job_id
 
         # large properties
@@ -48,11 +48,11 @@ class ReplaceLargePropertiesStep(Step):
         # -> if the property is a molecular property, we store the value in <mol_id>
         #    and otherwise in <mol_id>-<sub_id>
         if k in self._molecular_properties:
-            file_path = self._file_system.get_property_file_path(
+            file_path = self._storage.get_property_file_path(
                 job_id=self._job_id, property_name=k, record_id=str(record["mol_id"])
             )
         else:
-            file_path = self._file_system.get_property_file_path(
+            file_path = self._storage.get_property_file_path(
                 job_id=self._job_id, property_name=k, record_id=record_id
             )
 

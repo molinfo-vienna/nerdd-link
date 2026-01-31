@@ -6,7 +6,7 @@ from nerdd_module import DepthFirstExplorer, ReadInputStep, WriteOutputStep
 
 from ..channels import Channel
 from ..steps import WriteCheckpointsStep
-from ..storage import FileSystemStorage
+from ..storage import Storage
 from ..types import CheckpointMessage, JobMessage, Tombstone
 from ..utils import run_pipeline
 from .action import Action
@@ -30,7 +30,7 @@ class ProcessJobsAction(Action[JobMessage]):
         ratio_valid_entries: float,
         maximum_depth: int,
         max_num_lines_mol_block: int,
-        data_dir: str,
+        storage: Storage,
     ) -> None:
         super().__init__(channel.jobs_topic())
         # parameters of DepthFirstExplorer
@@ -39,7 +39,7 @@ class ProcessJobsAction(Action[JobMessage]):
         self._maximum_depth = maximum_depth
         # used as kwargs in DepthFirstExplorer
         self._max_num_lines_mol_block = max_num_lines_mol_block
-        self._file_system = FileSystemStorage(data_dir)
+        self._storage = storage
 
     async def _process_message(self, message: JobMessage) -> None:
         job_id = message.id
@@ -60,7 +60,7 @@ class ProcessJobsAction(Action[JobMessage]):
             # The input file to the job is stored in a designated sources directory. The file is
             # allowed to reference other files, but setting the data_dir to the sources directory
             # ensures that we never read files outside of the sources directory.
-            data_dir=self._file_system._get_sources_dir(),
+            data_dir=self._storage._get_sources_dir(),
         )
 
         # create a pipeline for reading and chunking the input
@@ -69,7 +69,7 @@ class ProcessJobsAction(Action[JobMessage]):
             ReadInputStep(explorer, message.source_id),
             # write checkpoints
             WriteCheckpointsStep(
-                filesystem=self._file_system,
+                storage=self._storage,
                 job_id=job_id,
                 job_type=job_type,
                 checkpoint_size=checkpoint_size,
@@ -94,7 +94,7 @@ class ProcessJobsAction(Action[JobMessage]):
         job_type = message.job_type
         logger.info(f"Received a tombstone for job {job_id}")
 
-        for i, path in self._file_system.iter_checkpoint_file_paths(job_id):
+        for i, path in self._storage.iter_checkpoint_file_paths(job_id):
             await self.channel.checkpoints_topic(job_type).send(
                 Tombstone(
                     CheckpointMessage,

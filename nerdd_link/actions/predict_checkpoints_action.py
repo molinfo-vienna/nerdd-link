@@ -7,7 +7,7 @@ from nerdd_module import Model
 
 from ..channels import Channel
 from ..delegates import PredictCheckpointModel
-from ..storage import FileSystemStorage
+from ..storage import Storage
 from ..types import CheckpointMessage, ResultCheckpointMessage, Tombstone
 from .action import Action
 
@@ -21,10 +21,10 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
     # (generated in the previous step) and process them. Results are written to
     # the "results" topic.
 
-    def __init__(self, channel: Channel, model: Model, data_dir: str) -> None:
+    def __init__(self, channel: Channel, model: Model, storage: Storage) -> None:
         super().__init__(channel.checkpoints_topic(model))
         self._model = model
-        self._file_system = FileSystemStorage(data_dir)
+        self._storage = storage
 
     async def _process_message(self, message: CheckpointMessage) -> None:
         job_id = message.job_id
@@ -32,7 +32,7 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         params = message.params
 
         # job might have been deleted in the meantime, so we check if the job exists
-        if not os.path.exists(self._file_system.get_checkpoint_file_path(job_id, checkpoint_id)):
+        if not os.path.exists(self._storage.get_checkpoint_file_path(job_id, checkpoint_id)):
             logger.warning(
                 f"Received a checkpoint message for job {job_id} and checkpoint {checkpoint_id}, "
                 "but the checkpoint file does not exist. Skipping."
@@ -55,14 +55,14 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         model = PredictCheckpointModel(
             base_model=self._model,
             job_id=job_id,
-            file_system=self._file_system,
+            storage=self._storage,
             checkpoint_id=checkpoint_id,
             channel=self.channel,
             loop=get_running_loop(),
         )
 
         # read from the checkpoint file
-        checkpoints_file = self._file_system.get_checkpoint_file_handle(job_id, checkpoint_id, "rb")
+        checkpoints_file = self._storage.get_checkpoint_file_handle(job_id, checkpoint_id, "rb")
 
         # Run the prediction in a separate thread to avoid blocking the event loop. We don't need to
         # look out for exceptions, because any exception raised in the thread will be re-raised by
@@ -86,7 +86,7 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         logger.info(f"Received a tombstone for checkpoint {checkpoint_id} of job {job_id}")
 
         # delete result checkpoint file if it exists
-        path = self._file_system.get_results_file_path(job_id, checkpoint_id)
+        path = self._storage.get_results_file_path(job_id, checkpoint_id)
         if os.path.exists(path):
             os.remove(path)
 

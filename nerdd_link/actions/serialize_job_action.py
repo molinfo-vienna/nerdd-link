@@ -7,7 +7,7 @@ from nerdd_module import WriteOutputStep
 
 from ..channels import Channel
 from ..steps import PostprocessFromConfigStep, ReadPickleStep
-from ..storage import FileSystemStorage
+from ..storage import Storage
 from ..types import SerializationRequestMessage, SerializationResultMessage, Tombstone
 from ..utils import run_pipeline
 from .action import Action
@@ -19,9 +19,9 @@ logger = logging.getLogger(__name__)
 
 
 class SerializeJobAction(Action[SerializationRequestMessage]):
-    def __init__(self, channel: Channel, data_dir: str) -> None:
+    def __init__(self, channel: Channel, storage: Storage) -> None:
         super().__init__(channel.serialization_requests_topic())
-        self._file_system = FileSystemStorage(data_dir)
+        self._storage = storage
 
     async def _process_message(self, message: SerializationRequestMessage) -> None:
         job_id = message.job_id
@@ -31,7 +31,7 @@ class SerializeJobAction(Action[SerializationRequestMessage]):
         logger.info(f"Write output for job {job_id} in format {output_format}")
 
         # check input files
-        input_files = list(self._file_system.iter_results_file_paths(job_id))
+        input_files = list(self._storage.iter_results_file_paths(job_id))
         if len(input_files) == 0:
             logger.warning(f"No input files found for job {job_id}. Cannot serialize.")
             return
@@ -41,15 +41,15 @@ class SerializeJobAction(Action[SerializationRequestMessage]):
         params.pop("output_format", None)
 
         # obtain output file
-        output_file = self._file_system.get_output_file(job_id, output_format)
+        output_file = self._storage.get_output_file(job_id, output_format)
 
         # get the configuration for the job_type
-        config_file = self._file_system.get_module_file_path(job_type)
+        config_file = self._storage.get_module_file_path(job_type)
         config = json.load(open(config_file, "r"))
 
         steps = [
             # read the result checkpoint files in the correct order
-            ReadPickleStep(self._file_system.iter_results_file_handles(job_id, mode="rb")),
+            ReadPickleStep(self._storage.iter_results_file_handles(job_id, mode="rb")),
             # don't preprocess, don't do prediction, only post-process based on config
             PostprocessFromConfigStep(
                 config=config,
@@ -78,7 +78,7 @@ class SerializeJobAction(Action[SerializationRequestMessage]):
         logger.info(f"Received tombstone for job {job_id} in format {output_format}")
 
         # remove the output file if it exists
-        output_file = self._file_system.get_output_file(job_id, output_format)
+        output_file = self._storage.get_output_file(job_id, output_format)
         if os.path.exists(output_file):
             os.remove(output_file)
 

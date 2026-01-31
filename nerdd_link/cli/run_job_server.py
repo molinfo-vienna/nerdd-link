@@ -5,6 +5,7 @@ import rich_click as click
 
 from ..actions import ProcessJobsAction, supervise_actions
 from ..channels import Channel
+from ..storage import FileSystemStorage
 from ..utils import async_to_sync
 
 __all__ = ["run_job_server"]
@@ -24,12 +25,12 @@ async def _run_job_server(
     try:
         async with channel:
             action = ProcessJobsAction(
-                channel,
-                num_test_entries,
-                ratio_valid_entries,
-                maximum_depth,
-                max_num_lines_mol_block,
-                data_dir,
+                channel=channel,
+                num_test_entries=num_test_entries,
+                ratio_valid_entries=ratio_valid_entries,
+                maximum_depth=maximum_depth,
+                max_num_lines_mol_block=max_num_lines_mol_block,
+                storage=FileSystemStorage(data_dir),
             )
 
             await supervise_actions([action])

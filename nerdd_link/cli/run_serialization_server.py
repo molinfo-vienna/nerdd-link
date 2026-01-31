@@ -5,6 +5,7 @@ import rich_click as click
 
 from ..actions import Action, SerializeJobAction, supervise_actions
 from ..channels import Channel
+from ..storage import FileSystemStorage
 from ..utils import async_to_sync
 
 logger = logging.getLogger(__name__)
@@ -15,7 +16,7 @@ async def _run_serialization_server(channel: Channel, data_dir: str) -> None:
         async with channel:
             serialize_job = SerializeJobAction(
                 channel=channel,
-                data_dir=data_dir,
+                storage=FileSystemStorage(data_dir),
             )
 
             actions: List[Action] = [serialize_job]

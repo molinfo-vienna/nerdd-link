@@ -33,8 +33,8 @@ async def _run_prediction_server(model: Model, channel: Channel, data_dir: str) 
             #
             # register the module
             #
-            file_system = FileSystemStorage(data_dir)
-            module_file_path = file_system.get_module_file_path(model.config.id)
+            storage = FileSystemStorage(data_dir)
+            module_file_path = storage.get_module_file_path(model.config.id)
 
             # compare old json with new one, only write if changed
             new_config_json = model.config.model_dump()
@@ -53,7 +53,7 @@ async def _run_prediction_server(model: Model, channel: Channel, data_dir: str) 
             predict_checkpoints = PredictCheckpointsAction(
                 channel=channel,
                 model=model,
-                data_dir=data_dir,
+                storage=storage,
             )
 
             # run actions in parallel

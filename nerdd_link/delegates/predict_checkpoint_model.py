@@ -23,7 +23,7 @@ class PredictCheckpointModel(Model):
         self,
         base_model: Model,
         job_id: str,
-        file_system: Storage,
+        storage: Storage,
         checkpoint_id: int,
         channel: Channel,
         loop: AbstractEventLoop,
@@ -31,7 +31,7 @@ class PredictCheckpointModel(Model):
         super().__init__()
         self._base_model = base_model
         self._job_id = job_id
-        self._file_system = file_system
+        self._storage = storage
         self._checkpoint_id = checkpoint_id
         self._channel = channel
         self._loop = loop
@@ -69,7 +69,7 @@ class PredictCheckpointModel(Model):
             *send_to_channel_steps[:-1],
             # replace large properties with file references
             ReplaceLargePropertiesStep(
-                self._base_model._get_config().get_dict(), self._file_system, self._job_id
+                self._base_model._get_config().get_dict(), self._storage, self._job_id
             ),
             # add record ids
             AddRecordIdStep(self._job_id),
@@ -79,7 +79,7 @@ class PredictCheckpointModel(Model):
             send_to_channel_steps[-1],
         ]
 
-        results_file = self._file_system.get_results_file_handle(
+        results_file = self._storage.get_results_file_handle(
             self._job_id, self._checkpoint_id, "wb"
         )
 
