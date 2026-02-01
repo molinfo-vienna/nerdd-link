@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 from asyncio import get_running_loop, to_thread
 
 from nerdd_module import WriteOutputStep
@@ -78,9 +77,7 @@ class SerializeJobAction(Action[SerializationRequestMessage]):
         logger.info(f"Received tombstone for job {job_id} in format {output_format}")
 
         # remove the output file if it exists
-        output_file = self._storage.get_output_file(job_id, output_format)
-        if os.path.exists(output_file):
-            os.remove(output_file)
+        self._storage.delete_output_file(job_id, output_format)
 
         await self.channel.serialization_results_topic().send(
             Tombstone(SerializationResultMessage, job_id=job_id, output_format=output_format)

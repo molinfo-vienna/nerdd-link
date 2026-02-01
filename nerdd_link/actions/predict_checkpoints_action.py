@@ -86,9 +86,7 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         logger.info(f"Received a tombstone for checkpoint {checkpoint_id} of job {job_id}")
 
         # delete result checkpoint file if it exists
-        path = self._storage.get_results_file_path(job_id, checkpoint_id)
-        if os.path.exists(path):
-            os.remove(path)
+        self._storage.delete_results_file(job_id, checkpoint_id)
 
         # Send a tombstone to the results topic to indicate that the prediction is done.
         await self.channel.result_checkpoints_topic().send(

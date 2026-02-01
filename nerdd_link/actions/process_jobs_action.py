@@ -1,5 +1,4 @@
 import logging
-import os
 from asyncio import get_running_loop, to_thread
 
 from nerdd_module import DepthFirstExplorer, ReadInputStep, WriteOutputStep
@@ -94,7 +93,7 @@ class ProcessJobsAction(Action[JobMessage]):
         job_type = message.job_type
         logger.info(f"Received a tombstone for job {job_id}")
 
-        for i, path in self._storage.iter_checkpoint_file_paths(job_id):
+        for i, _ in self._storage.iter_checkpoint_file_paths(job_id):
             await self.channel.checkpoints_topic(job_type).send(
                 Tombstone(
                     CheckpointMessage,
@@ -106,5 +105,4 @@ class ProcessJobsAction(Action[JobMessage]):
             # delete the checkpoint file if it exists
             # note: it is important that we delete the file at the end of the loop, because we don't
             # want to delete the file without propagating the tombstone first
-            if os.path.exists(path):
-                os.remove(path)
+            self._storage.delete_checkpoint_file(job_id, i)

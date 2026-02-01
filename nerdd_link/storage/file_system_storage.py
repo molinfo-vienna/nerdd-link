@@ -71,6 +71,9 @@ class FileSystemStorage(Storage):
     def get_source_file_handle(self, source_id: str, mode: str) -> IO:
         return _get_handle_and_create_dirs(self.get_source_file_path(source_id), mode)
 
+    def delete_source_file(self, source_id: str) -> None:
+        self._delete_file(self.get_source_file_path(source_id))
+
     def get_checkpoint_file_path(self, job_id: str, checkpoint_id: Union[int, str]) -> str:
         return os.path.join(self._get_input_dir(job_id), f"checkpoint_{checkpoint_id}.pickle")
 
@@ -87,6 +90,12 @@ class FileSystemStorage(Storage):
     def get_results_file_handle(self, job_id: str, checkpoint_id: Union[int, str], mode: str) -> IO:
         return _get_handle_and_create_dirs(self.get_results_file_path(job_id, checkpoint_id), mode)
 
+    def delete_checkpoint_file(self, job_id: str, checkpoint_id: Union[int, str]) -> None:
+        self._delete_file(self.get_checkpoint_file_path(job_id, checkpoint_id))
+
+    def delete_results_file(self, job_id: str, checkpoint_id: Union[int, str]) -> None:
+        self._delete_file(self.get_results_file_path(job_id, checkpoint_id))
+
     def get_property_file_path(self, job_id: str, property_name: str, record_id: str) -> str:
         return os.path.join(self._get_property_dir(job_id, property_name), record_id)
 
@@ -95,6 +104,13 @@ class FileSystemStorage(Storage):
 
     def get_output_file_handle(self, job_id: str, output_format: str, mode: str) -> IO:
         return _get_handle_and_create_dirs(self.get_output_file(job_id, output_format), mode)
+
+    def delete_output_file(self, job_id: str, output_format: str) -> None:
+        self._delete_file(self.get_output_file(job_id, output_format))
+
+    def _delete_file(self, file_path: str) -> None:
+        if os.path.exists(file_path):
+            os.remove(file_path)
 
     def iter_checkpoint_file_paths(self, job_id: str) -> Iterator[Tuple[int, str]]:
         for path in glob(os.path.join(self._get_input_dir(job_id), "checkpoint_*.pickle")):
