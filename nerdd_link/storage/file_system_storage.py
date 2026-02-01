@@ -68,6 +68,9 @@ class FileSystemStorage(Storage):
     def get_source_file_path(self, source_id: str) -> str:
         return os.path.join(self._get_sources_dir(), source_id)
 
+    def get_source_file_handle(self, source_id: str, mode: str) -> IO:
+        return _get_handle_and_create_dirs(self.get_source_file_path(source_id), mode)
+
     def get_checkpoint_file_path(self, job_id: str, checkpoint_id: Union[int, str]) -> str:
         return os.path.join(self._get_input_dir(job_id), f"checkpoint_{checkpoint_id}.pickle")
 

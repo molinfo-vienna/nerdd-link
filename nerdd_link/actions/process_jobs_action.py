@@ -56,17 +56,17 @@ class ProcessJobsAction(Action[JobMessage]):
             threshold=self._ratio_valid_entries,
             maximum_depth=self._maximum_depth,
             # extra args
+            storage=self._storage,
             max_num_lines_mol_block=self._max_num_lines_mol_block,
-            # The input file to the job is stored in a designated sources directory. The file is
-            # allowed to reference other files, but setting the data_dir to the sources directory
-            # ensures that we never read files outside of the sources directory.
-            data_dir=self._storage._get_sources_dir(),
+            # Explicitly set data_dir to None to avoid reading arbitrary files from disk. Source
+            # files on S3 / file system are only read via StructureJsonReader.
+            data_dir=None,
         )
 
         # create a pipeline for reading and chunking the input
         steps = [
             # read the input file (given by source_id)
-            ReadInputStep(explorer, message.source_id),
+            ReadInputStep(explorer, self._storage.get_source_file_handle(message.source_id, "rb")),
             # write checkpoints
             WriteCheckpointsStep(
                 storage=self._storage,

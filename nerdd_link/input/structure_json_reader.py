@@ -1,7 +1,9 @@
 import json
-from typing import Iterator, Protocol
+from typing import Iterator, Optional, Protocol
 
 from nerdd_module.input import ExploreCallable, MoleculeEntry, Reader
+
+from ..storage import Storage
 
 __all__ = ["StructureJsonReader"]
 
@@ -14,8 +16,9 @@ class StreamLike(Protocol):
 
 
 class StructureJsonReader(Reader):
-    def __init__(self) -> None:
+    def __init__(self, storage: Optional[Storage] = None) -> None:
         super().__init__()
+        self._storage = storage
 
     def read(self, input_stream: StreamLike, explore: ExploreCallable) -> Iterator[MoleculeEntry]:
         if not hasattr(input_stream, "read") or not hasattr(input_stream, "seek"):
@@ -25,13 +28,17 @@ class StructureJsonReader(Reader):
 
         contents = json.load(input_stream)
 
+        if self._storage is None:
+            raise ValueError("Storage must be provided to read from a JSON file")
+
         assert isinstance(contents, list) and all(
             (isinstance(entry, dict) and "id" in entry.keys()) for entry in contents
         )
 
         for entry in contents:
             source_id = entry.get("id", None)
-            yield from explore(source_id)
+            handle = self._storage.get_source_file_handle(source_id, "rb")
+            yield from explore(handle)
 
     def __repr__(self) -> str:
-        return "StructureJsonReader()"
+        return f"StructureJsonReader(storage={self._storage})"
