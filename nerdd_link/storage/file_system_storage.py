@@ -68,11 +68,17 @@ class FileSystemStorage(Storage):
     def get_module_file_handle(self, module_id: str, mode: str) -> IO:
         return _get_handle_and_create_dirs(self.get_module_file_path(module_id), mode)
 
+    def module_file_exists(self, module_id: str) -> bool:
+        return os.path.exists(self.get_module_file_path(module_id))
+
     def get_source_file_path(self, source_id: str) -> str:
         return os.path.join(self._get_sources_dir(), source_id)
 
     def get_source_file_handle(self, source_id: str, mode: str) -> IO:
         return _get_handle_and_create_dirs(self.get_source_file_path(source_id), mode)
+
+    def source_file_exists(self, source_id: str) -> bool:
+        return os.path.exists(self.get_source_file_path(source_id))
 
     def delete_source_file(self, source_id: str) -> None:
         self._delete_file(self.get_source_file_path(source_id))
@@ -93,6 +99,12 @@ class FileSystemStorage(Storage):
     def get_results_file_handle(self, job_id: str, checkpoint_id: Union[int, str], mode: str) -> IO:
         return _get_handle_and_create_dirs(self.get_results_file_path(job_id, checkpoint_id), mode)
 
+    def checkpoint_file_exists(self, job_id: str, checkpoint_id: Union[int, str]) -> bool:
+        return os.path.exists(self.get_checkpoint_file_path(job_id, checkpoint_id))
+
+    def results_file_exists(self, job_id: str, checkpoint_id: Union[int, str]) -> bool:
+        return os.path.exists(self.get_results_file_path(job_id, checkpoint_id))
+
     def delete_checkpoint_file(self, job_id: str, checkpoint_id: Union[int, str]) -> None:
         self._delete_file(self.get_checkpoint_file_path(job_id, checkpoint_id))
 
@@ -107,6 +119,9 @@ class FileSystemStorage(Storage):
 
     def get_output_file_handle(self, job_id: str, output_format: str, mode: str) -> IO:
         return _get_handle_and_create_dirs(self.get_output_file(job_id, output_format), mode)
+
+    def output_file_exists(self, job_id: str, output_format: str) -> bool:
+        return os.path.exists(self.get_output_file(job_id, output_format))
 
     def delete_output_file(self, job_id: str, output_format: str) -> None:
         self._delete_file(self.get_output_file(job_id, output_format))

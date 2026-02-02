@@ -1,5 +1,4 @@
 import logging
-import os
 import time
 from asyncio import get_running_loop, to_thread
 
@@ -32,7 +31,7 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         params = message.params
 
         # job might have been deleted in the meantime, so we check if the job exists
-        if not os.path.exists(self._storage.get_checkpoint_file_path(job_id, checkpoint_id)):
+        if not self._storage.checkpoint_file_exists(job_id, checkpoint_id):
             logger.warning(
                 f"Received a checkpoint message for job {job_id} and checkpoint {checkpoint_id}, "
                 "but the checkpoint file does not exist. Skipping."

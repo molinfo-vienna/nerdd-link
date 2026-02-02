@@ -1,7 +1,6 @@
 import asyncio
 import json
 import logging
-import os
 import signal
 from importlib import import_module
 from typing import Any, List, Optional
@@ -34,11 +33,9 @@ async def _run_prediction_server(model: Model, channel: Channel, data_dir: str) 
             # register the module
             #
             storage = FileSystemStorage(data_dir)
-            module_file_path = storage.get_module_file_path(model.config.id)
-
             # compare old json with new one, only write if changed
             new_config_json = model.config.model_dump()
-            if os.path.exists(module_file_path):
+            if storage.module_file_exists(model.config.id):
                 with storage.get_module_file_handle(model.config.id, "r") as f:
                     old_config_json = json.load(f)
             else:
