@@ -72,7 +72,7 @@ class ReplaceLargePropertiesStep(Step):
                 else:
                     f.write(str(v).encode("utf-8"))
 
-        return f"file://{file_path}"
+        return file_path
 
     def _run(self, source: Iterator[dict]) -> Iterator[dict]:
         for record in source:

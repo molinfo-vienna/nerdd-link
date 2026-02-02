@@ -39,37 +39,34 @@ class SerializeJobAction(Action[SerializationRequestMessage]):
         params.pop("output_file", None)
         params.pop("output_format", None)
 
-        # obtain output file
-        output_file = self._storage.get_output_file(job_id, output_format)
-
         # get the configuration for the job_type
         with self._storage.get_module_file_handle(job_type, "r") as f:
             config = json.load(f)
 
-        steps = [
-            # read the result checkpoint files in the correct order
-            ReadPickleStep(self._storage.iter_results_file_handles(job_id, mode="rb")),
-            # don't preprocess, don't do prediction, only post-process based on config
-            PostprocessFromConfigStep(
-                config=config,
-                job_id=job_id,
-                output_format=output_format,
-                output_file=output_file,
-                **params,
-            ),
-            # send messages to the corresponding topics
-            WriteOutputStep(
-                output_format="json",
-                config=None,  # type: ignore[arg-type]
-                channel=self.channel,
-                loop=get_running_loop(),
-            ),
-        ]
+        with self._storage.get_output_file_handle(job_id, output_format, "wb") as output_file:
+            steps = [
+                # read the result checkpoint files in the correct order
+                ReadPickleStep(self._storage.iter_results_file_handles(job_id, mode="rb")),
+                # don't preprocess or predict, only post-process based on config
+                PostprocessFromConfigStep(
+                    config=config,
+                    job_id=job_id,
+                    output_format=output_format,
+                    output_file=output_file,
+                    **params,
+                ),
+                # send messages to the corresponding topics
+                WriteOutputStep(
+                    output_format="json",
+                    config=None,  # type: ignore[arg-type]
+                    channel=self.channel,
+                    loop=get_running_loop(),
+                ),
+            ]
 
-        # Run the serialization in a separate thread to avoid blocking the event loop. We don't need
-        # to look out for exceptions, because any exception raised in the thread will be re-raised
-        # by asyncio here.
-        await to_thread(lambda: run_pipeline(*steps))
+            # Run serialization in a thread to avoid blocking the event loop. Exceptions raised in
+            # the thread are re-raised here.
+            await to_thread(lambda: run_pipeline(*steps))
 
     async def _process_tombstone(self, message: Tombstone[SerializationRequestMessage]) -> None:
         job_id = message.job_id
