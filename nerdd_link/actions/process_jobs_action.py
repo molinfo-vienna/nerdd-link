@@ -62,31 +62,32 @@ class ProcessJobsAction(Action[JobMessage]):
             data_dir=None,
         )
 
-        # create a pipeline for reading and chunking the input
-        steps = [
-            # read the input file (given by source_id)
-            ReadInputStep(explorer, self._storage.get_source_file_handle(message.source_id, "rb")),
-            # write checkpoints
-            WriteCheckpointsStep(
-                storage=self._storage,
-                job_id=job_id,
-                job_type=job_type,
-                checkpoint_size=checkpoint_size,
-                max_num_molecules=max_num_molecules,
-                params=message.params,
-            ),
-            # send messages to the corresponding topics
-            WriteOutputStep(
-                output_format="json",
-                config=None,  # type: ignore[arg-type]
-                channel=self.channel,
-                loop=get_running_loop(),
-            ),
-        ]
+        with self._storage.get_source_file_handle(message.source_id, "rb") as source_file_handle:
+            # create a pipeline for reading and chunking the input
+            steps = [
+                # read the input file (given by source_id)
+                ReadInputStep(explorer, source_file_handle),
+                # write checkpoints
+                WriteCheckpointsStep(
+                    storage=self._storage,
+                    job_id=job_id,
+                    job_type=job_type,
+                    checkpoint_size=checkpoint_size,
+                    max_num_molecules=max_num_molecules,
+                    params=message.params,
+                ),
+                # send messages to the corresponding topics
+                WriteOutputStep(
+                    output_format="json",
+                    config=None,  # type: ignore[arg-type]
+                    channel=self.channel,
+                    loop=get_running_loop(),
+                ),
+            ]
 
-        # Run the pipeline in a thread to not block the event loop. We don't need to look out for
-        # exceptions, because any exception raised in the thread will be re-raised by asyncio here.
-        await to_thread(lambda: run_pipeline(*steps))
+            # Run the pipeline in a thread to not block the event loop. We don't need to look out
+            # for exceptions, because any exception raised in the thread will be re-raised here.
+            await to_thread(lambda: run_pipeline(*steps))
 
     async def _process_tombstone(self, message: Tombstone[JobMessage]) -> None:
         job_id = message.id

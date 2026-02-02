@@ -1,5 +1,5 @@
 from asyncio import AbstractEventLoop
-from typing import Any, Iterable, List, Optional
+from typing import IO, Any, Iterable, List, Optional
 
 from nerdd_module import Model, Step
 from nerdd_module.config import Configuration
@@ -24,7 +24,7 @@ class PredictCheckpointModel(Model):
         base_model: Model,
         job_id: str,
         storage: Storage,
-        checkpoint_id: int,
+        result_checkpoint_handle: IO,
         channel: Channel,
         loop: AbstractEventLoop,
     ) -> None:
@@ -32,7 +32,7 @@ class PredictCheckpointModel(Model):
         self._base_model = base_model
         self._job_id = job_id
         self._storage = storage
-        self._checkpoint_id = checkpoint_id
+        self._result_checkpoint_handle = result_checkpoint_handle
         self._channel = channel
         self._loop = loop
 
@@ -79,12 +79,8 @@ class PredictCheckpointModel(Model):
             send_to_channel_steps[-1],
         ]
 
-        results_file = self._storage.get_results_file_handle(
-            self._job_id, self._checkpoint_id, "wb"
-        )
-
         file_writing_steps = self._base_model._get_postprocessing_steps(
-            output_format="pickle", output_file=results_file, **kwargs
+            output_format="pickle", output_file=self._result_checkpoint_handle, **kwargs
         )
 
         return [SplitAndMergeStep(send_to_channel_steps, file_writing_steps)]

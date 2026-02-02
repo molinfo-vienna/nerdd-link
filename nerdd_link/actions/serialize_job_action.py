@@ -44,7 +44,8 @@ class SerializeJobAction(Action[SerializationRequestMessage]):
 
         # get the configuration for the job_type
         config_file = self._storage.get_module_file_path(job_type)
-        config = json.load(open(config_file, "r"))
+        with open(config_file, "r") as f:
+            config = json.load(f)
 
         steps = [
             # read the result checkpoint files in the correct order

@@ -47,27 +47,31 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         # remove specific parameter keys that could induce vulnerabilities
         params.pop("input", None)
 
-        # create a wrapper model that
-        # * reads the checkpoint file instead of normal input
-        # * does preprocessing, prediction, and postprocessing like the encapsulated model
-        # * does not write to the specified results file, but to the checkpoints file instead
-        # * sends the results to the results topic
-        model = PredictCheckpointModel(
-            base_model=self._model,
-            job_id=job_id,
-            storage=self._storage,
-            checkpoint_id=checkpoint_id,
-            channel=self.channel,
-            loop=get_running_loop(),
-        )
+        with (
+            self._storage.get_checkpoint_file_handle(
+                job_id, checkpoint_id, "rb"
+            ) as checkpoint_handle,
+            self._storage.get_results_file_handle(
+                job_id, checkpoint_id, "wb"
+            ) as result_checkpoint_handle,
+        ):
+            # create a wrapper model that
+            # * reads the checkpoint file instead of normal input
+            # * does preprocessing, prediction, and postprocessing like the encapsulated model
+            # * does not write to the specified results file, but to the checkpoints file instead
+            # * sends the results to the results topic
+            model = PredictCheckpointModel(
+                base_model=self._model,
+                job_id=job_id,
+                storage=self._storage,
+                result_checkpoint_handle=result_checkpoint_handle,
+                channel=self.channel,
+                loop=get_running_loop(),
+            )
 
-        # read from the checkpoint file
-        checkpoints_file = self._storage.get_checkpoint_file_handle(job_id, checkpoint_id, "rb")
-
-        # Run the prediction in a separate thread to avoid blocking the event loop. We don't need to
-        # look out for exceptions, because any exception raised in the thread will be re-raised by
-        # asyncio here.
-        await to_thread(lambda: model.predict(input=checkpoints_file, **params))
+            # Run the prediction in a separate thread to avoid blocking the event loop. We don't
+            # need to look out for exceptions, because exceptions in the thread are re-raised here.
+            await to_thread(lambda: model.predict(input=checkpoint_handle, **params))
 
         # None indicates the end of the queue (end of the prediction)
         end_time = time.time()

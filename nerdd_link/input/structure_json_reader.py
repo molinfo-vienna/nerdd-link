@@ -36,9 +36,9 @@ class StructureJsonReader(Reader):
         )
 
         for entry in contents:
-            source_id = entry.get("id", None)
-            handle = self._storage.get_source_file_handle(source_id, "rb")
-            yield from explore(handle)
+            source_id = entry["id"]
+            with self._storage.get_source_file_handle(source_id, "rb") as handle:
+                yield from explore(handle)
 
     def __repr__(self) -> str:
         return f"StructureJsonReader(storage={self._storage})"
