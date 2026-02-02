@@ -43,8 +43,7 @@ class SerializeJobAction(Action[SerializationRequestMessage]):
         output_file = self._storage.get_output_file(job_id, output_format)
 
         # get the configuration for the job_type
-        config_file = self._storage.get_module_file_path(job_type)
-        with open(config_file, "r") as f:
+        with self._storage.get_module_file_handle(job_type, "r") as f:
             config = json.load(f)
 
         steps = [

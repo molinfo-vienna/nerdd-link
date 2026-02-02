@@ -39,13 +39,13 @@ async def _run_prediction_server(model: Model, channel: Channel, data_dir: str) 
             # compare old json with new one, only write if changed
             new_config_json = model.config.model_dump()
             if os.path.exists(module_file_path):
-                with open(module_file_path, "r") as f:
+                with storage.get_module_file_handle(model.config.id, "r") as f:
                     old_config_json = json.load(f)
             else:
                 old_config_json = None
             if new_config_json != old_config_json:
                 logger.info(f"Registering module {model.config.id}")
-                with open(module_file_path, "w") as f:
+                with storage.get_module_file_handle(model.config.id, "w") as f:
                     json.dump(new_config_json, f)
                 await channel.modules_topic().send(ModuleMessage(id=model.config.id))
 

@@ -11,6 +11,9 @@ class Storage(ABC):
     def get_module_file_path(self, module_id: str) -> str: ...
 
     @abstractmethod
+    def get_module_file_handle(self, module_id: str, mode: str) -> IO: ...
+
+    @abstractmethod
     def get_source_file_path(self, source_id: str) -> str: ...
 
     @abstractmethod

@@ -65,6 +65,9 @@ class FileSystemStorage(Storage):
     def get_module_file_path(self, module_id: str) -> str:
         return os.path.join(self._get_modules_dir(), module_id)
 
+    def get_module_file_handle(self, module_id: str, mode: str) -> IO:
+        return _get_handle_and_create_dirs(self.get_module_file_path(module_id), mode)
+
     def get_source_file_path(self, source_id: str) -> str:
         return os.path.join(self._get_sources_dir(), source_id)
 
