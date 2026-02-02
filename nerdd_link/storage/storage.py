@@ -72,13 +72,21 @@ class Storage(ABC):
     def delete_results_file(self, job_id: str, checkpoint_id: Union[int, str]) -> None: ...
 
     @abstractmethod
-    def get_property_file_path(self, job_id: str, property_name: str, record_id: str) -> str: ...
-
-    @abstractmethod
     def iter_results_file_paths(self, job_id: str) -> Iterator[Tuple[int, str]]: ...
 
     @abstractmethod
     def iter_results_file_handles(self, job_id: str, mode: str = "rb") -> Iterator[IO]: ...
+
+    #
+    # Properties
+    #
+    @abstractmethod
+    def get_property_file_path(self, job_id: str, property_name: str, record_id: str) -> str: ...
+
+    @abstractmethod
+    def get_property_file_handle(
+        self, job_id: str, property_name: str, record_id: str, mode: str
+    ) -> IO: ...
 
     #
     # Output

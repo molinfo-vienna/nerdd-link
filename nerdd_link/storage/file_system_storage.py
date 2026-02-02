@@ -126,9 +126,6 @@ class FileSystemStorage(Storage):
     def delete_results_file(self, job_id: str, checkpoint_id: Union[int, str]) -> None:
         self._delete_file(self.get_results_file_path(job_id, checkpoint_id))
 
-    def get_property_file_path(self, job_id: str, property_name: str, record_id: str) -> str:
-        return os.path.join(self._get_property_dir(job_id, property_name), record_id)
-
     def iter_results_file_paths(self, job_id: str) -> Iterator[Tuple[int, str]]:
         for path in glob(os.path.join(self._get_results_dir(job_id), "checkpoint_*.pickle")):
             basename = os.path.basename(path)
@@ -138,6 +135,19 @@ class FileSystemStorage(Storage):
     def iter_results_file_handles(self, job_id: str, mode: str = "rb") -> Iterator[IO]:
         for _, file_path in self.iter_results_file_paths(job_id):
             yield _get_handle_and_create_dirs(file_path, mode)
+
+    #
+    # Properties
+    #
+    def get_property_file_path(self, job_id: str, property_name: str, record_id: str) -> str:
+        return os.path.join(self._get_property_dir(job_id, property_name), record_id)
+
+    def get_property_file_handle(
+        self, job_id: str, property_name: str, record_id: str, mode: str
+    ) -> IO:
+        return _get_handle_and_create_dirs(
+            self.get_property_file_path(job_id, property_name, record_id), mode
+        )
 
     #
     # Output
