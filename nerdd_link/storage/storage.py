@@ -173,26 +173,40 @@ class Storage(ABC):
     def _get_file_handle(self, identifier: str, mode: str) -> IO:
         if mode == "rb":
             return self._get_binary_file_handle(identifier, "rb")
-        if mode == "wb":
+        elif mode == "wb":
             return self._get_binary_file_handle(identifier, "wb")
-        if mode == "r":
+        elif mode == "r":
             return io.TextIOWrapper(
                 self._get_binary_file_handle(identifier, "rb"), encoding="utf-8"
             )
-        if mode == "w":
+        elif mode == "w":
             return io.TextIOWrapper(
                 self._get_binary_file_handle(identifier, "wb"), encoding="utf-8"
             )
-        raise ValueError("Storage only supports read and write modes ('r', 'w', 'rb', and 'wb').")
+        else:
+            raise ValueError(
+                "Storage only supports read and write modes ('r', 'w', 'rb', and 'wb')."
+            )
 
     def _prefix_file_path(self, path: str) -> str:
         return f"{self._prefix}://{path}"
 
     def _unprefix_file_path(self, file_path: str) -> str:
         prefix = f"{self._prefix}://"
-        if not file_path.startswith(prefix):
+
+        # For backwards compatibility, we associate the paths
+        # * file:///data/ with file:// (and ignore the /data/ prefix)
+        # * /data/ with file:// (and ignore the /data/ prefix)
+        # Otherwise, we expect the file_path to start with the prefix.
+        # TODO: delete this legacy behaviour once the whole system is migrated to S3 storage
+        if self._prefix == "file" and file_path.startswith("file:///data/"):
+            return file_path[len("file:///data/") :]
+        elif file_path.startswith(prefix):
+            return file_path[len(prefix) :]
+        elif self._prefix == "file" and file_path.startswith("/data/"):
+            return file_path[len("/data/") :]
+        else:
             raise WrongPrefixError(self._prefix, file_path)
-        return file_path[len(prefix) :]
 
     def _iter_checkpoint_files(self, directory: str) -> Iterator[Tuple[int, str]]:
         checkpoint_files = []
