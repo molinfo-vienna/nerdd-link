@@ -3,6 +3,8 @@ import posixpath
 from abc import ABC, abstractmethod
 from typing import IO, BinaryIO, Iterator, Literal, Tuple, Union
 
+from .wrong_prefix_error import WrongPrefixError
+
 __all__ = ["Storage"]
 
 
@@ -139,6 +141,18 @@ class Storage(ABC):
         self._delete_file(self._get_output_file_path(job_id, output_format))
 
     #
+    # Files
+    #
+    def get_file_handle(self, file_path: str, mode: str) -> IO:
+        return self._get_file_handle(self._unprefix_file_path(file_path), mode)
+
+    def file_exists(self, file_path: str) -> bool:
+        return self._file_exists(self._unprefix_file_path(file_path))
+
+    def delete_file(self, file_path: str) -> None:
+        self._delete_file(self._unprefix_file_path(file_path))
+
+    #
     # Abstract methods
     #
     @abstractmethod
@@ -173,6 +187,12 @@ class Storage(ABC):
 
     def _prefix_file_path(self, path: str) -> str:
         return f"{self._prefix}://{path}"
+
+    def _unprefix_file_path(self, file_path: str) -> str:
+        prefix = f"{self._prefix}://"
+        if not file_path.startswith(prefix):
+            raise WrongPrefixError(self._prefix, file_path)
+        return file_path[len(prefix) :]
 
     def _iter_checkpoint_files(self, directory: str) -> Iterator[Tuple[int, str]]:
         checkpoint_files = []
