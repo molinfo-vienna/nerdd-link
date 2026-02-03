@@ -44,9 +44,13 @@ class SerializeJobAction(Action[SerializationRequestMessage]):
             config = json.load(f)
 
         with self._storage.get_output_file_handle(job_id, output_format, "wb") as output_file:
+            input_file_handles = (
+                self._storage.get_results_file_handle(job_id, checkpoint_id, "rb")
+                for checkpoint_id, _ in input_files
+            )
             steps = [
                 # read the result checkpoint files in the correct order
-                ReadPickleStep(self._storage.iter_results_file_handles(job_id, mode="rb")),
+                ReadPickleStep(input_file_handles),
                 # don't preprocess or predict, only post-process based on config
                 PostprocessFromConfigStep(
                     config=config,

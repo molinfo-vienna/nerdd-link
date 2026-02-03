@@ -102,11 +102,6 @@ class Storage(ABC):
         for checkpoint_id, identifier in self._iter_checkpoint_files(directory):
             yield checkpoint_id, self._prefix_file_path(identifier)
 
-    def iter_results_file_handles(self, job_id: str, mode: str = "rb") -> Iterator[IO]:
-        directory = self._get_results_directory_path(job_id)
-        for _, identifier in self._iter_checkpoint_files(directory):
-            yield self._get_file_handle(identifier, mode)
-
     #
     # Properties
     #
