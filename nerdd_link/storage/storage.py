@@ -145,9 +145,6 @@ class Storage(ABC):
     def _iter_directory(self, identifier: str) -> Iterator[str]: ...
 
     @abstractmethod
-    def _resolve_file_path(self, identifier: str) -> str: ...
-
-    @abstractmethod
     def _file_exists(self, identifier: str) -> bool: ...
 
     @abstractmethod

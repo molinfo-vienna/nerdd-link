@@ -1,5 +1,4 @@
-import os
-import posixpath
+from pathlib import Path, PurePosixPath
 from typing import BinaryIO, Iterator, Literal
 
 from .storage import Storage
@@ -14,26 +13,23 @@ class FileSystemStorage(Storage):
 
     def _iter_directory(self, identifier: str) -> Iterator[str]:
         directory_path = self._resolve_file_path(identifier)
-        if not os.path.isdir(directory_path):
+        if not directory_path.is_dir():
             return
 
-        with os.scandir(directory_path) as entries:
-            for entry in entries:
-                if entry.is_file():
-                    yield posixpath.join(identifier, entry.name)
+        for entry in directory_path.iterdir():
+            if entry.is_file():
+                yield str(PurePosixPath(identifier) / entry.name)
 
-    def _resolve_file_path(self, identifier: str) -> str:
-        return os.path.join(self.root_path, *identifier.split("/"))
+    def _resolve_file_path(self, identifier: str) -> Path:
+        return Path(self.root_path).joinpath(*identifier.split("/"))
 
     def _file_exists(self, identifier: str) -> bool:
-        return os.path.exists(self._resolve_file_path(identifier))
+        return self._resolve_file_path(identifier).exists()
 
     def _get_binary_file_handle(self, identifier: str, mode: Literal["rb", "wb"]) -> BinaryIO:
         file_path = self._resolve_file_path(identifier)
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        return open(file_path, mode)
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        return file_path.open(mode)
 
     def _delete_file(self, identifier: str) -> None:
-        file_path = self._resolve_file_path(identifier)
-        if os.path.exists(file_path):
-            os.remove(file_path)
+        self._resolve_file_path(identifier).unlink(missing_ok=True)
