@@ -98,6 +98,11 @@ async def _run_prediction_server(model: Model, channel: Channel, storage: Storag
     help="Directory containing structure files associated with the incoming jobs.",
 )
 @click.option(
+    "--s3-url",
+    default=None,
+    help="S3 endpoint URL.",
+)
+@click.option(
     "--s3-bucket",
     default=None,
     help="S3 bucket name.",
@@ -128,6 +133,7 @@ async def run_prediction_server(
     # options
     model_name: str,
     data_dir: str,
+    s3_url: Optional[str],
     s3_bucket: Optional[str],
     s3_username: Optional[str],
     s3_password: Optional[str],
@@ -143,7 +149,7 @@ async def run_prediction_server(
         channel_kwargs["broker_password"] = broker_password
 
     channel_instance = Channel.create_channel(channel, **channel_kwargs)
-    storage = get_storage(data_dir, s3_bucket, s3_username, s3_password)
+    storage = get_storage(data_dir, s3_url, s3_bucket, s3_username, s3_password)
 
     # import the model class
     package_name, class_name = model_name.rsplit(".", 1)

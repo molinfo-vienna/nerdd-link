@@ -61,6 +61,11 @@ async def _run_serialization_server(channel: Channel, storage: Storage) -> None:
     help="Directory containing structure files associated with the incoming jobs.",
 )
 @click.option(
+    "--s3-url",
+    default=None,
+    help="S3 endpoint URL.",
+)
+@click.option(
     "--s3-bucket",
     default=None,
     help="S3 bucket name.",
@@ -90,6 +95,7 @@ async def run_serialization_server(
     broker_password: Optional[str],
     # options
     data_dir: str,
+    s3_url: Optional[str],
     s3_bucket: Optional[str],
     s3_username: Optional[str],
     s3_password: Optional[str],
@@ -105,7 +111,7 @@ async def run_serialization_server(
         channel_kwargs["broker_password"] = broker_password
 
     channel_instance = Channel.create_channel(channel, **channel_kwargs)
-    storage = get_storage(data_dir, s3_bucket, s3_username, s3_password)
+    storage = get_storage(data_dir, s3_url, s3_bucket, s3_username, s3_password)
 
     await _run_serialization_server(
         channel=channel_instance,
