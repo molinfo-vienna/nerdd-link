@@ -1,6 +1,6 @@
 import os
-from glob import glob
-from typing import IO, Iterator, Tuple
+import posixpath
+from typing import IO, Iterator
 
 from .storage import Storage
 
@@ -12,29 +12,16 @@ class FileSystemStorage(Storage):
         super().__init__("file")
         self.root_path = root_path
 
-    #
-    # Checkpoints
-    #
-    def _iter_checkpoint_file_paths(self, job_id: str) -> Iterator[Tuple[int, str]]:
-        pattern = self._resolve_file_path(self._get_checkpoint_file_pattern(job_id))
-        for path in glob(pattern):
-            basename = os.path.basename(path)
-            checkpoint_id = int(basename[len("checkpoint_") : -len(".pickle")])
-            yield checkpoint_id, self._get_checkpoint_file_path(job_id, checkpoint_id)
+    def _iter_directory(self, identifier: str) -> Iterator[str]:
+        directory_path = self._resolve_file_path(identifier)
+        if not os.path.isdir(directory_path):
+            return
 
-    #
-    # Results
-    #
-    def _iter_results_file_paths(self, job_id: str) -> Iterator[Tuple[int, str]]:
-        pattern = self._resolve_file_path(self._get_results_file_pattern(job_id))
-        for path in glob(pattern):
-            basename = os.path.basename(path)
-            checkpoint_id = int(basename[len("checkpoint_") : -len(".pickle")])
-            yield checkpoint_id, self._get_results_file_path(job_id, checkpoint_id)
+        with os.scandir(directory_path) as entries:
+            for entry in entries:
+                if entry.is_file():
+                    yield posixpath.join(identifier, entry.name)
 
-    #
-    # Helpers
-    #
     def _resolve_file_path(self, identifier: str) -> str:
         return os.path.join(self.root_path, *identifier.split("/"))
 

@@ -47,8 +47,13 @@ class Storage(ABC):
     #
     # Checkpoints
     #
+    def _get_checkpoint_directory_path(self, job_id: str) -> str:
+        return posixpath.join("jobs", job_id, "inputs")
+
     def _get_checkpoint_file_path(self, job_id: str, checkpoint_id: Union[int, str]) -> str:
-        return posixpath.join("jobs", job_id, "inputs", f"checkpoint_{checkpoint_id}.pickle")
+        return posixpath.join(
+            self._get_checkpoint_directory_path(job_id), f"checkpoint_{checkpoint_id}.pickle"
+        )
 
     def get_checkpoint_file_path(self, job_id: str, checkpoint_id: Union[int, str]) -> str:
         return self._prefix_file_path(self._get_checkpoint_file_path(job_id, checkpoint_id))
@@ -64,18 +69,21 @@ class Storage(ABC):
     def delete_checkpoint_file(self, job_id: str, checkpoint_id: Union[int, str]) -> None:
         self._delete_file(self._get_checkpoint_file_path(job_id, checkpoint_id))
 
-    @abstractmethod
-    def _iter_checkpoint_file_paths(self, job_id: str) -> Iterator[Tuple[int, str]]: ...
-
     def iter_checkpoint_file_paths(self, job_id: str) -> Iterator[Tuple[int, str]]:
-        for checkpoint_id, path in self._iter_checkpoint_file_paths(job_id):
-            yield checkpoint_id, self._prefix_file_path(path)
+        directory = self._get_checkpoint_directory_path(job_id)
+        for checkpoint_id, identifier in self._iter_checkpoint_files(directory):
+            yield checkpoint_id, self._prefix_file_path(identifier)
 
     #
     # Results
     #
+    def _get_results_directory_path(self, job_id: str) -> str:
+        return posixpath.join("jobs", job_id, "results")
+
     def _get_results_file_path(self, job_id: str, checkpoint_id: Union[int, str]) -> str:
-        return posixpath.join("jobs", job_id, "results", f"checkpoint_{checkpoint_id}.pickle")
+        return posixpath.join(
+            self._get_results_directory_path(job_id), f"checkpoint_{checkpoint_id}.pickle"
+        )
 
     def get_results_file_path(self, job_id: str, checkpoint_id: Union[int, str]) -> str:
         return self._prefix_file_path(self._get_results_file_path(job_id, checkpoint_id))
@@ -89,15 +97,14 @@ class Storage(ABC):
     def delete_results_file(self, job_id: str, checkpoint_id: Union[int, str]) -> None:
         self._delete_file(self._get_results_file_path(job_id, checkpoint_id))
 
-    @abstractmethod
-    def _iter_results_file_paths(self, job_id: str) -> Iterator[Tuple[int, str]]: ...
-
     def iter_results_file_paths(self, job_id: str) -> Iterator[Tuple[int, str]]:
-        for checkpoint_id, path in self._iter_results_file_paths(job_id):
-            yield checkpoint_id, self._prefix_file_path(path)
+        directory = self._get_results_directory_path(job_id)
+        for checkpoint_id, identifier in self._iter_checkpoint_files(directory):
+            yield checkpoint_id, self._prefix_file_path(identifier)
 
     def iter_results_file_handles(self, job_id: str, mode: str = "rb") -> Iterator[IO]:
-        for _, identifier in self._iter_results_file_paths(job_id):
+        directory = self._get_results_directory_path(job_id)
+        for _, identifier in self._iter_checkpoint_files(directory):
             yield self._get_file_handle(identifier, mode)
 
     #
@@ -136,8 +143,11 @@ class Storage(ABC):
         self._delete_file(self._get_output_file_path(job_id, output_format))
 
     #
-    # Helpers
+    # Abstract methods
     #
+    @abstractmethod
+    def _iter_directory(self, identifier: str) -> Iterator[str]: ...
+
     @abstractmethod
     def _resolve_file_path(self, identifier: str) -> str: ...
 
@@ -150,17 +160,18 @@ class Storage(ABC):
     @abstractmethod
     def _delete_file(self, identifier: str) -> None: ...
 
+    #
+    # Helpers
+    #
     def _prefix_file_path(self, path: str) -> str:
         return f"{self._prefix}://{path}"
 
-    def _get_checkpoint_file_pattern(self, job_id: str) -> str:
-        return posixpath.join("jobs", job_id, "inputs", "checkpoint_*.pickle")
+    def _iter_checkpoint_files(self, directory: str) -> Iterator[Tuple[int, str]]:
+        checkpoint_files = []
+        for identifier in self._iter_directory(directory):
+            filename = posixpath.basename(identifier)
+            if filename.startswith("checkpoint_") and filename.endswith(".pickle"):
+                checkpoint_id = int(filename[len("checkpoint_") : -len(".pickle")])
+                checkpoint_files.append((checkpoint_id, identifier))
 
-    def _get_checkpoint_file_prefix(self, job_id: str) -> str:
-        return posixpath.join("jobs", job_id, "inputs", "checkpoint_")
-
-    def _get_results_file_pattern(self, job_id: str) -> str:
-        return posixpath.join("jobs", job_id, "results", "checkpoint_*.pickle")
-
-    def _get_results_file_prefix(self, job_id: str) -> str:
-        return posixpath.join("jobs", job_id, "results", "checkpoint_")
+        yield from sorted(checkpoint_files, key=lambda item: item[0])
