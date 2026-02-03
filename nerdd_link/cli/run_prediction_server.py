@@ -10,14 +10,15 @@ from nerdd_module import Model
 
 from ..actions import Action, PredictCheckpointsAction, supervise_actions
 from ..channels import Channel
-from ..storage import FileSystemStorage
+from ..storage import Storage
 from ..types import ModuleMessage
 from ..utils import async_to_sync
+from .get_storage import get_storage
 
 logger = logging.getLogger(__name__)
 
 
-async def _run_prediction_server(model: Model, channel: Channel, data_dir: str) -> None:
+async def _run_prediction_server(model: Model, channel: Channel, storage: Storage) -> None:
     # enable graceful shutdown on SIGTERM
     loop = asyncio.get_running_loop()
 
@@ -32,7 +33,6 @@ async def _run_prediction_server(model: Model, channel: Channel, data_dir: str) 
             #
             # register the module
             #
-            storage = FileSystemStorage(data_dir)
             # compare old json with new one, only write if changed
             new_config_json = model.config.model_dump()
             if storage.module_file_exists(model.config.id):
@@ -98,6 +98,21 @@ async def _run_prediction_server(model: Model, channel: Channel, data_dir: str) 
     help="Directory containing structure files associated with the incoming jobs.",
 )
 @click.option(
+    "--s3-bucket",
+    default=None,
+    help="S3 bucket name.",
+)
+@click.option(
+    "--s3-username",
+    default=None,
+    help="S3 username.",
+)
+@click.option(
+    "--s3-password",
+    default=None,
+    help="S3 password.",
+)
+@click.option(
     "--log-level",
     default="info",
     type=click.Choice(["debug", "info", "warning", "error", "critical"], case_sensitive=False),
@@ -113,6 +128,9 @@ async def run_prediction_server(
     # options
     model_name: str,
     data_dir: str,
+    s3_bucket: Optional[str],
+    s3_username: Optional[str],
+    s3_password: Optional[str],
     # log level
     log_level: str,
 ) -> None:
@@ -125,6 +143,7 @@ async def run_prediction_server(
         channel_kwargs["broker_password"] = broker_password
 
     channel_instance = Channel.create_channel(channel, **channel_kwargs)
+    storage = get_storage(data_dir, s3_bucket, s3_username, s3_password)
 
     # import the model class
     package_name, class_name = model_name.rsplit(".", 1)
@@ -135,5 +154,5 @@ async def run_prediction_server(
     await _run_prediction_server(
         model=model,
         channel=channel_instance,
-        data_dir=data_dir,
+        storage=storage,
     )

@@ -6,6 +6,7 @@ from pytest_bdd import parsers, when
 from nerdd_link.cli.run_job_server import _run_job_server
 from nerdd_link.cli.run_prediction_server import _run_prediction_server
 from nerdd_link.cli.run_serialization_server import _run_serialization_server
+from nerdd_link.storage import FileSystemStorage
 from nerdd_link.tests import async_step
 
 
@@ -15,7 +16,7 @@ async def prediction_server(model, channel, data_dir):
         _run_prediction_server(
             model=model,
             channel=channel,
-            data_dir=data_dir,
+            storage=FileSystemStorage(data_dir),
         )
     )
     yield task
@@ -37,7 +38,7 @@ async def job_server(channel, data_dir):
             ratio_valid_entries=0.5,
             maximum_depth=50,
             max_num_lines_mol_block=10000,
-            data_dir=data_dir,
+            storage=FileSystemStorage(data_dir),
         )
     )
     yield task
@@ -55,7 +56,7 @@ async def serialization_server(channel, data_dir):
     task = asyncio.create_task(
         _run_serialization_server(
             channel=channel,
-            data_dir=data_dir,
+            storage=FileSystemStorage(data_dir),
         )
     )
     yield task

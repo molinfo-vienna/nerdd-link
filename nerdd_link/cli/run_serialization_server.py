@@ -5,18 +5,19 @@ import rich_click as click
 
 from ..actions import Action, SerializeJobAction, supervise_actions
 from ..channels import Channel
-from ..storage import FileSystemStorage
+from ..storage import Storage
 from ..utils import async_to_sync
+from .get_storage import get_storage
 
 logger = logging.getLogger(__name__)
 
 
-async def _run_serialization_server(channel: Channel, data_dir: str) -> None:
+async def _run_serialization_server(channel: Channel, storage: Storage) -> None:
     try:
         async with channel:
             serialize_job = SerializeJobAction(
                 channel=channel,
-                storage=FileSystemStorage(data_dir),
+                storage=storage,
             )
 
             actions: List[Action] = [serialize_job]
@@ -60,6 +61,21 @@ async def _run_serialization_server(channel: Channel, data_dir: str) -> None:
     help="Directory containing structure files associated with the incoming jobs.",
 )
 @click.option(
+    "--s3-bucket",
+    default=None,
+    help="S3 bucket name.",
+)
+@click.option(
+    "--s3-username",
+    default=None,
+    help="S3 username.",
+)
+@click.option(
+    "--s3-password",
+    default=None,
+    help="S3 password.",
+)
+@click.option(
     "--log-level",
     default="info",
     type=click.Choice(["debug", "info", "warning", "error", "critical"], case_sensitive=False),
@@ -74,6 +90,9 @@ async def run_serialization_server(
     broker_password: Optional[str],
     # options
     data_dir: str,
+    s3_bucket: Optional[str],
+    s3_username: Optional[str],
+    s3_password: Optional[str],
     # log level
     log_level: str,
 ) -> None:
@@ -86,8 +105,9 @@ async def run_serialization_server(
         channel_kwargs["broker_password"] = broker_password
 
     channel_instance = Channel.create_channel(channel, **channel_kwargs)
+    storage = get_storage(data_dir, s3_bucket, s3_username, s3_password)
 
     await _run_serialization_server(
         channel=channel_instance,
-        data_dir=data_dir,
+        storage=storage,
     )

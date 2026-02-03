@@ -5,8 +5,9 @@ import rich_click as click
 
 from ..actions import ProcessJobsAction, supervise_actions
 from ..channels import Channel
-from ..storage import FileSystemStorage
+from ..storage import Storage
 from ..utils import async_to_sync
+from .get_storage import get_storage
 
 __all__ = ["run_job_server"]
 
@@ -20,7 +21,7 @@ async def _run_job_server(
     maximum_depth: int,
     # reading options for readers
     max_num_lines_mol_block: int,
-    data_dir: str,
+    storage: Storage,
 ) -> None:
     try:
         async with channel:
@@ -30,7 +31,7 @@ async def _run_job_server(
                 ratio_valid_entries=ratio_valid_entries,
                 maximum_depth=maximum_depth,
                 max_num_lines_mol_block=max_num_lines_mol_block,
-                storage=FileSystemStorage(data_dir),
+                storage=storage,
             )
 
             await supervise_actions([action])
@@ -92,6 +93,21 @@ async def _run_job_server(
     help="Directory containing structure files associated with the incoming jobs.",
 )
 @click.option(
+    "--s3-bucket",
+    default=None,
+    help="S3 bucket name.",
+)
+@click.option(
+    "--s3-username",
+    default=None,
+    help="S3 username.",
+)
+@click.option(
+    "--s3-password",
+    default=None,
+    help="S3 password.",
+)
+@click.option(
     "--log-level",
     default="info",
     type=click.Choice(["debug", "info", "warning", "error", "critical"], case_sensitive=False),
@@ -111,6 +127,9 @@ async def run_job_server(
     # reading options for readers
     max_num_lines_mol_block: int,
     data_dir: str,
+    s3_bucket: Optional[str],
+    s3_username: Optional[str],
+    s3_password: Optional[str],
     # log level
     log_level: str,
 ) -> None:
@@ -123,6 +142,7 @@ async def run_job_server(
         channel_kwargs["broker_password"] = broker_password
 
     channel_instance = Channel.create_channel(channel, **channel_kwargs)
+    storage = get_storage(data_dir, s3_bucket, s3_username, s3_password)
 
     await _run_job_server(
         channel=channel_instance,
@@ -130,5 +150,5 @@ async def run_job_server(
         ratio_valid_entries=ratio_valid_entries,
         maximum_depth=maximum_depth,
         max_num_lines_mol_block=max_num_lines_mol_block,
-        data_dir=data_dir,
+        storage=storage,
     )
