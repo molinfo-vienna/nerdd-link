@@ -1,6 +1,7 @@
+import io
 import posixpath
 from abc import ABC, abstractmethod
-from typing import IO, Iterator, Tuple, Union
+from typing import IO, BinaryIO, Iterator, Literal, Tuple, Union
 
 __all__ = ["Storage"]
 
@@ -150,7 +151,7 @@ class Storage(ABC):
     def _file_exists(self, identifier: str) -> bool: ...
 
     @abstractmethod
-    def _get_file_handle(self, identifier: str, mode: str) -> IO: ...
+    def _get_binary_file_handle(self, identifier: str, mode: Literal["rb", "wb"]) -> BinaryIO: ...
 
     @abstractmethod
     def _delete_file(self, identifier: str) -> None: ...
@@ -158,6 +159,21 @@ class Storage(ABC):
     #
     # Helpers
     #
+    def _get_file_handle(self, identifier: str, mode: str) -> IO:
+        if mode == "rb":
+            return self._get_binary_file_handle(identifier, "rb")
+        if mode == "wb":
+            return self._get_binary_file_handle(identifier, "wb")
+        if mode == "r":
+            return io.TextIOWrapper(
+                self._get_binary_file_handle(identifier, "rb"), encoding="utf-8"
+            )
+        if mode == "w":
+            return io.TextIOWrapper(
+                self._get_binary_file_handle(identifier, "wb"), encoding="utf-8"
+            )
+        raise ValueError("Storage only supports read and write modes ('r', 'w', 'rb', and 'wb').")
+
     def _prefix_file_path(self, path: str) -> str:
         return f"{self._prefix}://{path}"
 

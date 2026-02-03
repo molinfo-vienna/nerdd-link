@@ -1,6 +1,6 @@
 import os
 import posixpath
-from typing import IO, Iterator
+from typing import BinaryIO, Iterator, Literal
 
 from .storage import Storage
 
@@ -28,7 +28,7 @@ class FileSystemStorage(Storage):
     def _file_exists(self, identifier: str) -> bool:
         return os.path.exists(self._resolve_file_path(identifier))
 
-    def _get_file_handle(self, identifier: str, mode: str) -> IO:
+    def _get_binary_file_handle(self, identifier: str, mode: Literal["rb", "wb"]) -> BinaryIO:
         file_path = self._resolve_file_path(identifier)
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         return open(file_path, mode)
