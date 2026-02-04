@@ -30,7 +30,7 @@ class SerializeJobAction(Action[SerializationRequestMessage]):
         logger.info(f"Write output for job {job_id} in format {output_format}")
 
         # check input files
-        input_files = list(self._storage.iter_results_file_paths(job_id))
+        input_files = list(self._storage.iter_result_checkpoint_file_paths(job_id))
         if len(input_files) == 0:
             logger.warning(f"No input files found for job {job_id}. Cannot serialize.")
             return
@@ -45,7 +45,7 @@ class SerializeJobAction(Action[SerializationRequestMessage]):
 
         with self._storage.get_output_file_handle(job_id, output_format, "wb") as output_file:
             input_file_handles = (
-                self._storage.get_results_file_handle(job_id, checkpoint_id, "rb")
+                self._storage.get_result_checkpoint_file_handle(job_id, checkpoint_id, "rb")
                 for checkpoint_id, _ in input_files
             )
             steps = [

@@ -4,7 +4,7 @@ from nerdd_link import (
     ModuleFilePathSpec,
     OutputFilePathSpec,
     PropertyFilePathSpec,
-    ResultsFilePathSpec,
+    ResultCheckpointFilePathSpec,
     SourceFilePathSpec,
 )
 
@@ -35,12 +35,12 @@ def test_checkpoint_file_path_round_trip(tmp_path):
     )
 
 
-def test_results_file_path_round_trip(tmp_path):
+def test_result_checkpoint_file_path_round_trip(tmp_path):
     storage = FileSystemStorage(str(tmp_path))
 
-    file_path = storage.get_results_file_path("job-1", 2)
+    file_path = storage.get_result_checkpoint_file_path("job-1", 2)
 
-    assert storage.parse_results_file_path(file_path) == ResultsFilePathSpec(
+    assert storage.parse_result_checkpoint_file_path(file_path) == ResultCheckpointFilePathSpec(
         job_id="job-1", checkpoint_id=2
     )
 

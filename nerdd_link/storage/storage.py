@@ -10,7 +10,7 @@ __all__ = [
     "ModuleFilePathSpec",
     "OutputFilePathSpec",
     "PropertyFilePathSpec",
-    "ResultsFilePathSpec",
+    "ResultCheckpointFilePathSpec",
     "SourceFilePathSpec",
     "Storage",
 ]
@@ -29,7 +29,7 @@ class CheckpointFilePathSpec(NamedTuple):
     checkpoint_id: int
 
 
-class ResultsFilePathSpec(NamedTuple):
+class ResultCheckpointFilePathSpec(NamedTuple):
     job_id: str
     checkpoint_id: int
 
@@ -134,36 +134,40 @@ class Storage(ABC):
             yield checkpoint_id, self._prefix_file_path(identifier)
 
     #
-    # Results
+    # Result checkpoints
     #
     def _get_results_directory_path(self, job_id: str) -> str:
         return posixpath.join("jobs", job_id, "results")
 
-    def _get_results_file_path(self, job_id: str, checkpoint_id: Union[int, str]) -> str:
+    def _get_result_checkpoint_file_path(self, job_id: str, checkpoint_id: Union[int, str]) -> str:
         return posixpath.join(
             self._get_results_directory_path(job_id), f"checkpoint_{checkpoint_id}.pickle"
         )
 
-    def get_results_file_path(self, job_id: str, checkpoint_id: Union[int, str]) -> str:
-        return self._prefix_file_path(self._get_results_file_path(job_id, checkpoint_id))
+    def get_result_checkpoint_file_path(self, job_id: str, checkpoint_id: Union[int, str]) -> str:
+        return self._prefix_file_path(self._get_result_checkpoint_file_path(job_id, checkpoint_id))
 
-    def parse_results_file_path(self, file_path: str) -> ResultsFilePathSpec:
-        parts = self._parse_file_path_parts(file_path, "results", 4)
+    def parse_result_checkpoint_file_path(self, file_path: str) -> ResultCheckpointFilePathSpec:
+        parts = self._parse_file_path_parts(file_path, "result checkpoint", 4)
         if parts[0] != "jobs" or parts[2] != "results":
-            raise self._invalid_file_path("results", file_path)
-        checkpoint_id = self._parse_checkpoint_id(parts[3], "results", file_path)
-        return ResultsFilePathSpec(job_id=parts[1], checkpoint_id=checkpoint_id)
+            raise self._invalid_file_path("result checkpoint", file_path)
+        checkpoint_id = self._parse_checkpoint_id(parts[3], "result checkpoint", file_path)
+        return ResultCheckpointFilePathSpec(job_id=parts[1], checkpoint_id=checkpoint_id)
 
-    def get_results_file_handle(self, job_id: str, checkpoint_id: Union[int, str], mode: str) -> IO:
-        return self._get_file_handle(self._get_results_file_path(job_id, checkpoint_id), mode)
+    def get_result_checkpoint_file_handle(
+        self, job_id: str, checkpoint_id: Union[int, str], mode: str
+    ) -> IO:
+        return self._get_file_handle(
+            self._get_result_checkpoint_file_path(job_id, checkpoint_id), mode
+        )
 
-    def results_file_exists(self, job_id: str, checkpoint_id: Union[int, str]) -> bool:
-        return self._file_exists(self._get_results_file_path(job_id, checkpoint_id))
+    def result_checkpoint_file_exists(self, job_id: str, checkpoint_id: Union[int, str]) -> bool:
+        return self._file_exists(self._get_result_checkpoint_file_path(job_id, checkpoint_id))
 
-    def delete_results_file(self, job_id: str, checkpoint_id: Union[int, str]) -> None:
-        self._delete_file(self._get_results_file_path(job_id, checkpoint_id))
+    def delete_result_checkpoint_file(self, job_id: str, checkpoint_id: Union[int, str]) -> None:
+        self._delete_file(self._get_result_checkpoint_file_path(job_id, checkpoint_id))
 
-    def iter_results_file_paths(self, job_id: str) -> Iterator[Tuple[int, str]]:
+    def iter_result_checkpoint_file_paths(self, job_id: str) -> Iterator[Tuple[int, str]]:
         directory = self._get_results_directory_path(job_id)
         for checkpoint_id, identifier in self._iter_checkpoint_files(directory):
             yield checkpoint_id, self._prefix_file_path(identifier)

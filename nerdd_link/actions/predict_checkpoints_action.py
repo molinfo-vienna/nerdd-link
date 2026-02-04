@@ -50,7 +50,7 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
             self._storage.get_checkpoint_file_handle(
                 job_id, checkpoint_id, "rb"
             ) as checkpoint_handle,
-            self._storage.get_results_file_handle(
+            self._storage.get_result_checkpoint_file_handle(
                 job_id, checkpoint_id, "wb"
             ) as result_checkpoint_handle,
         ):
@@ -89,7 +89,7 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         logger.info(f"Received a tombstone for checkpoint {checkpoint_id} of job {job_id}")
 
         # delete result checkpoint file if it exists
-        self._storage.delete_results_file(job_id, checkpoint_id)
+        self._storage.delete_result_checkpoint_file(job_id, checkpoint_id)
 
         # Send a tombstone to the results topic to indicate that the prediction is done.
         await self.channel.result_checkpoints_topic().send(
