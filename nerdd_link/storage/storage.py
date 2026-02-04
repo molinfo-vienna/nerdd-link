@@ -1,11 +1,48 @@
 import io
 import posixpath
 from abc import ABC, abstractmethod
-from typing import IO, BinaryIO, Iterator, Literal, Tuple, Union
+from typing import IO, BinaryIO, Iterator, Literal, NamedTuple, Tuple, Union
 
 from .wrong_prefix_error import WrongPrefixError
 
-__all__ = ["Storage"]
+__all__ = [
+    "CheckpointFilePathSpec",
+    "ModuleFilePathSpec",
+    "OutputFilePathSpec",
+    "PropertyFilePathSpec",
+    "ResultsFilePathSpec",
+    "SourceFilePathSpec",
+    "Storage",
+]
+
+
+class ModuleFilePathSpec(NamedTuple):
+    module_id: str
+
+
+class SourceFilePathSpec(NamedTuple):
+    source_id: str
+
+
+class CheckpointFilePathSpec(NamedTuple):
+    job_id: str
+    checkpoint_id: int
+
+
+class ResultsFilePathSpec(NamedTuple):
+    job_id: str
+    checkpoint_id: int
+
+
+class PropertyFilePathSpec(NamedTuple):
+    job_id: str
+    property_name: str
+    record_id: str
+
+
+class OutputFilePathSpec(NamedTuple):
+    job_id: str
+    output_format: str
 
 
 class Storage(ABC):
@@ -23,6 +60,12 @@ class Storage(ABC):
     def get_module_file_path(self, module_id: str) -> str:
         return self._prefix_file_path(self._get_module_file_path(module_id))
 
+    def parse_module_file_path(self, file_path: str) -> ModuleFilePathSpec:
+        parts = self._parse_file_path_parts(file_path, "module", 2)
+        if parts[0] != "modules":
+            raise self._invalid_file_path("module", file_path)
+        return ModuleFilePathSpec(module_id=parts[1])
+
     def get_module_file_handle(self, module_id: str, mode: str) -> IO:
         return self._get_file_handle(self._get_module_file_path(module_id), mode)
 
@@ -37,6 +80,12 @@ class Storage(ABC):
 
     def get_source_file_path(self, source_id: str) -> str:
         return self._prefix_file_path(self._get_source_file_path(source_id))
+
+    def parse_source_file_path(self, file_path: str) -> SourceFilePathSpec:
+        parts = self._parse_file_path_parts(file_path, "source", 2)
+        if parts[0] != "sources":
+            raise self._invalid_file_path("source", file_path)
+        return SourceFilePathSpec(source_id=parts[1])
 
     def get_source_file_handle(self, source_id: str, mode: str) -> IO:
         return self._get_file_handle(self._get_source_file_path(source_id), mode)
@@ -60,6 +109,13 @@ class Storage(ABC):
 
     def get_checkpoint_file_path(self, job_id: str, checkpoint_id: Union[int, str]) -> str:
         return self._prefix_file_path(self._get_checkpoint_file_path(job_id, checkpoint_id))
+
+    def parse_checkpoint_file_path(self, file_path: str) -> CheckpointFilePathSpec:
+        parts = self._parse_file_path_parts(file_path, "checkpoint", 4)
+        if parts[0] != "jobs" or parts[2] != "inputs":
+            raise self._invalid_file_path("checkpoint", file_path)
+        checkpoint_id = self._parse_checkpoint_id(parts[3], "checkpoint", file_path)
+        return CheckpointFilePathSpec(job_id=parts[1], checkpoint_id=checkpoint_id)
 
     def get_checkpoint_file_handle(
         self, job_id: str, checkpoint_id: Union[int, str], mode: str
@@ -91,6 +147,13 @@ class Storage(ABC):
     def get_results_file_path(self, job_id: str, checkpoint_id: Union[int, str]) -> str:
         return self._prefix_file_path(self._get_results_file_path(job_id, checkpoint_id))
 
+    def parse_results_file_path(self, file_path: str) -> ResultsFilePathSpec:
+        parts = self._parse_file_path_parts(file_path, "results", 4)
+        if parts[0] != "jobs" or parts[2] != "results":
+            raise self._invalid_file_path("results", file_path)
+        checkpoint_id = self._parse_checkpoint_id(parts[3], "results", file_path)
+        return ResultsFilePathSpec(job_id=parts[1], checkpoint_id=checkpoint_id)
+
     def get_results_file_handle(self, job_id: str, checkpoint_id: Union[int, str], mode: str) -> IO:
         return self._get_file_handle(self._get_results_file_path(job_id, checkpoint_id), mode)
 
@@ -116,6 +179,16 @@ class Storage(ABC):
             self._get_property_file_path(job_id, property_name, record_id)
         )
 
+    def parse_property_file_path(self, file_path: str) -> PropertyFilePathSpec:
+        parts = self._parse_file_path_parts(file_path, "property", 5)
+        if parts[0] != "jobs" or parts[2] != "results":
+            raise self._invalid_file_path("property", file_path)
+        return PropertyFilePathSpec(
+            job_id=parts[1],
+            property_name=parts[3],
+            record_id=parts[4],
+        )
+
     def get_property_file_handle(
         self, job_id: str, property_name: str, record_id: str, mode: str
     ) -> IO:
@@ -130,6 +203,17 @@ class Storage(ABC):
 
     def get_output_file_path(self, job_id: str, output_format: str) -> str:
         return self._prefix_file_path(self._get_output_file_path(job_id, output_format))
+
+    def parse_output_file_path(self, file_path: str) -> OutputFilePathSpec:
+        parts = self._parse_file_path_parts(file_path, "output", 4)
+        filename = parts[3]
+        if parts[0] != "jobs" or parts[2] != "outputs" or not filename.startswith("result."):
+            raise self._invalid_file_path("output", file_path)
+
+        output_format = filename[len("result.") :]
+        if not self._is_valid_file_path_component(output_format):
+            raise self._invalid_file_path("output", file_path)
+        return OutputFilePathSpec(job_id=parts[1], output_format=output_format)
 
     def get_output_file_handle(self, job_id: str, output_format: str, mode: str) -> IO:
         return self._get_file_handle(self._get_output_file_path(job_id, output_format), mode)
@@ -207,6 +291,34 @@ class Storage(ABC):
             return file_path[len("/data/") :]
         else:
             raise WrongPrefixError(self._prefix, file_path)
+
+    def _parse_file_path_parts(
+        self, file_path: str, file_type: str, expected_num_parts: int
+    ) -> Tuple[str, ...]:
+        identifier = self._unprefix_file_path(file_path)
+        parts = tuple(identifier.split("/"))
+        if len(parts) != expected_num_parts or any(
+            not self._is_valid_file_path_component(part) for part in parts
+        ):
+            raise self._invalid_file_path(file_type, file_path)
+        return parts
+
+    def _parse_checkpoint_id(self, filename: str, file_type: str, file_path: str) -> int:
+        prefix = "checkpoint_"
+        suffix = ".pickle"
+        if not filename.startswith(prefix) or not filename.endswith(suffix):
+            raise self._invalid_file_path(file_type, file_path)
+
+        checkpoint_id = filename[len(prefix) : -len(suffix)]
+        if not checkpoint_id.isascii() or not checkpoint_id.isdecimal():
+            raise self._invalid_file_path(file_type, file_path)
+        return int(checkpoint_id)
+
+    def _is_valid_file_path_component(self, component: str) -> bool:
+        return component not in {"", ".", ".."} and "\\" not in component
+
+    def _invalid_file_path(self, file_type: str, file_path: str) -> ValueError:
+        return ValueError(f"Invalid {file_type} file path: {file_path}")
 
     def _iter_checkpoint_files(self, directory: str) -> Iterator[Tuple[int, str]]:
         checkpoint_files = []
