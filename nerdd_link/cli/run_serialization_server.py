@@ -8,6 +8,7 @@ from ..channels import Channel
 from ..storage import Storage
 from ..utils import async_to_sync
 from .get_storage import get_storage
+from .validate_storage_options import validate_storage_options
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +58,7 @@ async def _run_serialization_server(channel: Channel, storage: Storage) -> None:
 )
 @click.option(
     "--data-dir",
-    default="sources",
+    default=None,
     help="Directory containing structure files associated with the incoming jobs.",
 )
 @click.option(
@@ -94,7 +95,7 @@ async def run_serialization_server(
     broker_username: Optional[str],
     broker_password: Optional[str],
     # options
-    data_dir: str,
+    data_dir: Optional[str],
     s3_url: Optional[str],
     s3_bucket: Optional[str],
     s3_username: Optional[str],
@@ -102,6 +103,7 @@ async def run_serialization_server(
     # log level
     log_level: str,
 ) -> None:
+    validate_storage_options(data_dir, s3_url, s3_bucket, s3_username, s3_password)
     logging.basicConfig(level=log_level.upper())
 
     channel_kwargs = {"broker_url": broker_url}
