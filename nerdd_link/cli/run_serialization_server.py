@@ -8,7 +8,6 @@ from ..channels import Channel
 from ..storage import Storage
 from ..utils import async_to_sync
 from .get_storage import get_storage
-from .validate_storage_options import validate_storage_options
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +102,6 @@ async def run_serialization_server(
     # log level
     log_level: str,
 ) -> None:
-    validate_storage_options(data_dir, s3_url, s3_bucket, s3_username, s3_password)
     logging.basicConfig(level=log_level.upper())
 
     channel_kwargs = {"broker_url": broker_url}
@@ -113,7 +111,8 @@ async def run_serialization_server(
         channel_kwargs["broker_password"] = broker_password
 
     channel_instance = Channel.create_channel(channel, **channel_kwargs)
-    storage = get_storage(data_dir, s3_url, s3_bucket, s3_username, s3_password)
+
+    storage = get_storage(data_dir, s3_url, s3_bucket, s3_username, s3_password, mirrored=False)
 
     await _run_serialization_server(
         channel=channel_instance,
