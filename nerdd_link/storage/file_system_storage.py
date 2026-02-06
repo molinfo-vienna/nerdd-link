@@ -11,6 +11,15 @@ class FileSystemStorage(Storage):
         super().__init__("file")
         self.root_path = root_path
 
+    def _validate(self) -> None:
+        root_path = Path(self.root_path)
+        try:
+            root_path.mkdir(parents=True, exist_ok=True)
+        except FileExistsError as error:
+            raise ValueError(f"Storage root path is not a directory: {self.root_path!r}") from error
+        except OSError as error:
+            raise ValueError(f"Could not create storage root path: {self.root_path!r}") from error
+
     def _iter_directory(self, identifier: str) -> Iterator[str]:
         directory_path = self._resolve_file_path(identifier)
         if not directory_path.is_dir():

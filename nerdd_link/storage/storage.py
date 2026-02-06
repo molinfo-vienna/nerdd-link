@@ -52,6 +52,31 @@ class Storage(ABC):
         self._prefix = prefix
 
     #
+    # Abstract methods
+    #
+    @abstractmethod
+    def _validate(self) -> None: ...
+
+    @abstractmethod
+    def _iter_directory(self, identifier: str) -> Iterator[str]: ...
+
+    @abstractmethod
+    def _file_exists(self, identifier: str) -> bool: ...
+
+    @abstractmethod
+    def _get_binary_file_handle(self, identifier: str, mode: Literal["rb", "wb"]) -> BinaryIO: ...
+
+    @abstractmethod
+    def _delete_file(self, identifier: str) -> None: ...
+
+    #
+    # Validation
+    #
+    def validate(self) -> None:
+        """Verify that this storage backend is ready to be used."""
+        self._validate()
+
+    #
     # Modules
     #
     def _get_module_file_path(self, module_id: str) -> str:
@@ -235,21 +260,6 @@ class Storage(ABC):
 
     def delete_file(self, file_path: str) -> None:
         self._delete_file(self._unprefix_file_path(file_path))
-
-    #
-    # Abstract methods
-    #
-    @abstractmethod
-    def _iter_directory(self, identifier: str) -> Iterator[str]: ...
-
-    @abstractmethod
-    def _file_exists(self, identifier: str) -> bool: ...
-
-    @abstractmethod
-    def _get_binary_file_handle(self, identifier: str, mode: Literal["rb", "wb"]) -> BinaryIO: ...
-
-    @abstractmethod
-    def _delete_file(self, identifier: str) -> None: ...
 
     #
     # Helpers

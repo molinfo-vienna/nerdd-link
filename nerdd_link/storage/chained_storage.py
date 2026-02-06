@@ -15,6 +15,10 @@ class ChainedStorage(Storage):
         super().__init__(storages[0]._prefix)
         self._storages = storages
 
+    def _validate(self) -> None:
+        for storage in self._storages:
+            storage.validate()
+
     def _iter_directory(self, identifier: str) -> Iterator[str]:
         seen = set()
         for storage in self._storages:
