@@ -41,3 +41,7 @@ class ChainedStorage(Storage):
     def _delete_file(self, identifier: str) -> None:
         for storage in self._storages:
             storage._delete_file(identifier)
+
+    def __repr__(self) -> str:
+        storages_repr = ", ".join(repr(storage) for storage in self._storages)
+        return f"ChainedStorage({storages_repr})"

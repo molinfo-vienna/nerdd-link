@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 
 import rich_click as click
@@ -5,6 +6,8 @@ import rich_click as click
 from ..storage import ChainedStorage, FileSystemStorage, MirroredStorage, Storage
 
 __all__ = ["get_storage"]
+
+logger = logging.getLogger(__name__)
 
 
 def get_storage(
@@ -28,15 +31,18 @@ def get_storage(
         if data_dir is not None:
             file_system_storage = FileSystemStorage(data_dir)
             if mirrored:
-                return MirroredStorage(s3_storage, file_system_storage)
+                storage: Storage = MirroredStorage(s3_storage, file_system_storage)
             else:
-                return ChainedStorage(s3_storage, file_system_storage)
+                storage = ChainedStorage(s3_storage, file_system_storage)
         else:
-            return s3_storage
+            storage = s3_storage
     elif data_dir is not None:
-        return FileSystemStorage(data_dir)
+        storage = FileSystemStorage(data_dir)
     else:
         raise click.UsageError(
             "Either --data-dir or all S3 options (--s3-url, --s3-bucket, "
             "--s3-username, and --s3-password) must be provided."
         )
+
+    logger.info("Using storage backend: %r", storage)
+    return storage

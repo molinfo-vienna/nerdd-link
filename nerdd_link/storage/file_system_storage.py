@@ -33,3 +33,6 @@ class FileSystemStorage(Storage):
 
     def _delete_file(self, identifier: str) -> None:
         self._resolve_file_path(identifier).unlink(missing_ok=True)
+
+    def __repr__(self) -> str:
+        return f"FileSystemStorage({self.root_path!r})"

@@ -139,3 +139,7 @@ class MirroredStorage(Storage):
 
         if errors:
             raise errors[0]
+
+    def __repr__(self) -> str:
+        storages_repr = ", ".join(repr(storage) for storage in self._storages)
+        return f"MirroredStorage({storages_repr})"
