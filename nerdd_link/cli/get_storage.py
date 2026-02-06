@@ -44,5 +44,6 @@ def get_storage(
             "--s3-username, and --s3-password) must be provided."
         )
 
+    storage.validate()
     logger.info("Using storage backend: %r", storage)
     return storage
