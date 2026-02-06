@@ -22,6 +22,17 @@ class _FailingDeleteStorage(FileSystemStorage):
         raise OSError("delete failed")
 
 
+def test_repr():
+    first = FileSystemStorage("/path/1")
+    second = FileSystemStorage("/path/2")
+
+    storage = MirroredStorage(first, second)
+
+    assert repr(storage) == (
+        "MirroredStorage(FileSystemStorage('/path/1'), FileSystemStorage('/path/2'))"
+    )
+
+
 def test_requires_at_least_one_storage():
     with pytest.raises(ValueError, match="at least one storage"):
         MirroredStorage()
@@ -115,3 +126,15 @@ def test_attempts_delete_on_every_storage_before_raising(tmp_path):
         storage.delete_source_file("source-1")
 
     assert not healthy.source_file_exists("source-1")
+
+
+def test_validation_validates_every_child(mocker, tmp_path):
+    first = FileSystemStorage(str(tmp_path / "first"))
+    second = FileSystemStorage(str(tmp_path / "second"))
+    first_validate = mocker.spy(first, "validate")
+    second_validate = mocker.spy(second, "validate")
+
+    MirroredStorage(first, second).validate()
+
+    first_validate.assert_called_once_with()
+    second_validate.assert_called_once_with()
