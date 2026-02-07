@@ -8,6 +8,8 @@ from stringcase import spinalcase
 from ..channels import Channel, Topic
 from ..types import Message, Tombstone
 
+__all__ = ["Action"]
+
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=Message)
