@@ -1,5 +1,5 @@
 import json
-from typing import Iterator, Optional, Protocol
+from typing import Iterator, Optional, Protocol, Tuple
 
 from nerdd_module.input import ExploreCallable, MoleculeEntry, Reader
 
@@ -37,8 +37,21 @@ class StructureJsonReader(Reader):
 
         for entry in contents:
             source_id = entry["id"]
+            filename = entry.get("filename")
             with self._storage.get_source_file_handle(source_id, "rb") as handle:
-                yield from explore(handle)
+                for result in explore(handle):
+                    if filename is None:
+                        yield result
+                    else:
+                        # streams do not know that they are being read in a context of a file
+                        # -> we would obtain "raw_input" as source
+                        # -> we want to use the filename (without "raw_input") as the source
+                        if len(result.source) == 1 and result.source[0] == "raw_input":
+                            source: Tuple[str, ...] = tuple()
+                        else:
+                            source = result.source
+
+                        yield result._replace(source=(filename, *source))
 
     def __repr__(self) -> str:
         return f"StructureJsonReader(storage={self._storage})"
