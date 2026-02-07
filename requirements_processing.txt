@@ -5,5 +5,5 @@ importlib_metadata==8.6.1
 nerdd_module==0.3.57
 pydantic==2.10.6
 rdkit==2020.09.1
-rich_click==1.8.5
+rich_click==1.9.8
 stringcase==1.2.0
