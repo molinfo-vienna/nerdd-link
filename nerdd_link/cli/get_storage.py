@@ -3,7 +3,7 @@ from typing import Optional
 
 import rich_click as click
 
-from ..storage import ChainedStorage, FileSystemStorage, MirroredStorage, Storage
+from ..storage import ChainedStorage, FileSystemStorage, MirroredStorage, S3Storage, Storage
 
 __all__ = ["get_storage"]
 
@@ -25,9 +25,7 @@ def get_storage(
         and s3_username is not None
         and s3_password is not None
     ):
-        # TODO: replace
-        # s3_storage = S3Storage(s3_url, s3_bucket, s3_username, s3_password)
-        s3_storage = FileSystemStorage(data_dir)  # type: ignore[arg-type]
+        s3_storage = S3Storage(s3_url, s3_bucket, s3_username, s3_password)
         if data_dir is not None:
             file_system_storage = FileSystemStorage(data_dir)
             if mirrored:
