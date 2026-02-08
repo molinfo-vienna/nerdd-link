@@ -1,4 +1,4 @@
-from nerdd_link import (
+from nerdd_link.storage import (
     CheckpointFilePathSpec,
     ModuleFilePathSpec,
     OutputFilePathSpec,
