@@ -109,7 +109,6 @@ select = [
     "T20", # no print statements
 ]
 ignore = [
-    "F403", # I often use 'from .submodule import *' in __init__.py files
     "C408", # I prefer dict(a=5) over {'a': 5}
 ]
 
