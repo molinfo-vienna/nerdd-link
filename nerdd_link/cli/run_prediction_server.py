@@ -108,14 +108,14 @@ async def _run_prediction_server(model: Model, channel: Channel, storage: Storag
     help="S3 bucket name.",
 )
 @click.option(
-    "--s3-username",
+    "--s3-access-key-id",
     default=None,
-    help="S3 username.",
+    help="S3 access key ID.",
 )
 @click.option(
-    "--s3-password",
+    "--s3-secret-access-key",
     default=None,
-    help="S3 password.",
+    help="S3 secret access key.",
 )
 @click.option(
     "--log-level",
@@ -135,8 +135,8 @@ async def run_prediction_server(
     data_dir: Optional[str],
     s3_url: Optional[str],
     s3_bucket: Optional[str],
-    s3_username: Optional[str],
-    s3_password: Optional[str],
+    s3_access_key_id: Optional[str],
+    s3_secret_access_key: Optional[str],
     # log level
     log_level: str,
 ) -> None:
@@ -150,7 +150,7 @@ async def run_prediction_server(
 
     channel_instance = Channel.create_channel(channel, **channel_kwargs)
 
-    storage = get_storage(data_dir, s3_url, s3_bucket, s3_username, s3_password)
+    storage = get_storage(data_dir, s3_url, s3_bucket, s3_access_key_id, s3_secret_access_key)
 
     # import the model class
     package_name, class_name = model_name.rsplit(".", 1)

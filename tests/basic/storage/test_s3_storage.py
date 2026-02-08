@@ -9,7 +9,13 @@ from nerdd_link.storage import S3Storage
 def _create_storage(mocker, **kwargs):
     client = mocker.Mock()
     mocker.patch("nerdd_link.storage.s3_storage.boto3.client", return_value=client)
-    storage = S3Storage("http://s3.example.com", "my-bucket", "username", "password", **kwargs)
+    storage = S3Storage(
+        "http://s3.example.com",
+        "my-bucket",
+        "access-key-id",
+        "secret-access-key",
+        **kwargs,
+    )
     return storage, client
 
 
@@ -17,19 +23,19 @@ def test_repr():
     storage = S3Storage(
         url="http://s3.example.com",
         bucket_name="my-bucket",
-        username="my-secret-username",
-        password="my-secret-password",
+        access_key_id="my-secret-access-key-id",
+        secret_access_key="my-secret-access-key",
         max_spool_size=1024,
         multipart_part_size=5 * 1024 * 1024,
     )
 
     result = repr(storage)
 
-    # make sure that username and password are not exposed
-    assert "my-secret-username" not in result
-    assert "my-secret-password" not in result
-    assert "username='***'" in result
-    assert "password='***'" in result
+    # make sure that S3 credentials are not exposed
+    assert "my-secret-access-key-id" not in result
+    assert "my-secret-access-key" not in result
+    assert "access_key_id='***'" in result
+    assert "secret_access_key='***'" in result
     assert "url='http://s3.example.com'" in result
     assert "bucket_name='my-bucket'" in result
 

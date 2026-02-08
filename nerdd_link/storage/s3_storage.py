@@ -156,8 +156,8 @@ class S3Storage(Storage):
         self,
         url: str,
         bucket_name: str,
-        username: str,
-        password: str,
+        access_key_id: str,
+        secret_access_key: str,
         max_spool_size: int = 8 * 1024 * 1024,
         multipart_part_size: int = 8 * 1024 * 1024,
     ) -> None:
@@ -174,8 +174,8 @@ class S3Storage(Storage):
         self._client = boto3.client(
             "s3",
             endpoint_url=url,
-            aws_access_key_id=username,
-            aws_secret_access_key=password,
+            aws_access_key_id=access_key_id,
+            aws_secret_access_key=secret_access_key,
         )
 
     def _validate(self) -> None:
@@ -247,8 +247,8 @@ class S3Storage(Storage):
             f"S3Storage("
             f"url={self.url!r}, "
             f"bucket_name={self.bucket_name!r}, "
-            f"username='***', "
-            f"password='***', "
+            f"access_key_id='***', "
+            f"secret_access_key='***', "
             f"max_spool_size={self._max_spool_size!r}, "
             f"multipart_part_size={self._multipart_part_size!r}"
             f")"
