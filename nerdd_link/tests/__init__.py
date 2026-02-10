@@ -12,6 +12,14 @@ from .channels import (
 )
 from .files import data_dir
 
+# when import nerdd_link.tests in other project's conftest.py, pytest won't discover all the
+# fixtures in submodules -> we need to explicitly declare them here
+pytest_plugins = [
+    "nerdd_link.tests.channels",
+    "nerdd_link.tests.files",
+]
+
+
 __all__ = [
     "async_step",
     "channel",
