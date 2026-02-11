@@ -64,6 +64,9 @@ class Storage(ABC):
     def _file_exists(self, identifier: str) -> bool: ...
 
     @abstractmethod
+    def _get_file_size(self, identifier: str) -> int: ...
+
+    @abstractmethod
     def _get_binary_file_handle(self, identifier: str, mode: Literal["rb", "wb"]) -> BinaryIO: ...
 
     @abstractmethod
@@ -257,6 +260,10 @@ class Storage(ABC):
 
     def file_exists(self, file_path: str) -> bool:
         return self._file_exists(self._unprefix_file_path(file_path))
+
+    def get_file_size(self, file_path: str) -> int:
+        """Return the size of a file in bytes."""
+        return self._get_file_size(self._unprefix_file_path(file_path))
 
     def delete_file(self, file_path: str) -> None:
         self._delete_file(self._unprefix_file_path(file_path))

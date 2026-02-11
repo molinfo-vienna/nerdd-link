@@ -35,6 +35,9 @@ class FileSystemStorage(Storage):
     def _file_exists(self, identifier: str) -> bool:
         return self._resolve_file_path(identifier).exists()
 
+    def _get_file_size(self, identifier: str) -> int:
+        return self._resolve_file_path(identifier).stat().st_size
+
     def _get_binary_file_handle(self, identifier: str, mode: Literal["rb", "wb"]) -> BinaryIO:
         file_path = self._resolve_file_path(identifier)
         file_path.parent.mkdir(parents=True, exist_ok=True)
