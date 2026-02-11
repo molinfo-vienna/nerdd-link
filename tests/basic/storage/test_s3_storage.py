@@ -83,6 +83,16 @@ def test_writes_small_object_on_close(mocker):
     )
 
 
+def test_get_file_size(mocker):
+    storage, client = _create_storage(mocker)
+    client.head_object.return_value = {"ContentLength": 7}
+
+    file_size = storage.get_file_size(storage.get_source_file_path("source-1"))
+
+    assert file_size == 7
+    client.head_object.assert_called_once_with(Bucket="my-bucket", Key="sources/source-1")
+
+
 def test_writes_multipart_object(mocker):
     part_size = 5 * 1024 * 1024
     first_part = b"a" * part_size
