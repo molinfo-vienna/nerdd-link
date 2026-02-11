@@ -29,7 +29,8 @@ class MemoryChannel(Channel):
     ) -> AsyncIterable[List[Tuple[Optional[tuple], Optional[dict]]]]:
         num_retrieved = 0
         async for _, new in self._messages.changes():
-            assert new is not None
+            if new is None:
+                raise RuntimeError("Message changes must contain a new value")
             (t, key, value) = new
             if topic == t:
                 num_retrieved += 1

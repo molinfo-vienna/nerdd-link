@@ -20,6 +20,7 @@ def run_pipeline(first_step: Union[Iterator[dict], StepLike], *steps: StepLike) 
 
     # we will run the pipeline using the last step
     output_step = steps[-1]
-    assert isinstance(output_step, OutputStep), "The last step must be an OutputStep."
+    if not isinstance(output_step, OutputStep):
+        raise TypeError("The last step must be an OutputStep.")
 
     return output_step.get_result()

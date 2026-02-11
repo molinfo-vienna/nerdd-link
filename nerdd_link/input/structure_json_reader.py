@@ -31,9 +31,10 @@ class StructureJsonReader(Reader):
         if self._storage is None:
             raise ValueError("Storage must be provided to read from a JSON file")
 
-        assert isinstance(contents, list) and all(
-            (isinstance(entry, dict) and "id" in entry.keys()) for entry in contents
-        )
+        if not isinstance(contents, list) or not all(
+            isinstance(entry, dict) and "id" in entry for entry in contents
+        ):
+            raise ValueError("JSON contents must be a list of objects with an 'id' field")
 
         for entry in contents:
             source_id = entry["id"]

@@ -15,9 +15,8 @@ class SplitAndMergeStep(OutputStep):
         super().__init__()
 
         for step_list in step_lists:
-            assert isinstance(
-                step_list[-1], OutputStep
-            ), "The last step in each step list must be an OutputStep."
+            if not isinstance(step_list[-1], OutputStep):
+                raise TypeError("The last step in each step list must be an OutputStep.")
 
         self._step_lists = step_lists
 

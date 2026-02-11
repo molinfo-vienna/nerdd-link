@@ -34,7 +34,8 @@ class WriteCheckpointsStep(Step):
         self._params = params
 
     def _run(self, source: Optional[Iterator[dict]]) -> Iterator[dict]:
-        assert source is not None, "Source iterator cannot be None."
+        if source is None:
+            raise ValueError("Source iterator cannot be None.")
 
         # iterate through the entries
         # create batches of size checkpoint_size
