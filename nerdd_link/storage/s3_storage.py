@@ -1,4 +1,5 @@
 import io
+from contextlib import suppress
 from shutil import copyfileobj
 from tempfile import SpooledTemporaryFile
 from typing import Any, BinaryIO, Dict, Iterator, List, Literal, Optional, cast
@@ -103,15 +104,14 @@ class _S3MultipartWriteRawIO(io.RawIOBase):
             # abort multipart upload to avoid leaving an incomplete object in S3
             upload_id = self._upload_id
             self._upload_id = None
-            try:
+
+            # ignore abort errors to avoid masking the original upload failure
+            with suppress(Exception):
                 self._client.abort_multipart_upload(
                     Bucket=self._bucket_name,
                     Key=self._key,
                     UploadId=upload_id,
                 )
-            except Exception:
-                # ignore errors during abort (to avoid masking the original error)
-                pass
 
     def close(self) -> None:
         if self.closed:
@@ -208,7 +208,9 @@ class S3Storage(Storage):
     def _get_binary_file_handle(self, identifier: str, mode: Literal["rb", "wb"]) -> BinaryIO:
         if mode == "rb":
             body = self._client.get_object(Bucket=self.bucket_name, Key=identifier)["Body"]
-            spool = SpooledTemporaryFile(max_size=self._max_spool_size, mode="w+b")
+            spool = SpooledTemporaryFile(  # noqa: SIM115 - returned to the caller
+                max_size=self._max_spool_size, mode="w+b"
+            )
             try:
                 copyfileobj(body, spool)
                 spool.seek(0)

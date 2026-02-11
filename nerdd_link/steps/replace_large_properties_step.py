@@ -87,7 +87,7 @@ class ReplaceLargePropertiesStep(Step):
                 sub_id = None
 
             modified_record = {
-                k: self._process_property(record, record_id, sub_id, k) for k in record.keys()
+                k: self._process_property(record, record_id, sub_id, k) for k in record
             }
 
             yield modified_record

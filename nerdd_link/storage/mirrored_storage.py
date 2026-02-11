@@ -1,4 +1,5 @@
 import io
+from contextlib import suppress
 from typing import Any, BinaryIO, Iterator, List, Literal, Optional, Sequence, cast
 
 from .storage import Storage
@@ -133,10 +134,8 @@ class MirroredStorage(Storage):
 
             if first_error is not None:
                 for handle in handles:
-                    try:
+                    with suppress(Exception):
                         handle.close()
-                    except Exception:
-                        pass
                 raise first_error
 
             return cast(BinaryIO, _MirroredWriteRawIO(handles))

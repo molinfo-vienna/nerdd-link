@@ -7,6 +7,7 @@ from typing import (
     Any,
     AsyncIterable,
     Callable,
+    ClassVar,
     Dict,
     Generic,
     List,
@@ -271,7 +272,7 @@ class Channel(ABC):
     #
     # META
     #
-    _channel_registry: Dict[str, Type["Channel"]] = {}
+    _channel_registry: ClassVar[Dict[str, Type["Channel"]]] = {}
 
     @classmethod
     def __init_subclass__(

@@ -21,7 +21,6 @@ dependencies = [
     "numpy",
     "simplejson>=3",
     "pydantic>=2",
-    "rstream>=1.0.0",
     "boto3>=1",
     # TODO: move dependencies to extras
     "aiokafka>=0.12.0",
@@ -100,16 +99,30 @@ line-length = 100
 
 [tool.ruff.lint]
 select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "I",   # isort
-    "B",   # flake8-bugbear
-    "C4",  # flake8-comprehensions
-    "T20", # no print statements
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "SIM",  # flake8-simplify
+    "TCH",  # flake8-type-checking
+    "S",    # flake8-bandit
+    "RUF",  # Ruff-specific rules
+    "FAST", # FastAPI rules (if using FastAPI)
+    "T20",  # no print statements
 ]
 ignore = [
-    "C408", # I prefer dict(a=5) over {'a': 5}
+    "C408",   # I prefer dict(a=5) over {'a': 5}
+    "SIM108", # Ternary operator is not always more readable (my opinion)
+    "S301",   # Using pickle for deserialization is discouraged; TODO: use safer alternative
+    "S318",   # using minidom for parsing xml is discouraged; TODO: use defusedxml in the future
+]
+
+[tool.ruff.lint.per-file-ignores]
+"{tests,nerdd_link/tests}/**/*.py" = [
+    "S101", # Allow using assert statements in test files
+    "S106", # Passwords used in test files are fake and no security risk
 ]
 
 [tool.mypy]
