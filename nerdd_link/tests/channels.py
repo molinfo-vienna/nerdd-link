@@ -4,9 +4,16 @@ from ast import literal_eval
 import pytest_asyncio
 from pytest_bdd import parsers, then, when
 
-from nerdd_link import (JobMessage, MemoryChannel, Message, ModuleMessage,
-                        ResultCheckpointMessage, SerializationRequestMessage,
-                        SystemMessage, Tombstone)
+from nerdd_link import (
+    JobMessage,
+    MemoryChannel,
+    Message,
+    ModuleMessage,
+    ResultCheckpointMessage,
+    SerializationRequestMessage,
+    SystemMessage,
+    Tombstone,
+)
 
 from .async_step import async_step
 
@@ -34,22 +41,15 @@ async def channel():
         yield channel
 
 
-@when(
-    parsers.parse(
-        "the channel receives a message on topic '{topic}' with content\n{message}"
-    )
-)
+@when(parsers.parse("the channel receives a message on topic '{topic}' with content\n{message}"))
 @async_step
 async def receive_message(channel, topic, message):
     message = literal_eval(message)
     MessageType = get_message_type_from_topic(topic)
     await channel.send(topic, MessageType(**message))
 
-@when(
-    parsers.parse(
-        "the channel receives a tombstone on topic '{topic}' with key {key}"
-    )
-)
+
+@when(parsers.parse("the channel receives a tombstone on topic '{topic}' with key {key}"))
 @async_step
 async def receive_tombstone(channel, topic, key):
     key_tuple = literal_eval(key)
@@ -57,11 +57,7 @@ async def receive_tombstone(channel, topic, key):
     await channel.send(topic, Tombstone(MessageType, *key_tuple))
 
 
-@then(
-    parsers.parse(
-        "the channel sends a message on topic '{topic}' with content\n{message}"
-    )
-)
+@then(parsers.parse("the channel sends a message on topic '{topic}' with content\n{message}"))
 def check_exists_message_with_content(channel, topic, message):
     message = literal_eval(message)
     messages = channel.get_produced_messages()
@@ -73,11 +69,7 @@ def check_exists_message_with_content(channel, topic, message):
     assert found, f"Message {message} not found on topic {topic}."
 
 
-@then(
-    parsers.parse(
-        "the channel sends a tombstone on topic '{topic}' with key {key}"
-    )
-)
+@then(parsers.parse("the channel sends a tombstone on topic '{topic}' with key {key}"))
 def check_exists_tombstone_with_key(channel, topic, key):
     key_tuple = literal_eval(key)
     messages = channel.get_produced_messages()
@@ -99,11 +91,7 @@ def check_number_of_messages(channel, num, topic):
     assert count == num, f"Expected {num} messages on topic {topic}, got {count}."
 
 
-@then(
-    parsers.parse(
-        "the channel sends a message on topic '{topic}' containing\n{message}"
-    )
-)
+@then(parsers.parse("the channel sends a message on topic '{topic}' containing\n{message}"))
 def check_exists_message_containing(channel, topic, message):
     message = literal_eval(message)
     messages = channel.get_produced_messages()

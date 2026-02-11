@@ -9,4 +9,4 @@ def test_unpicklable_values():
 
         # temp_file is a _io.BufferedRandom object that cannot be pickled
         # pickle_writer should not raise an error
-        pickle_writer.write([{ "file": temp_file }])
+        pickle_writer.write([{"file": temp_file}])

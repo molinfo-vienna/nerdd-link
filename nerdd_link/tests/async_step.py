@@ -9,9 +9,7 @@ def async_step(step):
     parameters = list(signature.parameters.values())
     has_event_loop = any(parameter.name == "event_loop" for parameter in parameters)
     if not has_event_loop:
-        parameters.append(
-            inspect.Parameter("event_loop", inspect.Parameter.POSITIONAL_OR_KEYWORD)
-        )
+        parameters.append(inspect.Parameter("event_loop", inspect.Parameter.POSITIONAL_OR_KEYWORD))
         step.__signature__ = signature.replace(parameters=parameters)
 
     @wraps(step)
