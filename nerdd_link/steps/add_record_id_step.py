@@ -1,7 +1,7 @@
 import logging
 from typing import Iterator, Optional
 
-from nerdd_module import Step
+from nerdd_module.steps import Step
 
 __all__ = ["AddRecordIdStep"]
 

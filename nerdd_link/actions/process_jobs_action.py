@@ -1,7 +1,8 @@
 import logging
 from asyncio import get_running_loop, to_thread
 
-from nerdd_module import DepthFirstExplorer, ReadInputStep, WriteOutputStep
+from nerdd_module.input import DepthFirstExplorer
+from nerdd_module.model import ReadInputStep, WriteOutputStep
 
 from ..channels import Channel
 from ..steps import WriteCheckpointsStep

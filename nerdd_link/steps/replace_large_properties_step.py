@@ -1,7 +1,7 @@
 from typing import Any, Iterator, Optional
 
-from nerdd_module import Step
 from nerdd_module.config import Module
+from nerdd_module.steps import Step
 
 from ..storage import Storage
 

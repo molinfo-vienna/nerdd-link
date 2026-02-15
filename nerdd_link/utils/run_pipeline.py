@@ -1,6 +1,6 @@
 from typing import Any, Callable, Iterator, Optional, Union
 
-from nerdd_module import OutputStep
+from nerdd_module.steps import OutputStep
 
 __all__ = ["run_pipeline"]
 
