@@ -1,3 +1,4 @@
+from ._plugin import register
 from .actions import (
     Action,
     PredictCheckpointsAction,
@@ -64,3 +65,6 @@ __all__ = [
     "Topic",
     "supervise_actions",
 ]
+
+# run the entrypoint explicitly to ensure that classes register themselves with the plugin system
+register()
