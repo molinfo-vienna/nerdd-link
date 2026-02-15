@@ -76,6 +76,9 @@ nerdd_job_server = "nerdd_link.cli:run_job_server"
 nerdd_prediction_server = "nerdd_link.cli:run_prediction_server"
 nerdd_serialization_server = "nerdd_link.cli:run_serialization_server"
 
+[project.entry-points."nerdd_module.plugins"]
+nerdd_link = "nerdd_link._plugin:register"
+
 #
 # TOOLS
 #
