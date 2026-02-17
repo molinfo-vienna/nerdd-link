@@ -93,7 +93,8 @@ class Topic(Generic[TMessage]):
 
 class Channel(ABC):
     def __init__(self) -> None:
-        self._is_running = Event()
+        self._is_stopping = Event()
+        self._is_stopping.set()
 
         self._num_consumers_lock = Lock()
         self._num_consumers = 0
@@ -101,7 +102,7 @@ class Channel(ABC):
         self._no_active_consumers.set()
 
     async def start(self) -> None:
-        self._is_running.set()
+        self._is_stopping.clear()
         await self._start()
 
     async def _start(self) -> None:  # noqa: B027
@@ -112,7 +113,7 @@ class Channel(ABC):
             return
 
         # notify that we aim to stop
-        self._is_running.clear()
+        self._is_stopping.set()
 
         # wait for all consumers to stop
         await self._no_active_consumers.wait()
@@ -131,7 +132,7 @@ class Channel(ABC):
 
     @property
     def is_running(self) -> bool:
-        return self._is_running.is_set()
+        return not self._is_stopping.is_set()
 
     #
     # RECEIVE
