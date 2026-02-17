@@ -12,6 +12,7 @@ from .channels import (
     ConfluentKafkaChannel,
     KafkaChannel,
     MemoryChannel,
+    RabbitmqStreamsChannel,
     Topic,
 )
 from .storage import (
@@ -53,6 +54,7 @@ __all__ = [
     "OutputFilePathSpec",
     "PredictCheckpointsAction",
     "ProcessJobsAction",
+    "RabbitmqStreamsChannel",
     "ResultCheckpointMessage",
     "ResultMessage",
     "S3Storage",
