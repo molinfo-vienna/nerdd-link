@@ -1,9 +1,6 @@
 from ._plugin import register
 from .actions import (
     Action,
-    PredictCheckpointsAction,
-    ProcessJobsAction,
-    SerializeJobAction,
     supervise_actions,
 )
 from .channels import (
@@ -52,15 +49,12 @@ __all__ = [
     "MirroredStorage",
     "ModuleMessage",
     "OutputFilePathSpec",
-    "PredictCheckpointsAction",
-    "ProcessJobsAction",
     "RabbitmqStreamsChannel",
     "ResultCheckpointMessage",
     "ResultMessage",
     "S3Storage",
     "SerializationRequestMessage",
     "SerializationResultMessage",
-    "SerializeJobAction",
     "Storage",
     "SystemMessage",
     "Tombstone",
