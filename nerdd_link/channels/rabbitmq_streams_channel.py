@@ -192,12 +192,28 @@ class RabbitmqStreamsChannel(Channel):
 
                 key_value_pairs = []
                 for _, message in messages:
-                    key_value_pairs.append(
-                        (
-                            self._decode_key(message),
-                            self._decode_value(message),
-                        )
-                    )
+                    # decode key
+                    application_properties = message.application_properties or {}
+                    if _KEY_HEADER in application_properties:
+                        raw_key = application_properties[_KEY_HEADER]
+                        try:
+                            key = tuple(json.loads(raw_key))
+                        except (json.JSONDecodeError, TypeError):
+                            # key is not a valid JSON object, i.e. a string without quotes
+                            # -> use the key as is (but decode to str if it's bytes)
+                            if isinstance(raw_key, bytes):
+                                raw_key = raw_key.decode("utf-8")
+                            key = (str(raw_key),)
+                    else:
+                        key = None
+
+                    # decode value
+                    if message.body is None:
+                        value = None
+                    else:
+                        value = json.loads(message.body)
+
+                    key_value_pairs.append((key, value))
 
                 yield key_value_pairs
 
@@ -222,21 +238,3 @@ class RabbitmqStreamsChannel(Channel):
 
         message = AMQPMessage(body=body, application_properties=application_properties)
         await self._producer.send_wait(topic, message)
-
-    @staticmethod
-    def _decode_key(message: AMQPMessage) -> Optional[tuple]:
-        application_properties = message.application_properties or {}
-        if _KEY_HEADER not in application_properties:
-            return None
-
-        raw_key = application_properties[_KEY_HEADER]
-        try:
-            return tuple(json.loads(str(raw_key)))
-        except (json.JSONDecodeError, TypeError):
-            return (str(raw_key),)
-
-    @staticmethod
-    def _decode_value(message: AMQPMessage) -> Optional[dict]:
-        if message.body in (None, b""):
-            return None
-        return json.loads(message.body)
