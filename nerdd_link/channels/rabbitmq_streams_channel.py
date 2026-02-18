@@ -1,8 +1,7 @@
 import asyncio
 import json
 import logging
-import ssl
-from typing import AsyncIterable, List, Optional, Tuple
+from typing import Any, AsyncIterable, Dict, List, Optional, Tuple, Union
 from urllib.parse import unquote, urlparse
 
 try:
@@ -59,7 +58,6 @@ logger = logging.getLogger(__name__)
 
 _KEY_HEADER = "x-nerdd-key"
 _DEFAULT_RABBITMQ_PORT = 5552
-_DEFAULT_RABBITMQ_TLS_PORT = 5551
 
 
 class RabbitmqStreamsChannel(Channel):
@@ -69,30 +67,38 @@ class RabbitmqStreamsChannel(Channel):
         broker_username: Optional[str] = None,
         broker_password: Optional[str] = None,
     ) -> None:
-        super().__init__()
         if _IMPORT_ERROR is not None:
-            raise _IMPORT_ERROR
+            raise ImportError(
+                "RabbitmqStreamsChannel requires 'rstream' to be installed. "
+                "Install it with 'pip install rstream'."
+            ) from _IMPORT_ERROR
 
-        self._broker_url = broker_url
+        super().__init__()
 
-        parsed = urlparse(broker_url)
-        if parsed.scheme not in {"rabbitmq", "rabbitmqs"}:
-            raise ValueError(f"Unsupported RabbitMQ broker URL scheme: {parsed.scheme}")
+        parsed_url = urlparse(broker_url)
 
-        host = parsed.hostname
-        if host is None:
-            raise ValueError(f"Invalid RabbitMQ broker URL: {broker_url}")
-        self._host = host
+        # validate scheme
+        if parsed_url.scheme != "rabbitmq":
+            raise ValueError(
+                f"Invalid URL scheme '{parsed_url.scheme}' for RabbitmqStreamsChannel. "
+                f"Expected 'rabbitmq'."
+            )
 
-        use_tls = parsed.scheme == "rabbitmqs"
-        self._ssl_context = ssl.create_default_context() if use_tls else None
+        # use default host and port if not specified
+        self._host = parsed_url.hostname or "localhost"
+        self._port = parsed_url.port or _DEFAULT_RABBITMQ_PORT
 
-        default_port = _DEFAULT_RABBITMQ_TLS_PORT if use_tls else _DEFAULT_RABBITMQ_PORT
-        self._port = parsed.port or default_port
-
-        self._username = broker_username or unquote(parsed.username or "guest")
-        self._password = broker_password or unquote(parsed.password or "guest")
-        self._vhost = unquote(parsed.path[1:]) if parsed.path not in {"", "/"} else "/"
+        # username and password: percent-decode from URL using unquote (e.g. p%40ssword -> p@ssword)
+        self._username = (
+            broker_username
+            if broker_username is not None
+            else (unquote(parsed_url.username) if parsed_url.username else "guest")
+        )
+        self._password = (
+            broker_password
+            if broker_password is not None
+            else (unquote(parsed_url.password) if parsed_url.password else "guest")
+        )
 
         self._producer: Optional[Producer] = None
 
@@ -102,8 +108,6 @@ class RabbitmqStreamsChannel(Channel):
             port=self._port,
             username=self._username,
             password=self._password,
-            vhost=self._vhost,
-            ssl_context=self._ssl_context,
             connection_name="nerdd-link-producer",
         )
         await self._producer.start()
@@ -129,8 +133,6 @@ class RabbitmqStreamsChannel(Channel):
             port=self._port,
             username=self._username,
             password=self._password,
-            vhost=self._vhost,
-            ssl_context=self._ssl_context,
             connection_name=f"nerdd-link-{consumer_group}",
         )
         subscriber_name = consumer_group
