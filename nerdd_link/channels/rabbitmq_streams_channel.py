@@ -56,7 +56,7 @@ __all__ = ["RabbitmqStreamsChannel"]
 
 logger = logging.getLogger(__name__)
 
-_KEY_HEADER = "x-nerdd-key"
+_KEY_HEADER = b"x-nerdd-key"
 _DEFAULT_RABBITMQ_PORT = 5552
 
 
@@ -227,14 +227,16 @@ class RabbitmqStreamsChannel(Channel):
 
         await self._producer.create_stream(topic, exists_ok=True)
 
+        # encode key
+        application_properties: Dict[Union[str, bytes], Any] = {}
+        if key is not None:
+            application_properties[_KEY_HEADER] = json.dumps(key).encode("utf-8")
+
+        # encode body
         if value is None:
-            body = b""
+            body = None
         else:
             body = json.dumps(value).encode("utf-8")
-
-        application_properties = {}
-        if key is not None:
-            application_properties[_KEY_HEADER] = json.dumps(key)
 
         message = AMQPMessage(body=body, application_properties=application_properties)
         await self._producer.send_wait(topic, message)
