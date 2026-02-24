@@ -43,4 +43,3 @@ jobs:
             || contains(needs.*.result, 'cancelled')
             || contains(needs.*.result, 'skipped')
           }}
-          

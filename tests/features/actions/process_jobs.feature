@@ -7,13 +7,13 @@ Feature: Process job action
 
     # start all participating servers
     When the job server is running
-    
+
     And the channel receives a message on topic 'jobs' with content
-        { 
-            "id": "123", 
-            "job_type": 
-            "mol-scale", 
-            "source_id": "456", 
+        {
+            "id": "123",
+            "job_type":
+            "mol-scale",
+            "source_id": "456",
             "params": { "multiplier": 10 },
             "max_num_molecules": 10000,
             "checkpoint_size": 40
@@ -26,13 +26,13 @@ Feature: Process job action
     And the file 'jobs/123/inputs/checkpoint_2.pickle' is created
 
     # channel
-    And the channel sends a message on topic 'mol-scale-checkpoints' with content 
+    And the channel sends a message on topic 'mol-scale-checkpoints' with content
         { "job_id": "123", "checkpoint_id": 0, "params": { "multiplier": 10 } }
-    And the channel sends a message on topic 'mol-scale-checkpoints' with content 
+    And the channel sends a message on topic 'mol-scale-checkpoints' with content
         { "job_id": "123", "checkpoint_id": 1, "params": { "multiplier": 10 } }
-    And the channel sends a message on topic 'mol-scale-checkpoints' with content 
+    And the channel sends a message on topic 'mol-scale-checkpoints' with content
         { "job_id": "123", "checkpoint_id": 2, "params": { "multiplier": 10 } }
-    And the channel sends a message on topic 'logs' with content 
+    And the channel sends a message on topic 'logs' with content
         { "job_id": "123", "message_type": "report_job_size", "num_entries": 100, "num_checkpoints": 3 }
 
   Scenario: Process a job with too many molecules
@@ -41,14 +41,14 @@ Feature: Process job action
     And a file 'sources/456' with the molecules in format 'sdf'
 
     # start all participating servers
-    When the job server is running 
-    
+    When the job server is running
+
     And the channel receives a message on topic 'jobs' with content
-        { 
-            "id": "123", 
-            "job_type": 
-            "mol-scale", 
-            "source_id": "456", 
+        {
+            "id": "123",
+            "job_type":
+            "mol-scale",
+            "source_id": "456",
             "params": { "multiplier": 10 },
             "max_num_molecules": 10,
             "checkpoint_size": 100
@@ -59,15 +59,13 @@ Feature: Process job action
     Then the file 'jobs/123/inputs/checkpoint_0.pickle' is created
 
     # channel
-    And the channel sends a message on topic 'mol-scale-checkpoints' with content 
+    And the channel sends a message on topic 'mol-scale-checkpoints' with content
         { "job_id": "123", "checkpoint_id": 0, "params": { "multiplier": 10 } }
-    And the channel sends a message on topic 'logs' with content 
+    And the channel sends a message on topic 'logs' with content
         { "job_id": "123", "message_type": "report_job_size", "num_entries": 10, "num_checkpoints": 1 }
-    And the channel sends a message on topic 'logs' with content 
-        { 
-            "job_id": "123", 
-            "message_type": "warning", 
-            "message": "The provided job contains more than 10 input structures. Only the first 10 will be processed." 
+    And the channel sends a message on topic 'logs' with content
+        {
+            "job_id": "123",
+            "message_type": "warning",
+            "message": "The provided job contains more than 10 input structures. Only the first 10 will be processed."
         }
-    
-    

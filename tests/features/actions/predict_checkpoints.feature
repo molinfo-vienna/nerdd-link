@@ -10,14 +10,14 @@ Feature: Predict checkpoints action
     # start all participating servers
     When the job server is running
     And the prediction server is running
-    
+
     And the channel receives a message on topic 'jobs' with content
-        { "id": "123", 
-          "job_type": "mol-scale", 
-          "source_id": "456", 
-          "params": { "multiplier": 10 }, 
-          "max_num_molecules": 10000, 
-          "checkpoint_size": 40 
+        { "id": "123",
+          "job_type": "mol-scale",
+          "source_id": "456",
+          "params": { "multiplier": 10 },
+          "max_num_molecules": 10000,
+          "checkpoint_size": 40
         }
     And we wait for 1 seconds
 
