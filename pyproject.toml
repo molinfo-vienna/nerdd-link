@@ -102,18 +102,17 @@ line-length = 100
 
 [tool.ruff.lint]
 select = [
-    "E",    # pycodestyle errors
-    "W",    # pycodestyle warnings
-    "F",    # pyflakes
-    "I",    # isort
-    "B",    # flake8-bugbear
-    "C4",   # flake8-comprehensions
-    "SIM",  # flake8-simplify
-    "TCH",  # flake8-type-checking
-    "S",    # flake8-bandit
-    "RUF",  # Ruff-specific rules
-    "FAST", # FastAPI rules (if using FastAPI)
-    "T20",  # no print statements
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+    "TCH", # flake8-type-checking
+    "S",   # flake8-bandit
+    "RUF", # Ruff-specific rules
+    "T20", # no print statements
 ]
 ignore = [
     "C408",   # I prefer dict(a=5) over {'a': 5}
