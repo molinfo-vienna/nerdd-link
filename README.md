@@ -1,7 +1,33 @@
-# NERDD-Link
+<h1 align="center">
+    nerdd-link
+</h1>
 
-Run a [NERDD module](https://github.com/molinfo-vienna/nerdd-module) as a  
-service that consumes input molecules and produces prediction tuples.
+<hr/>
+
+<div align="center">
+
+![PyPI version](https://img.shields.io/pypi/v/nerdd-link)
+![Python versions](https://img.shields.io/pypi/pyversions/nerdd-link)
+![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-231F20?logo=apachekafka&logoColor=white)
+![RabbitMQ](https://img.shields.io/badge/RabbitMQ-FF6600?logo=rabbitmq&logoColor=white)
+![License](https://img.shields.io/github/license/molinfo-vienna/nerdd-link)
+
+</div>
+
+<div align="center">
+<a href="https://github.com/molinfo-vienna/nerdd-module">📦 nerdd-module</a>
+•
+<a href="https://github.com/molinfo-vienna/nerdd">⚙️ Infrastructure</a>
+•
+<a href="https://nerdd.univie.ac.at">🌐 NERDD website</a>
+</div>
+
+<br/>
+
+## Introduction
+
+Run a [NERDD module](https://github.com/molinfo-vienna/nerdd-module) as a service that consumes
+input molecules and produces prediction tuples.
 
 
 ## Installation
@@ -9,31 +35,3 @@ service that consumes input molecules and produces prediction tuples.
 ```bash
 pip install -U nerdd-link
 ```
-  
-## Usage
-
-When a class inherits from ```nerdd_module.AbstractModel``` (see 
-[NERDD Module Github page](https://github.com/molinfo-vienna/nerdd-module)), it can be 
-used to create a Kafka service. 
-
-```bash 
-# run a Kafka service for NerddModel on localhost:9092
-run_nerdd_server package.path.to.NerddModel
-
-# modify broker url, input topic and batch size
-run_nerdd_server package.path.to.NerddModel \
-  --broker-url my-cluster-kafka-bootstrap.kafka:9092 \
-  --input-topic examples \
-  --batch-size 10
-
-# more information via --help
-run_nerdd_server --help
-```
-
-If the model class is called ```ExamplePredictionModel```, the server will read input 
-tuples from the input topic ```example-prediction-inputs``` in batches of size 100
-and write results to the ```results``` topic. The batch size specifies the number
-of input tuples that are given to the model at once.
-
-## Communication
-
