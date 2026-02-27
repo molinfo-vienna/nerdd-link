@@ -6,7 +6,7 @@ from typing import Any, BinaryIO, Dict, Iterator, List, Literal, Optional, cast
 import boto3
 from botocore.exceptions import ClientError
 
-from ..utils import SpooledTemporaryFile
+from ..polyfills import SpooledTemporaryFile
 from .storage import Storage
 
 __all__ = ["S3Storage"]
