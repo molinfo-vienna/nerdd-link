@@ -1,12 +1,12 @@
 import io
 from contextlib import suppress
 from shutil import copyfileobj
-from tempfile import SpooledTemporaryFile
 from typing import Any, BinaryIO, Dict, Iterator, List, Literal, Optional, cast
 
 import boto3
 from botocore.exceptions import ClientError
 
+from ..utils import SpooledTemporaryFile
 from .storage import Storage
 
 __all__ = ["S3Storage"]
@@ -208,9 +208,7 @@ class S3Storage(Storage):
     def _get_binary_file_handle(self, identifier: str, mode: Literal["rb", "wb"]) -> BinaryIO:
         if mode == "rb":
             body = self._client.get_object(Bucket=self.bucket_name, Key=identifier)["Body"]
-            spool = SpooledTemporaryFile(  # noqa: SIM115 - returned to the caller
-                max_size=self._max_spool_size, mode="w+b"
-            )
+            spool = SpooledTemporaryFile(max_size=self._max_spool_size, mode="w+b")
             try:
                 copyfileobj(body, spool)
                 spool.seek(0)
