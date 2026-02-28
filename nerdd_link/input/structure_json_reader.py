@@ -39,8 +39,15 @@ class StructureJsonReader(Reader):
         for entry in contents:
             source_id = entry["id"]
             filename = entry.get("filename")
+            raw_input_on_error = filename if filename is not None else source_id
+
             with self._storage.get_source_file_handle(source_id, "rb") as handle:
                 for result in explore(handle):
+                    # if the content of the file is not recognized as molecular data, we replace
+                    # the field `raw_input` with the filename (if available) or the source_id
+                    if result.input_type == "unknown" and not isinstance(result.raw_input, str):
+                        result = result._replace(raw_input=raw_input_on_error)
+
                     if filename is None:
                         yield result
                     else:
