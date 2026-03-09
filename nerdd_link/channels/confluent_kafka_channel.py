@@ -4,6 +4,8 @@ import logging
 import time
 from typing import Any, AsyncIterable, List, Optional, Tuple
 
+from nerdd_link.utils import CommandQueueThread, command
+
 from .channel import Channel
 
 try:
@@ -33,6 +35,79 @@ __all__ = ["ConfluentKafkaChannel"]
 logger = logging.getLogger(__name__)
 
 
+class _ProducerWorker(CommandQueueThread):
+    def __init__(self, config: dict[str, Any]) -> None:
+        super().__init__(name="confluent-kafka-producer", idle_timeout=5.0)
+        self._config = config
+        self._producer: Producer
+        self._delivery_errors: list[BaseException] = []
+        self._produce_errors: list[BaseException] = []
+
+    def _initialize(self) -> None:
+        self._producer = Producer(self._config)
+
+    def _on_idle(self) -> None:
+        self._producer.poll(0)
+
+    def _shutdown(self) -> None:
+        pass
+
+    @command(fire_and_forget=True)
+    def produce(self, topic: str, key: Optional[bytes], value: Optional[bytes]) -> None:
+        last_error: BaseException = RuntimeError(
+            "Failed sending Kafka message after multiple trials."
+        )
+        try:
+            num_trials = 5
+            for trial in range(num_trials):
+                try:
+                    self._producer.produce(
+                        topic,
+                        key=key,
+                        value=value,
+                        callback=self._delivery_callback,
+                    )
+                except BaseException as error:
+                    last_error = error
+                    self._producer.poll(0)
+                else:
+                    break
+
+                if trial < num_trials - 1:
+                    logger.warning(
+                        "Error while sending Kafka message. Retrying... (%s/%s): %s",
+                        trial + 1,
+                        num_trials,
+                        last_error,
+                    )
+                    time.sleep(1)
+            else:
+                raise last_error
+        except BaseException as error:
+            self._produce_errors.append(error)
+            raise
+
+    @command
+    def flush(self) -> None:
+        try:
+            remaining = self._producer.flush()
+            if remaining != 0:
+                raise RuntimeError(f"Kafka producer failed to deliver {remaining} message(s).")
+            if self._delivery_errors:
+                error = self._delivery_errors.pop(0)
+                self._delivery_errors.clear()
+                raise error
+        finally:
+            if self._produce_errors:
+                error = self._produce_errors.pop(0)
+                self._produce_errors.clear()
+                raise error
+
+    def _delivery_callback(self, error: Any, _: Any) -> None:
+        if error is not None:
+            self._delivery_errors.append(KafkaException(error))
+
+
 class ConfluentKafkaChannel(Channel):
     def __init__(
         self,
@@ -54,7 +129,7 @@ class ConfluentKafkaChannel(Channel):
         self._broker_url = broker_url
         self._broker_username = broker_username if username_provided else None
         self._broker_password = broker_password if password_provided else None
-        self._producer: Optional[Producer] = None
+        self._producer_worker: Optional[_ProducerWorker] = None
 
     async def _start(self) -> None:
         auth_config = {}
@@ -66,7 +141,7 @@ class ConfluentKafkaChannel(Channel):
                 "sasl.password": self._broker_password,
             }
 
-        self._producer = Producer(
+        worker = _ProducerWorker(
             {
                 "bootstrap.servers": self._broker_url,
                 # ensure no messages are lost
@@ -79,13 +154,21 @@ class ConfluentKafkaChannel(Channel):
                 **auth_config,
             }
         )
-        logger.info(f"Kafka producer configured for broker {self._broker_url}.")
+        self._producer_worker = worker
+        worker.start()
+        await asyncio.wrap_future(worker.initialized)
+        logger.info("Kafka producer configured for broker %s.", self._broker_url)
 
     async def _stop(self) -> None:
-        if self._producer is None:
+        worker = self._producer_worker
+        if worker is None:
             return
 
-        self._producer = None
+        self._producer_worker = None
+        try:
+            await asyncio.wrap_future(worker.stop())
+        finally:
+            await asyncio.to_thread(worker.join)
 
     async def _iter_messages(
         self, topic: str, consumer_group: str, batch_size: int = 1
@@ -239,64 +322,20 @@ class ConfluentKafkaChannel(Channel):
                 logger.error("Error while stopping consumer", exc_info=True)
 
     async def _send(self, topic: str, key: Optional[tuple], value: Optional[dict]) -> None:
-        # store self._producer in a local variable to avoid issues with parallel shutdown
-        # (stopping the channel sets self._producer to None)
-        producer = self._producer
-        if producer is None:
+        message_key = None if key is None else json.dumps(key).encode("utf-8")
+        message_value = None if value is None else json.dumps(value).encode("utf-8")
+
+        worker = self._producer_worker
+        if worker is None:
             raise RuntimeError("Kafka producer not established.")
 
-        # compute key
-        if key is None:
-            message_key = None
-        else:
-            message_key = json.dumps(key).encode("utf-8")
+        # We don't wait until producing is finished. If an error occurs, we will catch it when
+        # calling flush() later.
+        worker.produce(topic, message_key, message_value)
 
-        # compute value
-        if value is None:
-            message_value = None
-        else:
-            message_value = json.dumps(value).encode("utf-8")
+    async def _flush(self) -> None:
+        worker = self._producer_worker
+        if worker is None:
+            return
 
-        def produce_and_flush() -> None:
-            n_trials = 5
-
-            # define an exception that will be raised if all trials fail
-            last_error: BaseException = RuntimeError(
-                "Failed sending message after multiple trials."
-            )
-
-            # try sending multiple times before giving up
-            for trial in range(n_trials):
-                delivery_error = None
-
-                def delivery_callback(error: Any, message: Any) -> None:
-                    nonlocal delivery_error
-                    if error is not None:
-                        delivery_error = error
-
-                try:
-                    producer.produce(
-                        topic,
-                        key=message_key,
-                        value=message_value,
-                        callback=delivery_callback,
-                    )
-                    producer.flush()
-
-                    if delivery_error is None:
-                        return
-
-                    last_error = KafkaException(delivery_error)
-                except Exception as error:
-                    last_error = error
-
-                if trial + 1 < n_trials:
-                    logger.warning(
-                        f"Error while sending Kafka message. Retrying... "
-                        f"({trial + 1}/{n_trials}): {last_error}"
-                    )
-                    time.sleep(1)
-
-            raise last_error
-
-        await asyncio.to_thread(produce_and_flush)
+        await asyncio.wrap_future(worker.flush())
