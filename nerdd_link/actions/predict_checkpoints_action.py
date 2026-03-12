@@ -5,9 +5,9 @@ from asyncio import get_running_loop, to_thread
 from nerdd_module import Model
 
 from ..channels import Channel
-from ..delegates import PredictCheckpointModel
 from ..storage import Storage
 from ..types import CheckpointMessage, ResultCheckpointMessage, Tombstone
+from ..utils import PredictCheckpointModel
 from .action import Action
 
 __all__ = ["PredictCheckpointsAction"]

@@ -81,10 +81,18 @@ class PredictCheckpointModel(Model):
         ]
 
         file_writing_steps = self._base_model._get_postprocessing_steps(
-            output_format="pickle", output_file=self._result_checkpoint_handle, **kwargs
+            output_format="pickle",
+            output_file=self._result_checkpoint_handle,
+            **kwargs,
         )
 
-        return [SplitAndMergeStep(send_to_channel_steps, file_writing_steps)]
+        return [
+            SplitAndMergeStep(
+                send_to_channel_steps,
+                file_writing_steps,
+                queue_length=10000,
+            )
+        ]
 
     def _predict_mols(self, mols: List[Mol], **kwargs: Any) -> Iterable[dict]:
         # do prediction as the encapsulated model would do
