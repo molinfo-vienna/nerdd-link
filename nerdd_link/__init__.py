@@ -16,6 +16,7 @@ from .storage import (
     ChainedStorage,
     FileSystemStorage,
     MirroredStorage,
+    QueuedWriterStorage,
     S3Storage,
     Storage,
 )
@@ -49,6 +50,7 @@ __all__ = [
     "MirroredStorage",
     "ModuleMessage",
     "OutputFilePathSpec",
+    "QueuedWriterStorage",
     "RabbitmqStreamsChannel",
     "ResultCheckpointMessage",
     "ResultMessage",
