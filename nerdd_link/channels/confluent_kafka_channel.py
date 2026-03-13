@@ -2,14 +2,14 @@ import asyncio
 import json
 import logging
 import time
-from typing import Any, AsyncIterable, List, Optional, Tuple
+from typing import Any, AsyncIterable, List, Optional, Tuple, Union, cast
 
 from nerdd_link.utils import CommandQueueThread, command
 
 from .channel import Channel
 
 try:
-    from confluent_kafka import Consumer, KafkaException, Producer
+    from confluent_kafka import Consumer, KafkaError, KafkaException, Producer
 
     _IMPORT_ERROR: Optional[ImportError] = None
 except ImportError as e:
@@ -28,6 +28,11 @@ except ImportError as e:
 
     class KafkaException(Exception):  # type: ignore
         pass
+
+    class KafkaError:  # type: ignore
+        ILLEGAL_GENERATION = 22
+        UNKNOWN_MEMBER_ID = 25
+        REBALANCE_IN_PROGRESS = 27
 
 
 __all__ = ["ConfluentKafkaChannel"]
@@ -182,144 +187,165 @@ class ConfluentKafkaChannel(Channel):
                 "sasl.password": self._broker_password,
             }
 
-        consumer = Consumer(
-            {
-                "bootstrap.servers": self._broker_url,
-                "group.id": consumer_group,
-                "auto.offset.reset": "earliest",
-                "enable.auto.commit": False,
-                # use cooperative sticky assignor to avoid being kicked out of the group during
-                # rebalances (-> decreases probability to interrupt long-running tasks)
-                "partition.assignment.strategy": "cooperative-sticky",
-                # max.poll.interval.ms: Time between polls before the consumer is considered
-                # dead. Prediction tasks can take a long time, so we set this to 6 hours.
-                "max.poll.interval.ms": 6 * 60 * 60 * 1000,
-                # session.timeout.ms: The timeout used to detect failures when using Kafka's
-                # group management. We set this to 1 minute.
-                "session.timeout.ms": 60_000,
-                # heartbeat.interval.ms: The expected time between heartbeats to the consumer
-                # coordinator. The recommended value is 1/3 of session.timeout.ms.
-                "heartbeat.interval.ms": 20_000,
-                # optional authentication config
-                **auth_config,
-            }
-        )
+        rebalance_codes = {
+            KafkaError.ILLEGAL_GENERATION,
+            KafkaError.UNKNOWN_MEMBER_ID,
+            KafkaError.REBALANCE_IN_PROGRESS,
+        }
 
-        try:
-            await asyncio.to_thread(
-                consumer.subscribe,
-                [topic],
+        while True:
+            if not self.is_running:
+                logger.info("Shutdown event set for topic %s, stopping consumer...", topic)
+                break
+
+            consumer = Consumer(
+                {
+                    "bootstrap.servers": self._broker_url,
+                    "group.id": consumer_group,
+                    "auto.offset.reset": "earliest",
+                    "enable.auto.commit": False,
+                    # use cooperative sticky assignor to avoid being kicked out of the group during
+                    # rebalances (-> decreases probability to interrupt long-running tasks)
+                    "partition.assignment.strategy": "cooperative-sticky",
+                    # max.poll.interval.ms: Time between polls before the consumer is considered
+                    # dead. Prediction tasks can take a long time, so we set this to 6 hours.
+                    "max.poll.interval.ms": 6 * 60 * 60 * 1000,
+                    # session.timeout.ms: The timeout used to detect failures when using Kafka's
+                    # group management. We set this to 1 minute.
+                    "session.timeout.ms": 60_000,
+                    # heartbeat.interval.ms: The expected time between heartbeats to the consumer
+                    # coordinator. The recommended value is 1/3 of session.timeout.ms.
+                    "heartbeat.interval.ms": 20_000,
+                    # optional authentication config
+                    **auth_config,
+                }
             )
 
-            logger.info(
-                f"Connected to Kafka broker {self._broker_url} and started a consumer on topic "
-                f"{topic}."
-            )
-
-            while True:
-                if not self.is_running:
-                    logger.info(f"Shutdown event set for topic {topic}, stopping consumer...")
-                    break
-
-                # We run consumer.consume in a separate thread, because it would occupy the current
-                # event loop for (up to) the timeout duration. However, this doesn't spawn a new
-                # thread for each call (which would be expensive), but instead uses a thread pool.
-                messages = await asyncio.to_thread(
-                    consumer.consume,
-                    num_messages=batch_size,
-                    timeout=0.5,
+            rebalance_needed = False
+            try:
+                await asyncio.to_thread(consumer.subscribe, [topic])
+                logger.info(
+                    "Connected to Kafka broker %s and started a consumer on topic %s.",
+                    self._broker_url,
+                    topic,
                 )
 
-                if len(messages) == 0:
-                    continue
+                while True:
+                    if not self.is_running:
+                        logger.info("Shutdown event set for topic %s, stopping consumer...", topic)
+                        break
 
-                key_value_pairs = []
-                for message in messages:
-                    error = message.error()
-                    if error is not None:
-                        raise RuntimeError(f"Error while consuming Kafka message: {error}")
+                    # We run consumer.consume in a separate thread, because it would occupy the
+                    # current event loop for (up to) the timeout duration. However, this doesn't
+                    # spawn a new thread for each call (which would be expensive), but instead uses
+                    # a thread pool.
+                    messages = await asyncio.to_thread(
+                        consumer.consume,
+                        num_messages=batch_size,
+                        timeout=0.5,
+                    )
 
-                    # parse key
-                    message_key = message.key()
-                    if message_key is None:
-                        key = None
-                    else:
+                    if len(messages) == 0:
+                        continue
+
+                    key_value_pairs = []
+                    for message in messages:
+                        error = message.error()
+                        if error is not None:
+                            raise RuntimeError(f"Error while consuming Kafka message: {error}")
+
+                        message_key = message.key()
+                        if message_key is None:
+                            key = None
+                        else:
+                            try:
+                                decoded_key: list[Any] = json.loads(message_key)
+                            except json.JSONDecodeError:
+                                # if we can't decode the key as JSON, we assume it is a string
+                                decoded_key = [message_key.decode("utf-8")]
+                            key = tuple(decoded_key)
+
+                        # parse value
+                        message_value = message.value()
+                        value = None if message_value is None else json.loads(message_value)
+                        key_value_pairs.append((key, value))
+
+                    yield key_value_pairs
+
+                    # Commit message offsets. During this process, we often encounter errors that
+                    # might be retriable. Therefore, we retry committing multiple times before
+                    # giving up.
+                    num_trials = 5
+                    for trial in range(num_trials):
+                        # In confluent-kafka, errors can be raised during consumer.commit() or
+                        # returned in the list of partitions. We check both cases and store the
+                        # error here.
+                        commit_error: Union[KafkaError, None] = None
+
+                        # try consumer.commit() and check errors
                         try:
-                            decoded_key: list[Any] = json.loads(message_key)
-                        except json.JSONDecodeError:
-                            # if we can't decode the key as JSON, we assume it is a string
-                            decoded_key = [message_key.decode("utf-8")]
-                        key = tuple(decoded_key)
-
-                    # parse value
-                    message_value = message.value()
-                    if message_value is None:
-                        value = None
-                    else:
-                        value = json.loads(message_value)
-
-                    key_value_pairs.append((key, value))
-
-                yield key_value_pairs
-
-                # Commit message offsets. During this process, we often encounter errors that might
-                # be retriable. Therefore, we retry committing multiple times before giving up.
-                n_trials = 5
-                for trial in range(n_trials):
-                    # In confluent-kafka, errors can be raised during consumer.commit() or
-                    # returned in the list of partitions. We check both cases and store the
-                    # error here.
-                    commit_error = None
-
-                    # try consumer.commit() and check errors
-                    try:
-                        partitions = await asyncio.to_thread(
-                            consumer.commit,
-                            asynchronous=False,
-                        )
-                    except KafkaException as error:
-                        commit_error = error.args[0]
-                    else:
-                        # Check errors in the list of partitions. We store the most critical error
-                        # (non-retriable > retriable) in the variable commit_error.
-                        if partitions is not None:
+                            partitions = await asyncio.to_thread(
+                                consumer.commit, asynchronous=False
+                            )
+                        except KafkaException as error:
+                            commit_error = cast(KafkaError, error.args[0])
+                        # Check errors in the list of partitions. We store the most critical
+                        # error (non-retriable > retriable) in the variable commit_error.
+                        if commit_error is None and partitions is not None:
                             for partition in partitions:
                                 if partition.error is None:
                                     continue
-
                                 commit_error = partition.error
 
-                                # If this error is retriable, there might still be a non-retriable
-                                # error later, so we continue checking. Otherwise, we break early.
+                                # If this error is retriable, there might still be a
+                                # non-retriable error later, so we continue checking. Otherwise,
+                                # we break early.
                                 if not partition.error.retriable():
                                     break
 
-                    if commit_error is None:
                         # neither consumer.commit() nor the partitions contained an error
                         # -> we can break the retry loop
-                        break
-                    elif not commit_error.retriable() or trial + 1 >= n_trials:
-                        # there was a non-retriable error or we have no trials left
-                        raise RuntimeError(f"Error while committing Kafka message: {commit_error}")
-                    else:
-                        # error is retriable and we have trials left
+                        if commit_error is None:
+                            break
+
+                        if (
+                            commit_error.code() in rebalance_codes
+                            or commit_error in rebalance_codes
+                        ):
+                            logger.warning(
+                                "Kafka commit failed due to consumer group rebalance (%s). "
+                                "Re-subscribing consumer to obtain a fresh partition assignment...",
+                                commit_error,
+                            )
+                            rebalance_needed = True
+                            break
+
+                        if not commit_error.retriable() or trial + 1 >= num_trials:
+                            raise RuntimeError(
+                                f"Error while committing Kafka message: {commit_error}"
+                            )
+
                         logger.warning(
                             "Error while committing Kafka message. Retrying... (%s/%s): %s",
                             trial + 1,
-                            n_trials,
+                            num_trials,
                             commit_error,
                         )
                         await asyncio.sleep(1)
-        finally:
-            logger.warning(
-                "Kafka consumer stopped on topic %s with group %s",
-                topic,
-                consumer_group,
-            )
-            try:
-                await asyncio.to_thread(consumer.close)
-            except Exception:
-                logger.error("Error while stopping consumer", exc_info=True)
+
+                    if rebalance_needed:
+                        break
+            finally:
+                logger.warning(
+                    "Kafka consumer stopped on topic %s with group %s", topic, consumer_group
+                )
+                try:
+                    await asyncio.to_thread(consumer.close)
+                except Exception:
+                    logger.error("Error while stopping consumer", exc_info=True)
+
+            if not rebalance_needed:
+                break
 
     async def _send(self, topic: str, key: Optional[tuple], value: Optional[dict]) -> None:
         message_key = None if key is None else json.dumps(key).encode("utf-8")
