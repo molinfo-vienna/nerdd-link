@@ -1,5 +1,4 @@
 import asyncio
-import json
 import logging
 import signal
 from importlib import import_module
@@ -8,10 +7,9 @@ from typing import Any, List, Optional
 import rich_click as click
 from nerdd_module import Model
 
-from ..actions import Action, PredictCheckpointsAction, supervise_actions
+from ..actions import Action, PredictCheckpointsAction, RegisterModuleAction, supervise_actions
 from ..channels import Channel
 from ..storage import Storage
-from ..types import ModuleMessage
 from ..utils import async_to_sync
 from .get_storage import get_storage
 
@@ -33,18 +31,12 @@ async def _run_prediction_server(model: Model, channel: Channel, storage: Storag
             #
             # register the module
             #
-            # compare old json with new one, only write if changed
-            new_config_json = model.config.model_dump()
-            if storage.module_file_exists(model.config.id):
-                with storage.get_module_file_handle(model.config.id, "r") as f:
-                    old_config_json = json.load(f)
-            else:
-                old_config_json = None
-            if new_config_json != old_config_json:
-                logger.info(f"Registering module {model.config.id}")
-                with storage.get_module_file_handle(model.config.id, "w") as f:
-                    json.dump(new_config_json, f)
-                await channel.modules_topic().send(ModuleMessage(id=model.config.id))
+            register_module = RegisterModuleAction(
+                channel=channel,
+                model=model,
+                storage=storage,
+            )
+            await register_module.register()
 
             #
             # run prediction
@@ -56,7 +48,7 @@ async def _run_prediction_server(model: Model, channel: Channel, storage: Storag
             )
 
             # run actions in parallel
-            actions: List[Action] = [predict_checkpoints]
+            actions: List[Action] = [predict_checkpoints, register_module]
 
             await supervise_actions(actions)
     except KeyboardInterrupt:
