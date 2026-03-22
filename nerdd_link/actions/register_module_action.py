@@ -40,6 +40,7 @@ class RegisterModuleAction(Action[SystemMessage]):
         if config_changed or force_announce:
             logger.info("Registering module with id %s", config.id)
             await self.channel.modules_topic().send(ModuleMessage(id=config.id))
+            await self.channel.flush()
 
     def _get_group_name(self) -> str:
         model_id = self._model.config.id
