@@ -65,4 +65,5 @@ async def initialize_system(
     async with channel_instance:
         logger.info("Initializing system...")
         await channel_instance.system_topic().send(SystemMessage())
+        await channel_instance.flush()
         logger.info("System initialized.")
