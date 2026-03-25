@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.5.18 (2026-03-25)
+
+### Fixes
+
+* fix: Increase poll interval ([`81c5bda`](https://github.com/molinfo-vienna/nerdd-link/commit/81c5bda6d7467378469d175cb7fa1a698ea286ca))
+
+### Unknown
+
+* Merge pull request #74 from shirte/main
+
+Increase poll interval ([`9ad8d66`](https://github.com/molinfo-vienna/nerdd-link/commit/9ad8d66e1edff09b06bf4d63c6faddf8b27f44cd))
+
+
 ## v0.5.17 (2026-01-28)
 
 ### Fixes
