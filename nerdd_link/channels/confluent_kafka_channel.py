@@ -9,7 +9,7 @@ from nerdd_link.utils import CommandQueueThread, command
 from .channel import Channel
 
 try:
-    from confluent_kafka import Consumer, KafkaError, KafkaException, Producer
+    from confluent_kafka import Consumer, KafkaError, KafkaException, Producer, TopicPartition
 
     _IMPORT_ERROR: Optional[ImportError] = None
 except ImportError as e:
@@ -98,6 +98,250 @@ class _ProducerWorker(CommandQueueThread):
     def _delivery_callback(self, error: Any, _: Any) -> None:
         if error is not None:
             self._delivery_errors.append(KafkaException(error))
+
+
+class _ConsumerWorker(CommandQueueThread):
+    """Poll one consumer while its current message batch is being processed."""
+
+    def __init__(
+        self,
+        config: dict[str, Any],
+        topic: str,
+        batch_size: int,
+    ) -> None:
+        """Initialize a consumer worker.
+
+        Parameters
+        ----------
+        config : dict[str, Any]
+            Configuration passed to the confluent-kafka consumer.
+        topic : str
+            Topic to subscribe to.
+        batch_size : int
+            Maximum number of messages to deliver in one batch.
+        """
+        super().__init__(name=f"confluent-kafka-consumer-{topic}", idle_timeout=0.1)
+        self._config = config
+        self._topic = topic
+        self._batch_size = batch_size
+
+        self._consumer: Consumer
+        self._pending: Optional[List[Any]] = None
+        self._pending_revoked = False
+        self._failure: Optional[Exception] = None
+
+    def _initialize(self) -> None:
+        """Create and subscribe the consumer on its owning thread."""
+        self._consumer = Consumer(self._config)
+        self._consumer.subscribe(
+            [self._topic],
+            on_assign=self._on_assign,
+            on_revoke=self._on_revoke,
+        )
+
+    def _on_assign(self, consumer: Consumer, partitions: List[Any]) -> None:
+        """Pause partitions newly assigned while a batch is still running."""
+        consumer.incremental_assign(partitions)
+        if self._pending is not None and len(partitions) > 0:
+            consumer.pause(partitions)
+
+    def _on_revoke(self, _: Consumer, partitions: List[Any]) -> None:
+        """Remember whether an in-flight batch lost its partition."""
+        if self._pending is None:
+            return
+
+        for partition in partitions:
+            for message in self._pending:
+                if (
+                    message.topic() == partition.topic
+                    and message.partition() == partition.partition
+                ):
+                    self._pending_revoked = True
+                    return
+
+    def _on_idle(self) -> None:
+        """Service Kafka events even while the application processes a batch."""
+        self._poll()
+
+    def _poll(self, timeout: float = 0) -> None:
+        """Poll once and retain at most one batch for the next fetch command."""
+        if self._failure is not None:
+            return
+
+        try:
+            messages = self._consumer.consume(
+                num_messages=self._batch_size if self._pending is None else 1,
+                timeout=timeout,
+            )
+
+            if len(messages) == 0:
+                return
+
+            # We might recover from these error codes later when committing.
+            recoverable_codes = {
+                KafkaError._PARTITION_EOF,
+                KafkaError._TRANSPORT,
+                KafkaError._WAIT_COORD,
+                KafkaError._RESOLVE,
+            }
+            valid_messages = []
+            for message in messages:
+                error = message.error()
+                if error is None:
+                    valid_messages.append(message)
+                elif not error.fatal() and error.code() in recoverable_codes:
+                    logger.warning("Kafka consumer event: %s", error)
+                else:
+                    raise RuntimeError(f"Error while consuming Kafka message: {error}")
+
+            if len(valid_messages) == 0:
+                return
+
+            if self._pending is not None:
+                raise RuntimeError("Kafka returned a message while its partitions were paused")
+
+            # THE FOLLOWING CODE IS THE REASON WHY WE IMPLEMENTED _ConsumerWorker IN THE FIRST
+            # PLACE: We pause fetching so we can still call consume() without actually consuming
+            # more messages. This gives us the option to set a small value for max.poll.interval.ms,
+            # because we keep communicating with kafka in the _on_idle slots in this command thread.
+            # In parallel, we use fetch() to get the current batch of messages. When calling
+            # complete(), the messages are committed and consuming messages is resumed.
+            self._pending = valid_messages
+            assignment = self._consumer.assignment()
+            if len(assignment) > 0:
+                self._consumer.pause(assignment)
+        except Exception as error:
+            self._failure = error
+
+    @command
+    def fetch(self) -> List[Any]:
+        """Return the staged batch, polling briefly when no batch is ready.
+
+        Returns
+        -------
+        List[Any]
+            Kafka messages, or an empty list when no message is available yet.
+        """
+        # look for messages in the topic
+        if self._pending is None:
+            self._poll(timeout=0.5)
+
+        # check for errors (remember: _poll doesn't raise errors but stores them in self._failure)
+        if self._failure is not None:
+            raise self._failure
+
+        # if we are already processing messages (self._pending is not None) or the previous
+        # self._poll did not yield messages, we return an empty list
+        if self._pending is None:
+            return []
+
+        return self._pending
+
+    def _shutdown(self) -> None:
+        """Close the consumer on its owning thread."""
+        self._consumer.close()
+
+    @command
+    def complete(self) -> bool:
+        """Commit the completed batch, or request a fresh consumer after a rebalance.
+
+        Returns
+        -------
+        bool
+            Whether the consumer must be recreated without committing the batch.
+        """
+        if self._failure is not None:
+            raise self._failure
+
+        messages = self._pending
+
+        if messages is None:
+            raise RuntimeError("No Kafka message batch is awaiting completion")
+
+        if self._pending_revoked:
+            logger.warning(
+                "Kafka partition was revoked while processing. The completed batch was not "
+                "committed and may be replayed."
+            )
+            return True
+
+        assigned = {
+            (partition.topic, partition.partition) for partition in self._consumer.assignment()
+        }
+        if any((message.topic(), message.partition()) not in assigned for message in messages):
+            logger.warning(
+                "Kafka partition is no longer assigned after processing. The completed batch "
+                "was not committed and may be replayed."
+            )
+            return True
+
+        # Commit only offsets belonging to messages whose processing and output flush completed.
+        offsets_by_partition: dict[tuple[str, int], int] = {}
+        for message in messages:
+            partition_key = (message.topic(), message.partition())
+            offsets_by_partition[partition_key] = max(
+                offsets_by_partition.get(partition_key, 0), message.offset() + 1
+            )
+        offsets = [
+            TopicPartition(topic, partition, offset)
+            for (topic, partition), offset in offsets_by_partition.items()
+        ]
+        rebalance_codes = {
+            KafkaError.ILLEGAL_GENERATION,
+            KafkaError.UNKNOWN_MEMBER_ID,
+            KafkaError.REBALANCE_IN_PROGRESS,
+        }
+        num_trials = 5
+        for trial in range(num_trials):
+            commit_error: Union[KafkaError, None] = None
+            try:
+                partitions = self._consumer.commit(offsets=offsets, asynchronous=False)
+
+                # search for more errors in partitions
+                if partitions is not None:
+                    for partition in partitions:
+                        if partition.error is None:
+                            continue
+                        commit_error = partition.error
+
+                        # prioritize non-retriable errors
+                        if not partition.error.retriable():
+                            break
+            except KafkaException as error:
+                commit_error = cast(KafkaError, error.args[0])
+
+            # check for errors
+            if commit_error is None:
+                break
+            elif commit_error.code() in rebalance_codes:
+                logger.warning(
+                    "Kafka commit failed due to consumer group rebalance (%s). "
+                    "Re-subscribing consumer to obtain a fresh partition assignment...",
+                    commit_error,
+                )
+                return True
+            elif not commit_error.retriable() or trial + 1 >= num_trials:
+                raise RuntimeError(f"Error while committing Kafka message: {commit_error}")
+
+            # error is retriable -> try one more time
+            logger.warning(
+                "Error while committing Kafka message. Retrying... (%s/%s): %s",
+                trial + 1,
+                num_trials,
+                commit_error,
+            )
+            time.sleep(1)
+
+        self._pending = None
+        self._pending_revoked = False
+
+        # resume consuming messages
+        assignment = self._consumer.assignment()
+        if len(assignment) > 0:
+            self._consumer.resume(assignment)
+
+        # we don't need to handle a rebalance
+        return False
 
 
 class ConfluentKafkaChannel(Channel):
