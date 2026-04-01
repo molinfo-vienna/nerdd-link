@@ -38,7 +38,7 @@ class _ProducerWorker(CommandQueueThread):
         self._producer.poll(0)
 
     def _shutdown(self) -> None:
-        pass
+        self._flush()
 
     @command(fire_and_forget=True)
     def produce(self, topic: str, key: Optional[bytes], value: Optional[bytes]) -> None:
@@ -77,6 +77,10 @@ class _ProducerWorker(CommandQueueThread):
 
     @command
     def flush(self) -> None:
+        self._flush()
+
+    def _flush(self) -> None:
+        """Wait for pending deliveries and report producer failures."""
         try:
             remaining = self._producer.flush()
             if remaining != 0:
