@@ -147,10 +147,12 @@ class _ConsumerWorker(CommandQueueThread):
         if self._pending is not None and len(partitions) > 0:
             consumer.pause(partitions)
 
-    def _on_revoke(self, _: Consumer, partitions: List[Any]) -> None:
+    def _on_revoke(self, consumer: Consumer, partitions: List[Any]) -> None:
         """Invalidate the current batch's commit offsets for revoked partitions."""
         for partition in partitions:
             self._pending_offsets.pop((partition.topic, partition.partition), None)
+
+        consumer.incremental_unassign(partitions)
 
     def _on_idle(self) -> None:
         """Service Kafka events even while the application processes a batch."""
@@ -170,7 +172,7 @@ class _ConsumerWorker(CommandQueueThread):
             if len(messages) == 0:
                 return
 
-            # We might recover from these error codes later when committing.
+            # check messages for errors (some errors are recoverable)
             recoverable_codes = {
                 KafkaError._PARTITION_EOF,
                 KafkaError._TRANSPORT,
@@ -271,7 +273,7 @@ class _ConsumerWorker(CommandQueueThread):
         }
         num_trials = 5
         for trial in range(num_trials):
-            # Rebuild after polling: revoke callbacks may invalidate more batch offsets.
+            # gather offsets that were not revoked after obtaining the current batch of messages
             offsets = [
                 TopicPartition(topic, partition, offset)
                 for (topic, partition), offset in self._pending_offsets.items()
@@ -279,6 +281,7 @@ class _ConsumerWorker(CommandQueueThread):
             if len(offsets) == 0:
                 break
 
+            # commit
             commit_error: Union[KafkaError, None] = None
             try:
                 partitions = self._consumer.commit(offsets=offsets, asynchronous=False)
@@ -316,7 +319,8 @@ class _ConsumerWorker(CommandQueueThread):
                 num_trials,
                 commit_error,
             )
-            # Service rebalance callbacks while this command occupies the worker thread.
+
+            # poll once manually since this command replaces idle slots (where polling happens)
             self._poll(timeout=1.0)
             if self._failure is not None:
                 raise self._failure
