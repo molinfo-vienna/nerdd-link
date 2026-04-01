@@ -449,7 +449,6 @@ class ConfluentKafkaChannel(Channel):
                 batch_size=batch_size,
             )
 
-            rebalance_needed = False
             self._consumer_workers.add(worker)
             worker.start()
             try:
@@ -490,8 +489,7 @@ class ConfluentKafkaChannel(Channel):
 
                     yield key_value_pairs
 
-                    rebalance_needed = await asyncio.wrap_future(worker.complete())
-                    if rebalance_needed:
+                    if await asyncio.wrap_future(worker.complete()):
                         break
             finally:
                 logger.warning(
@@ -504,9 +502,6 @@ class ConfluentKafkaChannel(Channel):
                 finally:
                     await asyncio.to_thread(worker.join)
                     self._consumer_workers.discard(worker)
-
-            if not rebalance_needed:
-                break
 
     async def _send(self, topic: str, key: Optional[tuple], value: Optional[dict]) -> None:
         message_key = None if key is None else json.dumps(key).encode("utf-8")
