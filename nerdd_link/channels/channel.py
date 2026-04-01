@@ -128,7 +128,17 @@ class Channel(ABC):
         return self
 
     async def __aexit__(self, exc_type: type, exc_value: Exception, traceback: object) -> None:
-        await self.stop()
+        try:
+            await self.stop()
+        except Exception:
+            # forward the exception of the context body (instead of the current exception)
+            if exc_value is None:
+                raise
+
+            # additionally log the current exception
+            logger.exception(
+                "Channel shutdown failed after an earlier error (%s)", type(self).__name__
+            )
 
     @property
     def is_running(self) -> bool:
