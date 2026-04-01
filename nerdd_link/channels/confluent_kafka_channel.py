@@ -366,6 +366,7 @@ class ConfluentKafkaChannel(Channel):
         self._broker_username = broker_username if username_provided else None
         self._broker_password = broker_password if password_provided else None
         self._producer_worker: Optional[_ProducerWorker] = None
+        self._consumer_workers: set[_ConsumerWorker] = set()
 
     async def _start(self) -> None:
         auth_config = {}
@@ -396,6 +397,15 @@ class ConfluentKafkaChannel(Channel):
         logger.info("Kafka producer configured for broker %s.", self._broker_url)
 
     async def _stop(self) -> None:
+        for consumer_worker in tuple(self._consumer_workers):
+            try:
+                await asyncio.wrap_future(consumer_worker.stop())
+            except Exception:
+                logger.error("Error while stopping consumer", exc_info=True)
+            finally:
+                await asyncio.to_thread(consumer_worker.join)
+        self._consumer_workers.clear()
+
         worker = self._producer_worker
         if worker is None:
             return
@@ -418,29 +428,25 @@ class ConfluentKafkaChannel(Channel):
                 "sasl.password": self._broker_password,
             }
 
-        rebalance_codes = {
-            KafkaError.ILLEGAL_GENERATION,
-            KafkaError.UNKNOWN_MEMBER_ID,
-            KafkaError.REBALANCE_IN_PROGRESS,
-        }
-
         while True:
             if not self.is_running:
                 logger.info("Shutdown event set for topic %s, stopping consumer...", topic)
                 break
 
-            consumer = Consumer(
-                {
+            worker = _ConsumerWorker(
+                config={
                     "bootstrap.servers": self._broker_url,
                     "group.id": consumer_group,
                     "auto.offset.reset": "earliest",
                     "enable.auto.commit": False,
+                    "enable.auto.offset.store": False,
                     # use cooperative sticky assignor to avoid being kicked out of the group during
                     # rebalances (-> decreases probability to interrupt long-running tasks)
                     "partition.assignment.strategy": "cooperative-sticky",
                     # max.poll.interval.ms: Time between polls before the consumer is considered
-                    # dead. Prediction tasks can take a long time, so we set this to 6 hours.
-                    "max.poll.interval.ms": 6 * 60 * 60 * 1000,
+                    # dead. Since polling runs in parallel to long computations, we can keep this
+                    # time interval short.
+                    "max.poll.interval.ms": 5 * 60 * 1000,
                     # session.timeout.ms: The timeout used to detect failures when using Kafka's
                     # group management. We set this to 1 minute.
                     "session.timeout.ms": 60_000,
@@ -449,12 +455,16 @@ class ConfluentKafkaChannel(Channel):
                     "heartbeat.interval.ms": 20_000,
                     # optional authentication config
                     **auth_config,
-                }
+                },
+                topic=topic,
+                batch_size=batch_size,
             )
 
             rebalance_needed = False
+            self._consumer_workers.add(worker)
+            worker.start()
             try:
-                await asyncio.to_thread(consumer.subscribe, [topic])
+                await asyncio.wrap_future(worker.initialized)
                 logger.info(
                     "Connected to Kafka broker %s and started a consumer on topic %s.",
                     self._broker_url,
@@ -466,25 +476,13 @@ class ConfluentKafkaChannel(Channel):
                         logger.info("Shutdown event set for topic %s, stopping consumer...", topic)
                         break
 
-                    # We run consumer.consume in a separate thread, because it would occupy the
-                    # current event loop for (up to) the timeout duration. However, this doesn't
-                    # spawn a new thread for each call (which would be expensive), but instead uses
-                    # a thread pool.
-                    messages = await asyncio.to_thread(
-                        consumer.consume,
-                        num_messages=batch_size,
-                        timeout=0.5,
-                    )
-
+                    # Fetch a batch from the worker while it continues polling Kafka.
+                    messages = await asyncio.wrap_future(worker.fetch())
                     if len(messages) == 0:
                         continue
 
                     key_value_pairs = []
                     for message in messages:
-                        error = message.error()
-                        if error is not None:
-                            raise RuntimeError(f"Error while consuming Kafka message: {error}")
-
                         message_key = message.key()
                         if message_key is None:
                             key = None
@@ -503,67 +501,7 @@ class ConfluentKafkaChannel(Channel):
 
                     yield key_value_pairs
 
-                    # Commit message offsets. During this process, we often encounter errors that
-                    # might be retriable. Therefore, we retry committing multiple times before
-                    # giving up.
-                    num_trials = 5
-                    for trial in range(num_trials):
-                        # In confluent-kafka, errors can be raised during consumer.commit() or
-                        # returned in the list of partitions. We check both cases and store the
-                        # error here.
-                        commit_error: Union[KafkaError, None] = None
-
-                        # try consumer.commit() and check errors
-                        try:
-                            partitions = await asyncio.to_thread(
-                                consumer.commit, asynchronous=False
-                            )
-                        except KafkaException as error:
-                            commit_error = cast(KafkaError, error.args[0])
-                        # Check errors in the list of partitions. We store the most critical
-                        # error (non-retriable > retriable) in the variable commit_error.
-                        if commit_error is None and partitions is not None:
-                            for partition in partitions:
-                                if partition.error is None:
-                                    continue
-                                commit_error = partition.error
-
-                                # If this error is retriable, there might still be a
-                                # non-retriable error later, so we continue checking. Otherwise,
-                                # we break early.
-                                if not partition.error.retriable():
-                                    break
-
-                        # neither consumer.commit() nor the partitions contained an error
-                        # -> we can break the retry loop
-                        if commit_error is None:
-                            break
-
-                        if (
-                            commit_error.code() in rebalance_codes
-                            or commit_error in rebalance_codes
-                        ):
-                            logger.warning(
-                                "Kafka commit failed due to consumer group rebalance (%s). "
-                                "Re-subscribing consumer to obtain a fresh partition assignment...",
-                                commit_error,
-                            )
-                            rebalance_needed = True
-                            break
-
-                        if not commit_error.retriable() or trial + 1 >= num_trials:
-                            raise RuntimeError(
-                                f"Error while committing Kafka message: {commit_error}"
-                            )
-
-                        logger.warning(
-                            "Error while committing Kafka message. Retrying... (%s/%s): %s",
-                            trial + 1,
-                            num_trials,
-                            commit_error,
-                        )
-                        await asyncio.sleep(1)
-
+                    rebalance_needed = await asyncio.wrap_future(worker.complete())
                     if rebalance_needed:
                         break
             finally:
@@ -571,9 +509,12 @@ class ConfluentKafkaChannel(Channel):
                     "Kafka consumer stopped on topic %s with group %s", topic, consumer_group
                 )
                 try:
-                    await asyncio.to_thread(consumer.close)
+                    await asyncio.wrap_future(worker.stop())
                 except Exception:
                     logger.error("Error while stopping consumer", exc_info=True)
+                finally:
+                    await asyncio.to_thread(worker.join)
+                    self._consumer_workers.discard(worker)
 
             if not rebalance_needed:
                 break
