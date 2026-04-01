@@ -127,7 +127,7 @@ class _ConsumerWorker(CommandQueueThread):
 
         self._consumer: Consumer
         self._pending: Optional[List[Any]] = None
-        self._pending_revoked = False
+        self._pending_offsets: dict[tuple[str, int], int] = {}
         self._failure: Optional[Exception] = None
 
     def _initialize(self) -> None:
@@ -142,22 +142,15 @@ class _ConsumerWorker(CommandQueueThread):
     def _on_assign(self, consumer: Consumer, partitions: List[Any]) -> None:
         """Pause partitions newly assigned while a batch is still running."""
         consumer.incremental_assign(partitions)
+
+        # we need to pause newly assigned partitions if we are currently processing messages
         if self._pending is not None and len(partitions) > 0:
             consumer.pause(partitions)
 
     def _on_revoke(self, _: Consumer, partitions: List[Any]) -> None:
-        """Remember whether an in-flight batch lost its partition."""
-        if self._pending is None:
-            return
-
+        """Invalidate the current batch's commit offsets for revoked partitions."""
         for partition in partitions:
-            for message in self._pending:
-                if (
-                    message.topic() == partition.topic
-                    and message.partition() == partition.partition
-                ):
-                    self._pending_revoked = True
-                    return
+            self._pending_offsets.pop((partition.topic, partition.partition), None)
 
     def _on_idle(self) -> None:
         """Service Kafka events even while the application processes a batch."""
@@ -200,13 +193,28 @@ class _ConsumerWorker(CommandQueueThread):
             if self._pending is not None:
                 raise RuntimeError("Kafka returned a message while its partitions were paused")
 
-            # THE FOLLOWING CODE IS THE REASON WHY WE IMPLEMENTED _ConsumerWorker IN THE FIRST
-            # PLACE: We pause fetching so we can still call consume() without actually consuming
-            # more messages. This gives us the option to set a small value for max.poll.interval.ms,
-            # because we keep communicating with kafka in the _on_idle slots in this command thread.
-            # In parallel, we use fetch() to get the current batch of messages. When calling
-            # complete(), the messages are committed and consuming messages is resumed.
             self._pending = valid_messages
+
+            # For each (topic, partition) pair we store the maximum offset. When a partition is
+            # revoked, we will remove them from this dictionary. When committing, we will commit
+            # only (the offsets of) the remaining partitions
+            self._pending_offsets = {}
+            for message in valid_messages:
+                partition_key = (message.topic(), message.partition())
+                offset = message.offset() + 1
+                if (
+                    partition_key not in self._pending_offsets
+                    or offset > self._pending_offsets[partition_key]
+                ):
+                    self._pending_offsets[partition_key] = offset
+
+            # THE FOLLOWING CODE IS THE REASON WHY WE IMPLEMENTED _ConsumerWorker IN THE FIRST
+            # PLACE: We pause fetching messages so each upcoming call to consume() will not retrieve
+            # more messages, but it will keep communicating with kafka! That means we keep calling
+            # consume() in the _on_idle slots of this command thread and have a much smaller value
+            # for max.poll.interval.ms. In parallel, we use fetch() to get the current batch of
+            # messages. When calling complete(), the messages are committed and consuming messages
+            # is resumed.
             assignment = self._consumer.assignment()
             if len(assignment) > 0:
                 self._consumer.pause(assignment)
@@ -243,49 +251,19 @@ class _ConsumerWorker(CommandQueueThread):
 
     @command
     def complete(self) -> bool:
-        """Commit the completed batch, or request a fresh consumer after a rebalance.
+        """Commit completed work on partitions owned continuously during the batch.
 
         Returns
         -------
         bool
-            Whether the consumer must be recreated without committing the batch.
+            Whether the consumer must be recreated after repeated rebalance errors.
         """
         if self._failure is not None:
             raise self._failure
 
-        messages = self._pending
-
-        if messages is None:
+        if self._pending is None:
             raise RuntimeError("No Kafka message batch is awaiting completion")
 
-        if self._pending_revoked:
-            logger.warning(
-                "Kafka partition was revoked while processing. The completed batch was not "
-                "committed and may be replayed."
-            )
-            return True
-
-        assigned = {
-            (partition.topic, partition.partition) for partition in self._consumer.assignment()
-        }
-        if any((message.topic(), message.partition()) not in assigned for message in messages):
-            logger.warning(
-                "Kafka partition is no longer assigned after processing. The completed batch "
-                "was not committed and may be replayed."
-            )
-            return True
-
-        # Commit only offsets belonging to messages whose processing and output flush completed.
-        offsets_by_partition: dict[tuple[str, int], int] = {}
-        for message in messages:
-            partition_key = (message.topic(), message.partition())
-            offsets_by_partition[partition_key] = max(
-                offsets_by_partition.get(partition_key, 0), message.offset() + 1
-            )
-        offsets = [
-            TopicPartition(topic, partition, offset)
-            for (topic, partition), offset in offsets_by_partition.items()
-        ]
         rebalance_codes = {
             KafkaError.ILLEGAL_GENERATION,
             KafkaError.UNKNOWN_MEMBER_ID,
@@ -293,6 +271,14 @@ class _ConsumerWorker(CommandQueueThread):
         }
         num_trials = 5
         for trial in range(num_trials):
+            # Rebuild after polling: revoke callbacks may invalidate more batch offsets.
+            offsets = [
+                TopicPartition(topic, partition, offset)
+                for (topic, partition), offset in self._pending_offsets.items()
+            ]
+            if len(offsets) == 0:
+                break
+
             commit_error: Union[KafkaError, None] = None
             try:
                 partitions = self._consumer.commit(offsets=offsets, asynchronous=False)
@@ -314,12 +300,12 @@ class _ConsumerWorker(CommandQueueThread):
             if commit_error is None:
                 break
             elif commit_error.code() in rebalance_codes:
-                logger.warning(
-                    "Kafka commit failed due to consumer group rebalance (%s). "
-                    "Re-subscribing consumer to obtain a fresh partition assignment...",
-                    commit_error,
-                )
-                return True
+                if trial + 1 >= num_trials:
+                    logger.warning(
+                        "Kafka commit repeatedly failed during rebalance; recreating consumer: %s",
+                        commit_error,
+                    )
+                    return True
             elif not commit_error.retriable() or trial + 1 >= num_trials:
                 raise RuntimeError(f"Error while committing Kafka message: {commit_error}")
 
@@ -330,10 +316,13 @@ class _ConsumerWorker(CommandQueueThread):
                 num_trials,
                 commit_error,
             )
-            time.sleep(1)
+            # Service rebalance callbacks while this command occupies the worker thread.
+            self._poll(timeout=1.0)
+            if self._failure is not None:
+                raise self._failure
 
         self._pending = None
-        self._pending_revoked = False
+        self._pending_offsets.clear()
 
         # resume consuming messages
         assignment = self._consumer.assignment()
