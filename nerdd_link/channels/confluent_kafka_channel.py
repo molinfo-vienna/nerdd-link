@@ -42,12 +42,15 @@ class _ProducerWorker(CommandQueueThread):
 
     @command(fire_and_forget=True)
     def produce(self, topic: str, key: Optional[bytes], value: Optional[bytes]) -> None:
-        last_error: BaseException = RuntimeError(
-            "Failed sending Kafka message after multiple trials."
-        )
         try:
+            # try sending multiple times
             num_trials = 5
             for trial in range(num_trials):
+                # if there are many produce operations in the worker queue, we might not
+                # enter the "idle" command often enough -> poll once here
+                self._producer.poll(0)
+
+                # try sending
                 try:
                     self._producer.produce(
                         topic,
@@ -55,25 +58,22 @@ class _ProducerWorker(CommandQueueThread):
                         value=value,
                         callback=self._delivery_callback,
                     )
-                except BaseException as error:
-                    last_error = error
-                    self._producer.poll(0)
-                else:
                     break
+                except BaseException as error:
+                    # give up when num_trials reached
+                    if trial == num_trials - 1:
+                        raise
 
-                if trial < num_trials - 1:
+                    # otherwise try one more time
                     logger.warning(
                         "Error while sending Kafka message. Retrying... (%s/%s): %s",
                         trial + 1,
                         num_trials,
-                        last_error,
+                        error,
                     )
                     time.sleep(1)
-            else:
-                raise last_error
         except BaseException as error:
             self._produce_errors.append(error)
-            raise
 
     @command
     def flush(self) -> None:
