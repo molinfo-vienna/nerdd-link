@@ -12,6 +12,7 @@ Feature: Delete job
     # First, job is processed normally
     #
     When the channel receives a message on topic 'jobs' with content
+        """
         {
             "id": "123",
             "job_type":
@@ -21,18 +22,27 @@ Feature: Delete job
             "max_num_molecules": 10000,
             "checkpoint_size": 40
         }
+        """
     And the process job action is executed
     And the predict checkpoints action is executed
     And we wait for 1 seconds
 
     Then the channel sends a message on topic 'mol-scale-checkpoints' with content
+        """
         { "job_id": "123", "checkpoint_id": 0, "params": { "multiplier": 10 } }
+        """
     And the channel sends a message on topic 'mol-scale-checkpoints' with content
+        """
         { "job_id": "123", "checkpoint_id": 1, "params": { "multiplier": 10 } }
+        """
     And the channel sends a message on topic 'mol-scale-checkpoints' with content
+        """
         { "job_id": "123", "checkpoint_id": 2, "params": { "multiplier": 10 } }
+        """
     And the channel sends a message on topic 'logs' with content
+        """
         { "job_id": "123", "message_type": "report_job_size", "num_entries": 100, "num_checkpoints": 3 }
+        """
 
     #
     # Then, job is deleted
@@ -71,6 +81,7 @@ Feature: Delete job
     # Job is processed, but checkpoints are not predicted
     #
     When the channel receives a message on topic 'jobs' with content
+        """
         {
             "id": "123",
             "job_type":
@@ -80,17 +91,26 @@ Feature: Delete job
             "max_num_molecules": 10000,
             "checkpoint_size": 40
         }
+        """
     And the process job action is executed
     And we wait for 1 seconds
 
     Then the channel sends a message on topic 'mol-scale-checkpoints' with content
+        """
         { "job_id": "123", "checkpoint_id": 0, "params": { "multiplier": 10 } }
+        """
     And the channel sends a message on topic 'mol-scale-checkpoints' with content
+        """
         { "job_id": "123", "checkpoint_id": 1, "params": { "multiplier": 10 } }
+        """
     And the channel sends a message on topic 'mol-scale-checkpoints' with content
+        """
         { "job_id": "123", "checkpoint_id": 2, "params": { "multiplier": 10 } }
+        """
     And the channel sends a message on topic 'logs' with content
+        """
         { "job_id": "123", "message_type": "report_job_size", "num_entries": 100, "num_checkpoints": 3 }
+        """
 
     #
     # Then, job is deleted
@@ -121,6 +141,7 @@ Feature: Delete job
     And a file 'sources/456' with the molecules in format 'sdf'
 
     When the channel receives a message on topic 'jobs' with content
+        """
         {
             "id": "123",
             "job_type":
@@ -130,6 +151,7 @@ Feature: Delete job
             "max_num_molecules": 10000,
             "checkpoint_size": 40
         }
+        """
     And the channel receives a tombstone on topic 'jobs' with key ("123", "mol-scale")
     And the channel receives a tombstone on topic 'jobs' with key ("123", "mol-scale")
     # The following line is important now: it should not cause an error for the second tombstone

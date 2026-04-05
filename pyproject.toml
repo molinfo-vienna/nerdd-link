@@ -59,7 +59,7 @@ test = [
     "pytest-sugar",
     "pytest-cov",
     "pytest-asyncio~=0.21.1",
-    "pytest-bdd==7.3.0",
+    "pytest-bdd~=9.0.1",
     "pytest-mock",
     "pytest-watcher",
     "hypothesis",

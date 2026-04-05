@@ -8,7 +8,9 @@ Feature: Register module action
 
     Then the channel sends 1 messages on topic 'modules'
     And the channel sends a message on topic 'modules' with content
+        """
         {
             "id": "mol-scale",
         }
+        """
     And the file 'modules/mol-scale' is created
