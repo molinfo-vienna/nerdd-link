@@ -7,7 +7,7 @@
 <div align="center">
 
 ![PyPI version](https://img.shields.io/pypi/v/nerdd-link)
-![Python versions](https://img.shields.io/pypi/pyversions/nerdd-link)
+![Tested Python versions](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue?logo=python&logoColor=white)
 ![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-231F20?logo=apachekafka&logoColor=white)
 ![RabbitMQ](https://img.shields.io/badge/RabbitMQ-FF6600?logo=rabbitmq&logoColor=white)
 ![License](https://img.shields.io/github/license/molinfo-vienna/nerdd-link)
