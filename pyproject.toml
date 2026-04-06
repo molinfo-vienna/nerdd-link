@@ -102,6 +102,9 @@ patterns = ["*.py", "*.feature", "pyproject.toml"]
 line-length = 100
 
 [tool.ruff.lint]
+# enable preview mode specifically for F822 (identifying undefined exports)
+preview = true
+explicit-preview-rules = true
 select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
