@@ -240,3 +240,8 @@ when nerdd-link starts.
 
 The services use shared storage for molecular inputs, prediction checkpoints, and serialized
 results. nerdd-link supports the local filesystem and S3-compatible object storage.
+
+
+## License
+
+This project is licensed under the [BSD 3-Clause License](LICENSE).
