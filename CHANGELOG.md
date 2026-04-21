@@ -1,6 +1,27 @@
 # CHANGELOG
 
 
+## v0.5.20 (2026-04-21)
+
+### Fixes
+
+* fix: Simplify instructions to patch rdkit in Dockerfiles ([`aedab9e`](https://github.com/molinfo-vienna/nerdd-link/commit/aedab9e8d7f3ac460a5268ffbad67bcfd91d48f3))
+
+* fix: Adapt entrypoint of dev nerdd-serialize-jobs image ([`3141b3b`](https://github.com/molinfo-vienna/nerdd-link/commit/3141b3b22cb99c1947662fbbf45b0e9c6cea6656))
+
+* fix: Adapt entrypoint of dev nerdd-process-jobs image ([`e23cff8`](https://github.com/molinfo-vienna/nerdd-link/commit/e23cff8b514b925a2f2684b7504c5cbdefad809d))
+
+* fix: Make nerdd-serialize-jobs dockerfile multi-stage ([`a452ff8`](https://github.com/molinfo-vienna/nerdd-link/commit/a452ff8ed467b605b36d7fde4e95cc0d31c90b2c))
+
+* fix: Make nerdd-process-jobs dockerfile multi-stage ([`a96e585`](https://github.com/molinfo-vienna/nerdd-link/commit/a96e585fbe82be28118311e6efb2b6e3723a4e26))
+
+### Unknown
+
+* Merge pull request #76 from shirte/main
+
+Optimize Dockerfiles ([`903c82b`](https://github.com/molinfo-vienna/nerdd-link/commit/903c82b792044196e4cccf15494c71af1052906a))
+
+
 ## v0.5.19 (2026-04-21)
 
 ### Fixes
