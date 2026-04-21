@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import List
+from typing import List, Optional
 
 import rich_click as click
 
@@ -38,11 +38,28 @@ async def _run_serialization_server(channel: Channel, data_dir: str) -> None:
 @click.command(context_settings={"show_default": True})
 @click.option(
     "--channel",
-    type=click.Choice(["kafka"], case_sensitive=False),
+    type=click.Choice(Channel.get_channel_names(), case_sensitive=False),
     default="kafka",
     help="Channel to use for communication with the model.",
 )
-@click.option("--broker-url", default="localhost:9092", help="Kafka broker to connect to.")
+@click.option(
+    "--broker-url",
+    default="localhost:9092",
+    help=(
+        "Broker url to connect to (e.g. localhost:9092 for Kafka or "
+        "rabbitmq://guest:guest@localhost:5552/ for RabbitMQ Streams)."
+    ),
+)
+@click.option(
+    "--broker-username",
+    default=None,
+    help="Broker username to use for authenticated connections.",
+)
+@click.option(
+    "--broker-password",
+    default=None,
+    help="Broker password to use for authenticated connections.",
+)
 @click.option(
     "--data-dir",
     default="sources",
@@ -59,6 +76,8 @@ async def run_serialization_server(
     # communication options
     channel: str,
     broker_url: str,
+    broker_username: Optional[str],
+    broker_password: Optional[str],
     # options
     data_dir: str,
     # log level
@@ -66,7 +85,13 @@ async def run_serialization_server(
 ) -> None:
     logging.basicConfig(level=log_level.upper())
 
-    channel_instance = Channel.create_channel(channel, broker_url=broker_url)
+    channel_kwargs = {"broker_url": broker_url}
+    if broker_username is not None:
+        channel_kwargs["broker_username"] = broker_username
+    if broker_password is not None:
+        channel_kwargs["broker_password"] = broker_password
+
+    channel_instance = Channel.create_channel(channel, **channel_kwargs)
 
     await _run_serialization_server(
         channel=channel_instance,
