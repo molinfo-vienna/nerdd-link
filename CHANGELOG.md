@@ -1,6 +1,27 @@
 # CHANGELOG
 
 
+## v0.5.19 (2026-04-21)
+
+### Fixes
+
+* fix: Add broker_username and broker_password to MemoryChannel ([`bf90fb0`](https://github.com/molinfo-vienna/nerdd-link/commit/bf90fb05c1d2291e2d903e4e9e8b0b8baca01e04))
+
+* fix: Add broker_username and broker_password to all entrypoints ([`e0c1ba2`](https://github.com/molinfo-vienna/nerdd-link/commit/e0c1ba26aad37aef952a4c04f0c39b83fbb113cc))
+
+* fix: Present all channel names in CLI entrypoints ([`057e437`](https://github.com/molinfo-vienna/nerdd-link/commit/057e43719d660a3c468ac4339e3af99587f65734))
+
+* fix: Rename KafkaChannel to AioKafkaChannel ([`612daaa`](https://github.com/molinfo-vienna/nerdd-link/commit/612daaaf950cc3acf3ef91177ffb95e091005dd1))
+
+* fix: Remove redundant method Channel.get_channel ([`e122dda`](https://github.com/molinfo-vienna/nerdd-link/commit/e122ddae100d532dd93f6cd0cec36ff44cf33777))
+
+### Unknown
+
+* Merge pull request #75 from shirte/main
+
+Add CLI options to provide broker_username and broker_password ([`675919c`](https://github.com/molinfo-vienna/nerdd-link/commit/675919c167fe84700d25732e34dd401d15ec41b7))
+
+
 ## v0.5.18 (2026-03-25)
 
 ### Fixes
