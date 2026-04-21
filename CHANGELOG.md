@@ -1,6 +1,23 @@
 # CHANGELOG
 
 
+## v0.5.21 (2026-04-21)
+
+### Fixes
+
+* fix: Add CLI entrypoint for initialize_system ([`2c8ccda`](https://github.com/molinfo-vienna/nerdd-link/commit/2c8ccdad5145707387eeadf27bd9852d662a5110))
+
+### Testing
+
+* test: Make sure that 'kafka' is a valid channel name ([`451babd`](https://github.com/molinfo-vienna/nerdd-link/commit/451babd4dd51674ca73708204551a7b5aa2f792f))
+
+### Unknown
+
+* Merge pull request #77 from shirte/main
+
+Add initialize_system CLI command ([`847ad7d`](https://github.com/molinfo-vienna/nerdd-link/commit/847ad7d33ffdd550ac699cabb4c8d88e357ec636))
+
+
 ## v0.5.20 (2026-04-21)
 
 ### Fixes
