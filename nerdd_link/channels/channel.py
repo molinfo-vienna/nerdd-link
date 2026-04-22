@@ -97,6 +97,7 @@ class Channel(ABC):
         self._num_consumers_lock = Lock()
         self._num_consumers = 0
         self._no_active_consumers = Event()
+        self._no_active_consumers.set()
 
     async def start(self) -> None:
         self._is_running.set()
