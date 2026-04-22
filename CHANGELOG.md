@@ -1,6 +1,21 @@
 # CHANGELOG
 
 
+## v0.5.22 (2026-04-22)
+
+### Fixes
+
+* fix: Give SystemMessage an id field ([`f8da979`](https://github.com/molinfo-vienna/nerdd-link/commit/f8da979dc0e22689e8e61d02924569c7fcbbf4b3))
+
+* fix: Set _no_active_consumers to avoid potential deadlocks ([`60815a8`](https://github.com/molinfo-vienna/nerdd-link/commit/60815a8b936b3ae560f1999e52b1508ec94c43a1))
+
+### Unknown
+
+* Merge pull request #78 from shirte/main
+
+Avoid potential deadlocks in Channel class ([`47f1c14`](https://github.com/molinfo-vienna/nerdd-link/commit/47f1c142b844a0736db80bd565df5a26eebbc742))
+
+
 ## v0.5.21 (2026-04-21)
 
 ### Fixes
