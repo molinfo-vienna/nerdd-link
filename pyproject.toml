@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nerdd-link"
-version = "0.5.23"
+version = "0.5.24"
 description = "Run a NERDD module as a service"
 readme = "README.md"
 license = "BSD-3-Clause"
@@ -77,6 +77,7 @@ nerdd_serialization_server = "nerdd_link.cli:run_serialization_server"
 #
 # TOOLS
 #
+
 
 [tool.setuptools.packages.find]
 where = ["."]

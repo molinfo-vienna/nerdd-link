@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.5.24 (2026-06-02)
+
+### Fixes
+
+* fix: Let WriteCheckpointsStep use the PickleWriter class ([`05f4656`](https://github.com/molinfo-vienna/nerdd-link/commit/05f4656858cd14422c700f2fb6448564c4a63daa))
+
+### Unknown
+
+* Merge pull request #80 from shirte/main
+
+Let WriteCheckpointsStep use the PickleWriter class ([`eb4fe24`](https://github.com/molinfo-vienna/nerdd-link/commit/eb4fe2422b1137a7d8bfcadf05589478eb6a843a))
+
+
 ## v0.5.23 (2026-06-02)
 
 ### Fixes
