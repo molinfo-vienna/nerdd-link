@@ -1,6 +1,23 @@
 # CHANGELOG
 
 
+## v0.5.23 (2026-06-02)
+
+### Fixes
+
+* fix: Replace non-picklable values in PickleWriter ([`09c5b32`](https://github.com/molinfo-vienna/nerdd-link/commit/09c5b329477d639855c56a936ae140b29cdabd41))
+
+### Testing
+
+* test: Check that PickleWriter does not raise exceptions when writing non-picklable objects ([`8f298eb`](https://github.com/molinfo-vienna/nerdd-link/commit/8f298eb263911dc4d453f59b64ee774e253ea248))
+
+### Unknown
+
+* Merge pull request #79 from shirte/main
+
+Replace non-picklable values in PickleWriter ([`df50118`](https://github.com/molinfo-vienna/nerdd-link/commit/df501180be645a08600a3a331054babc7fbaa164))
+
+
 ## v0.5.22 (2026-04-22)
 
 ### Fixes
