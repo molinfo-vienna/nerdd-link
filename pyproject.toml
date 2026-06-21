@@ -23,6 +23,7 @@ dependencies = [
     "pydantic>=2",
     # TODO: move dependencies to extras
     "aiokafka>=0.12.0",
+    "confluent-kafka>=2.14.0",
     # for old Python versions
     "importlib-metadata>=4.6; python_version<'3.10'",
     "typing_extensions>=4.0.1; python_version<'3.8'",
@@ -133,6 +134,10 @@ ignore_errors = true
 
 [[tool.mypy.overrides]]
 module = ["aiokafka.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["confluent_kafka", "confluent_kafka.*"]
 ignore_missing_imports = true
 
 [tool.semantic_release]
