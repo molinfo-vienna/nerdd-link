@@ -1,6 +1,21 @@
 # CHANGELOG
 
 
+## v0.5.25 (2026-06-21)
+
+### Fixes
+
+* fix: Implement ConfluentKafkaChannel ([`ae20632`](https://github.com/molinfo-vienna/nerdd-link/commit/ae2063296c611bc78f817ba65153a652b9044104))
+
+* fix: Install confluent-kafka ([`10a6242`](https://github.com/molinfo-vienna/nerdd-link/commit/10a624281d01efa82473ecbe058a856970fcd817))
+
+### Unknown
+
+* Merge pull request #81 from shirte/main
+
+Implement ConfluentKafkaChannel ([`164ccfb`](https://github.com/molinfo-vienna/nerdd-link/commit/164ccfb47fca3eb3258f67479832ccec8ea43d25))
+
+
 ## v0.5.24 (2026-06-02)
 
 ### Fixes
