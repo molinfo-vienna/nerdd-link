@@ -1,6 +1,21 @@
 # CHANGELOG
 
 
+## v0.5.26 (2026-06-21)
+
+### Fixes
+
+* fix: Use ConfluentKafkaChannel by default ([`f12bb0b`](https://github.com/molinfo-vienna/nerdd-link/commit/f12bb0bf27413aa83ffa522123d55fe3ce706802))
+
+* fix: Specify partitioner in ConfluentKafkaChannel ([`6a0e90f`](https://github.com/molinfo-vienna/nerdd-link/commit/6a0e90f5aabb059887aa2204e63d11599ea23447))
+
+### Unknown
+
+* Merge pull request #82 from shirte/main
+
+Use ConfluentKafkaChannel by default ([`0ee374a`](https://github.com/molinfo-vienna/nerdd-link/commit/0ee374aca01cb11337af22dff0cb4f13f4f33de6))
+
+
 ## v0.5.25 (2026-06-21)
 
 ### Fixes
