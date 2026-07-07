@@ -1,6 +1,21 @@
 # CHANGELOG
 
 
+## v0.5.27 (2026-07-07)
+
+### Fixes
+
+* fix: Show a log message when stopping a consumer ([`19228e9`](https://github.com/molinfo-vienna/nerdd-link/commit/19228e9afaa44639c13ea665823a85cd69e6e0f3))
+
+* fix: Remove custom RebalanceListener and use the default one ([`959f655`](https://github.com/molinfo-vienna/nerdd-link/commit/959f655876fc4b3f80e84e2ca7bf183e8e9b8b6c))
+
+### Unknown
+
+* Merge pull request #83 from shirte/main
+
+Remove custom RebalanceListener and use the default one ([`d40b047`](https://github.com/molinfo-vienna/nerdd-link/commit/d40b0479f4c1aaa46743fed520b0502e22ff2017))
+
+
 ## v0.5.26 (2026-06-21)
 
 ### Fixes
