@@ -1,6 +1,33 @@
 # CHANGELOG
 
 
+## v0.5.28 (2026-07-09)
+
+### Fixes
+
+* fix: Use supervise_actions in CLI entrypoints ([`535d6c7`](https://github.com/molinfo-vienna/nerdd-link/commit/535d6c7cacc563c262eaafcc6b4eb5bcbabd955a))
+
+* fix: Export supervise_actions function ([`4a98a67`](https://github.com/molinfo-vienna/nerdd-link/commit/4a98a67d832bd4681f1b8c64ba090e4a258e79e6))
+
+* fix: Overwrite _stop instead of stop in MemoryChannel ([`a368398`](https://github.com/molinfo-vienna/nerdd-link/commit/a368398793ef776fd35cdd76e82a474296e53eeb))
+
+* fix: Implement function to run and restart a list of actions ([`d2a7dd6`](https://github.com/molinfo-vienna/nerdd-link/commit/d2a7dd61f328e4f6b983390bee746ff97a88ec44))
+
+* fix: Retry committing in ConfluentKafkaChannel ([`5f626e6`](https://github.com/molinfo-vienna/nerdd-link/commit/5f626e6ed2d44febcade573333aaa2208da601aa))
+
+* fix: Let exceptions pass through in Action.run ([`9958bf7`](https://github.com/molinfo-vienna/nerdd-link/commit/9958bf70c4d37b7853ee509af76cbe8da931bea3))
+
+* fix: Pass exceptions through in AioKafkaChannel._iter_messages ([`ba2b10e`](https://github.com/molinfo-vienna/nerdd-link/commit/ba2b10ef7c45a9558284d165eb7fe3cf775fa74d))
+
+### Unknown
+
+* Merge pull request #84 from shirte/main
+
+Restart failed actions automatically ([`9aece98`](https://github.com/molinfo-vienna/nerdd-link/commit/9aece98c5e1536bd5ad7840a0caa7e3b89269a33))
+
+* tests: Test supervise_actions ([`34a3d3b`](https://github.com/molinfo-vienna/nerdd-link/commit/34a3d3bab15cf89d98bf2b220be1b463ec965e81))
+
+
 ## v0.5.27 (2026-07-07)
 
 ### Fixes
