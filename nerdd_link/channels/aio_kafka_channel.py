@@ -170,12 +170,7 @@ class AioKafkaChannel(Channel):
                     if len(key_value_pairs) == 0:
                         continue
 
-                    try:
-                        yield key_value_pairs
-                    except Exception:
-                        logger.error("Error while yielding messages", exc_info=True)
-                        # do not commit the message, but retry
-                        continue
+                    yield key_value_pairs
 
                     await consumer.commit()
         finally:

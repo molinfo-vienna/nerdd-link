@@ -1,10 +1,9 @@
-import asyncio
 import logging
 from typing import Optional
 
 import rich_click as click
 
-from ..actions import ProcessJobsAction
+from ..actions import ProcessJobsAction, supervise_actions
 from ..channels import Channel
 from ..utils import async_to_sync
 
@@ -22,27 +21,23 @@ async def _run_job_server(
     max_num_lines_mol_block: int,
     data_dir: str,
 ) -> None:
-    await channel.start()
-
-    action = ProcessJobsAction(
-        channel,
-        num_test_entries,
-        ratio_valid_entries,
-        maximum_depth,
-        max_num_lines_mol_block,
-        data_dir,
-    )
-
-    task = asyncio.create_task(action.run())
     try:
-        logging.info(f"Running action {action}")
-        await task
-    except KeyboardInterrupt:
-        logger.info("Shutting down server")
-        task.cancel()
-        await task
+        async with channel:
+            action = ProcessJobsAction(
+                channel,
+                num_test_entries,
+                ratio_valid_entries,
+                maximum_depth,
+                max_num_lines_mol_block,
+                data_dir,
+            )
 
-        await channel.stop()
+            await supervise_actions([action])
+    except KeyboardInterrupt:
+        # we catch KeyboardInterrupt so it is not displayed to the user
+        pass
+    finally:
+        logger.info("Server shut down successfully")
 
 
 @click.command(context_settings={"show_default": True})
