@@ -242,6 +242,10 @@ class S3Storage(Storage):
                 return False
             raise
 
+    def _get_file_size(self, identifier: str) -> int:
+        response = self._client.head_object(Bucket=self.bucket_name, Key=identifier)
+        return response["ContentLength"]
+
     def __repr__(self) -> str:
         return (
             f"S3Storage("

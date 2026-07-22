@@ -30,6 +30,14 @@ class ChainedStorage(Storage):
     def _file_exists(self, identifier: str) -> bool:
         return any(storage._file_exists(identifier) for storage in self._storages)
 
+    def _get_file_size(self, identifier: str) -> int:
+        for storage in self._storages:
+            if storage._file_exists(identifier):
+                return storage._get_file_size(identifier)
+
+        # fail with the error raised by the primary storage
+        return self._storages[0]._get_file_size(identifier)
+
     def _get_binary_file_handle(self, identifier: str, mode: Literal["rb", "wb"]) -> BinaryIO:
         primary = self._storages[0]
         if mode == "wb":

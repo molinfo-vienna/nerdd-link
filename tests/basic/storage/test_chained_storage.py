@@ -22,3 +22,16 @@ def test_validation_validates_every_child(mocker, tmp_path):
 
     first_validate.assert_called_once_with()
     second_validate.assert_called_once_with()
+
+
+def test_get_file_size_uses_first_storage_containing_file(tmp_path):
+    first = FileSystemStorage(str(tmp_path / "first"))
+    second = FileSystemStorage(str(tmp_path / "second"))
+    storage = ChainedStorage(first, second)
+    file_path = storage.get_source_file_path("source-1")
+
+    for backend, content in ((first, b"first"), (second, b"second-content")):
+        with backend.get_file_handle(file_path, "wb") as handle:
+            handle.write(content)
+
+    assert storage.get_file_size(file_path) == len(b"first")

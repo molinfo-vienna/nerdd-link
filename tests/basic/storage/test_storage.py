@@ -1,3 +1,5 @@
+import pytest
+
 from nerdd_link.storage import (
     CheckpointFilePathSpec,
     ModuleFilePathSpec,
@@ -6,6 +8,7 @@ from nerdd_link.storage import (
     ResultCheckpointFilePathSpec,
     SourceFilePathSpec,
     Storage,
+    WrongPrefixError,
 )
 
 
@@ -20,6 +23,9 @@ class DummyStorage(Storage):
         raise NotImplementedError
 
     def _file_exists(self, identifier):
+        raise NotImplementedError
+
+    def _get_file_size(self, identifier):
         raise NotImplementedError
 
     def _get_binary_file_handle(self, identifier, mode):
@@ -83,3 +89,10 @@ def test_output_file_path_round_trip():
     assert storage.parse_output_file_path(file_path) == OutputFilePathSpec(
         job_id="job-1", output_format="sdf.gz"
     )
+
+
+def test_get_file_size_rejects_wrong_prefix():
+    storage = DummyStorage()
+
+    with pytest.raises(WrongPrefixError):
+        storage.get_file_size("file://sources/source-1")
