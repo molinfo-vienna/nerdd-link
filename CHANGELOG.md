@@ -1,6 +1,23 @@
 # CHANGELOG
 
 
+## v0.6.1 (2026-07-22)
+
+### Fixes
+
+* fix: Add operation in Storage to get file size ([`c1a3a27`](https://github.com/molinfo-vienna/nerdd-link/commit/c1a3a27d39c1dea84a3aaec47239f4335e1ff821))
+
+### Testing
+
+* test: Add tests for get_file_size ([`e624b01`](https://github.com/molinfo-vienna/nerdd-link/commit/e624b01d8321c598232de41f085ace5c81373610))
+
+### Unknown
+
+* Merge pull request #86 from shirte/main
+
+Add file size operations in Storage ([`0aa3327`](https://github.com/molinfo-vienna/nerdd-link/commit/0aa332744d7e3a35ac4e87db1ff615355f8bc521))
+
+
 ## v0.6.0 (2026-07-22)
 
 ### Chores
