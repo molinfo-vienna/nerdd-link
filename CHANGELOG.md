@@ -1,6 +1,35 @@
 # CHANGELOG
 
 
+## v0.6.2 (2026-07-22)
+
+### Chores
+
+* chore: Include tests in linting and formatting ([`eb4c08a`](https://github.com/molinfo-vienna/nerdd-link/commit/eb4c08accc72ee8929db830478526b022619575a))
+
+### Fixes
+
+* fix: Extend ruff rule set ([`34ba48b`](https://github.com/molinfo-vienna/nerdd-link/commit/34ba48b7c22226da5341d32644a0908cb4cd5ed6))
+
+* fix: Replace assert statements with exceptions ([`2dccfbf`](https://github.com/molinfo-vienna/nerdd-link/commit/2dccfbf32ee5257776b3063699fee9b68681f9ff))
+
+### Refactoring
+
+* refactor: Order imports ([`0bfafa7`](https://github.com/molinfo-vienna/nerdd-link/commit/0bfafa703e2d158480143ec9dde6209096e7eafc))
+
+* refactor: Implement __repr__ in all classes derived from Action ([`2e86186`](https://github.com/molinfo-vienna/nerdd-link/commit/2e861865df597bb1ee907a3a11b4fbb026237544))
+
+* refactor: Implement fallback __repr__ in Action class ([`79f29f0`](https://github.com/molinfo-vienna/nerdd-link/commit/79f29f05c90c56f0c5365219d867a4d36cffc8d6))
+
+* refactor: Format tests ([`38b9592`](https://github.com/molinfo-vienna/nerdd-link/commit/38b9592869888a2caa9e37a3c594cc7994a2e884))
+
+### Unknown
+
+* Merge pull request #87 from shirte/main
+
+Extend ruff rule set ([`a7570ae`](https://github.com/molinfo-vienna/nerdd-link/commit/a7570ae47bd07ae5a4ac1816f33b5acf1a1cdea5))
+
+
 ## v0.6.1 (2026-07-22)
 
 ### Fixes
