@@ -24,7 +24,8 @@ class MolToImageConverter(Converter):
         if input is None:
             return None
 
-        assert isinstance(input, Mol), f"Expected RDKit Mol object, but got {type(input)}"
+        if not isinstance(input, Mol):
+            raise TypeError(f"Expected RDKit Mol object, but got {type(input)}")
 
         # clean up 2d coordinates
         mol = Mol(input)  # create a copy to avoid modifying the input molecule
@@ -72,7 +73,8 @@ class MolToImageConverter(Converter):
 
                 # remove highlight circle from parent
                 parent = ellipse.parentNode
-                assert parent is not None, "Parent node cannot be None."
+                if parent is None:
+                    raise ValueError("Parent node cannot be None.")
                 parent.removeChild(ellipse)
 
                 # add highlight circle at the end of parent

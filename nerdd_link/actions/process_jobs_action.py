@@ -107,3 +107,14 @@ class ProcessJobsAction(Action[JobMessage]):
             # note: it is important that we delete the file at the end of the loop, because we don't
             # want to delete the file without propagating the tombstone first
             self._storage.delete_checkpoint_file(job_id, i)
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}("
+            f"num_test_entries={self._num_test_entries!r}, "
+            f"ratio_valid_entries={self._ratio_valid_entries!r}, "
+            f"maximum_depth={self._maximum_depth!r}, "
+            f"max_num_lines_mol_block={self._max_num_lines_mol_block!r}, "
+            f"storage={self._storage!r}"
+            f")"
+        )

@@ -79,7 +79,7 @@ __all__ = [
     "Storage",
     "StructureJsonReader",
     "SystemMessage",
-    "Topic",
     "Tombstone",
+    "Topic",
     "supervise_actions",
 ]

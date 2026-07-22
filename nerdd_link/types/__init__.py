@@ -6,13 +6,13 @@ from pydantic import BaseModel, ConfigDict
 __all__ = [
     "CheckpointMessage",
     "JobMessage",
-    "ResultMessage",
     "LogMessage",
     "ModuleMessage",
-    "SystemMessage",
     "ResultCheckpointMessage",
+    "ResultMessage",
     "SerializationRequestMessage",
     "SerializationResultMessage",
+    "SystemMessage",
     "Tombstone",
 ]
 
@@ -95,7 +95,7 @@ class Tombstone(Generic[TMessage]):
             self.key = dict(zip(key_fields, args))
         else:
             # check that the kwargs keys match the key fields
-            for key in kwargs.keys():
+            for key in kwargs:
                 if key not in key_fields:
                     raise ValueError(
                         f"Key field {key} is not defined in the topic config for message type "

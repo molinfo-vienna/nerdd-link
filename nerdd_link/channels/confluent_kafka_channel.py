@@ -177,8 +177,6 @@ class ConfluentKafkaChannel(Channel):
 
                     key_value_pairs.append((key, value))
 
-                assert len(key_value_pairs) > 0
-
                 yield key_value_pairs
 
                 # Commit message offsets. During this process, we often encounter errors that might
@@ -244,7 +242,8 @@ class ConfluentKafkaChannel(Channel):
         # store self._producer in a local variable to avoid issues with parallel shutdown
         # (stopping the channel sets self._producer to None)
         producer = self._producer
-        assert producer is not None, "Kafka producer not established."
+        if producer is None:
+            raise RuntimeError("Kafka producer not established.")
 
         # compute key
         if key is None:
@@ -260,7 +259,11 @@ class ConfluentKafkaChannel(Channel):
 
         def produce_and_flush() -> None:
             n_trials = 5
-            last_error: Optional[BaseException] = None
+
+            # define an exception that will be raised if all trials fail
+            last_error: BaseException = RuntimeError(
+                "Failed sending message after multiple trials."
+            )
 
             # try sending multiple times before giving up
             for trial in range(n_trials):
@@ -294,7 +297,6 @@ class ConfluentKafkaChannel(Channel):
                     )
                     time.sleep(1)
 
-            assert last_error is not None
             raise last_error
 
         await asyncio.to_thread(produce_and_flush)

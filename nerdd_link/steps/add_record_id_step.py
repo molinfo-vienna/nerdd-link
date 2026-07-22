@@ -14,7 +14,8 @@ class AddRecordIdStep(Step):
         self._job_id = job_id
 
     def _run(self, source: Optional[Iterator[dict]]) -> Iterator[dict]:
-        assert source is not None, "Source iterator cannot be None."
+        if source is None:
+            raise ValueError("Source iterator cannot be None.")
 
         job_id = self._job_id
         for record in source:

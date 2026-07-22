@@ -26,10 +26,12 @@ def input_file(data_dir, path, molecules, format):
     # We remove all properties except "input_mol", because we don't want to store them.
     def remove_properties(source):
         for entry in source:
-            yield { "input_mol": entry["input_mol"] }
+            yield {"input_mol": entry["input_mol"]}
 
     input_step = ReadInputStep(explorer, molecules)
-    output_step = WriteOutputStep(config=Module(name="dummy"), output_format=format, output_file=full_path)
+    output_step = WriteOutputStep(
+        config=Module(name="dummy"), output_format=format, output_file=full_path
+    )
     output_step(remove_properties(input_step(None)))
     output_step.get_result()
 
@@ -38,6 +40,7 @@ def input_file(data_dir, path, molecules, format):
 def file_created(data_dir, path):
     full_path = os.path.join(data_dir, path)
     assert os.path.exists(full_path)
+
 
 @then(parsers.parse("the file '{path}' does not exist"))
 def file_does_not_exist(data_dir, path):

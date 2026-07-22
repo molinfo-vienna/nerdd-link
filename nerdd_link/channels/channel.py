@@ -7,6 +7,7 @@ from typing import (
     Any,
     AsyncIterable,
     Callable,
+    ClassVar,
     Dict,
     Generic,
     List,
@@ -157,7 +158,8 @@ class Channel(ABC):
                 message_batch: List[Union[TMessage, Tombstone[TMessage]]] = []
                 for key, value in key_value_pairs:
                     if value is None:
-                        assert key is not None, "Key must be provided for tombstone messages"
+                        if key is None:
+                            raise ValueError("Key must be provided for tombstone messages")
                         message_batch.append(Tombstone(message_type, *key))
                     else:
                         if key_fields is None and key is not None:
@@ -270,7 +272,7 @@ class Channel(ABC):
     #
     # META
     #
-    _channel_registry: Dict[str, Type["Channel"]] = {}
+    _channel_registry: ClassVar[Dict[str, Type["Channel"]]] = {}
 
     @classmethod
     def __init_subclass__(

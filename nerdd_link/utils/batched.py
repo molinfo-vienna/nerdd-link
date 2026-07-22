@@ -17,7 +17,8 @@ def batched(iterable: Iterable[T], size: int) -> Iterator[List[T]]:
     Returns:
         An iterator over the batches.
     """
-    assert size > 0, "Size must be greater than 0"
+    if size <= 0:
+        raise ValueError("Size must be greater than 0")
 
     iterator = iter(iterable)
     while True:

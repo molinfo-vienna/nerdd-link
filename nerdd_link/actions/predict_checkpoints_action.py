@@ -103,3 +103,6 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
     def _get_group_name(self) -> str:
         model_id = self._model.config.id
         return f"predict-checkpoints-{model_id}"
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(model={self._model!r}, storage={self._storage!r})"

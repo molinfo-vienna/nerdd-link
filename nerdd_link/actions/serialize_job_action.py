@@ -83,3 +83,6 @@ class SerializeJobAction(Action[SerializationRequestMessage]):
         await self.channel.serialization_results_topic().send(
             Tombstone(SerializationResultMessage, job_id=job_id, output_format=output_format)
         )
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(storage={self._storage!r})"
