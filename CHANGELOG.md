@@ -1,6 +1,139 @@
 # CHANGELOG
 
 
+## v0.6.0 (2026-07-22)
+
+### Chores
+
+* chore: Remove F403 from ruff ignore list ([`ffc73c8`](https://github.com/molinfo-vienna/nerdd-link/commit/ffc73c8195d6924d3dce2506c65547ece6741b9a))
+
+* chore: Add boto3 type stubs in pre-commit config ([`615a7f9`](https://github.com/molinfo-vienna/nerdd-link/commit/615a7f9b00edfdc9fc45997498efa50ac5142b6d))
+
+### Code Style
+
+* style: Reorganize methods in Storage classes ([`f11ccbc`](https://github.com/molinfo-vienna/nerdd-link/commit/f11ccbc12361d2592256f4f42cb90928efed4c1b))
+
+### Features
+
+* feat: Implement S3 storage ([`be91c0a`](https://github.com/molinfo-vienna/nerdd-link/commit/be91c0a0fbb830d6fa2f9834ab95baf45a0a3415))
+
+### Fixes
+
+* fix: Pass CancelledError to caller in Action.run ([`ca4a467`](https://github.com/molinfo-vienna/nerdd-link/commit/ca4a46783e9d1c19a3a01f29ff499188d28643b4))
+
+* fix: Remove irrelevant exports from storage subpackage ([`5c8607d`](https://github.com/molinfo-vienna/nerdd-link/commit/5c8607def7ebe05e522921289a5f872dab9ea9c3))
+
+* fix: Export only Action in action.py ([`b619daa`](https://github.com/molinfo-vienna/nerdd-link/commit/b619daae1272eeb1f60ab72d93e998d9290944a6))
+
+* fix: Use entry filename as source if available in StructureJsonReader ([`75e26a1`](https://github.com/molinfo-vienna/nerdd-link/commit/75e26a18a27e4f1eaed65b7f36a50773cc9e596d))
+
+* fix: Wire S3Storage into get_storage ([`9d4d68d`](https://github.com/molinfo-vienna/nerdd-link/commit/9d4d68d5caa48fd45f95cd370b48abe020d8fc6a))
+
+* fix: Use explicit imports in storage module ([`d6fa3ac`](https://github.com/molinfo-vienna/nerdd-link/commit/d6fa3ac0f4048f6899c42f3c64369dc3f273e6c9))
+
+* fix: Update rich_click version in requirements files ([`e922f12`](https://github.com/molinfo-vienna/nerdd-link/commit/e922f12a72698cc3eef0e6fabb3665a60688a550))
+
+* fix: Add boto3 to requirement files ([`9614da3`](https://github.com/molinfo-vienna/nerdd-link/commit/9614da3973c012bc7adbbb3ab76deae6ddca7e8d))
+
+* fix: Validate storage in get_storage ([`33b0447`](https://github.com/molinfo-vienna/nerdd-link/commit/33b0447963a9ad2ec2732b29bcd0e1dcd5d7bfa0))
+
+* fix: Add validation methods in Storage derived classes ([`8a5a4d0`](https://github.com/molinfo-vienna/nerdd-link/commit/8a5a4d024eec79a14802a6def996674fd7c3b60b))
+
+* fix: Log storage backend in get_storage ([`77edc67`](https://github.com/molinfo-vienna/nerdd-link/commit/77edc67a525bde9c1bd0515530f9b00af984ba9f))
+
+* fix: Merge validate_storage_options into get_storage ([`a982712`](https://github.com/molinfo-vienna/nerdd-link/commit/a982712963704910a081d57a173d9a8d00b07680))
+
+* fix: Implement MirroredStorage class ([`1da0780`](https://github.com/molinfo-vienna/nerdd-link/commit/1da07805002b0a82bf87fd4942f7640984ecec32))
+
+* fix: Require checkpoint_id to be int in Storage ([`0755819`](https://github.com/molinfo-vienna/nerdd-link/commit/0755819443fea4e24d2e89c7b28bf26f547827d6))
+
+* fix: Rename *_results_file methods to *_result_checkpoint_file for consistency ([`37bdaf5`](https://github.com/molinfo-vienna/nerdd-link/commit/37bdaf5cf927facd567b22a52bf065441113dfcc))
+
+* fix: Add methods in Storage class for parsing components of file paths ([`e7dd98b`](https://github.com/molinfo-vienna/nerdd-link/commit/e7dd98b83a2c621936a06ac616e80236e7c63a15))
+
+* fix: Validate storage options ([`d265603`](https://github.com/molinfo-vienna/nerdd-link/commit/d26560367e6259fcd101ba0adb2e54297d05fa46))
+
+* fix: Add s3_url parameter to CLI entrypoints ([`34fabd1`](https://github.com/molinfo-vienna/nerdd-link/commit/34fabd1f40f035ec49cc352285cf47681cad35b8))
+
+* fix: Implement ChainedStorage that combines multiple storage instances ([`099b2e5`](https://github.com/molinfo-vienna/nerdd-link/commit/099b2e558297b450027278194d2fe940f39e6372))
+
+* fix: Temporarily make Storage backwards compatible to legacy paths ([`0061f96`](https://github.com/molinfo-vienna/nerdd-link/commit/0061f96bbaade33439a3f5b2eb173b8b34e8ad57))
+
+* fix: Add universal file methods in Storage ([`a1181ed`](https://github.com/molinfo-vienna/nerdd-link/commit/a1181ed47737571895127bfd77f40c98cc9bfaa3))
+
+* fix: Create storage instance from CLI arguments ([`d6257fa`](https://github.com/molinfo-vienna/nerdd-link/commit/d6257fa82b9e440f18da38b299b5f958da8f1fea))
+
+* fix: Replace os with pathlib in FileSystemStorage ([`55f26e1`](https://github.com/molinfo-vienna/nerdd-link/commit/55f26e1202e993f4737d5369f258ddad07e89cb8))
+
+* fix: Require only binary mode handlers in classes derived from Storage ([`73a3811`](https://github.com/molinfo-vienna/nerdd-link/commit/73a38111188bc18fad45be7da9fb26242f4e9c5d))
+
+* fix: Remove Storage.iter_results_file_handles ([`6b1f514`](https://github.com/molinfo-vienna/nerdd-link/commit/6b1f51420ae36fb89afad11d759489365f2b1b80))
+
+* fix: Simplify folder iteration logic in Storage and derived classes ([`2a1055e`](https://github.com/molinfo-vienna/nerdd-link/commit/2a1055e2d023780016937fff9b9959307078204d))
+
+* fix: Move main logic into Storage base class (simplifying derived classes) ([`248f776`](https://github.com/molinfo-vienna/nerdd-link/commit/248f776c86a6637ceed0ef32582662f3569d4936))
+
+* fix: Add method Storage.get_property_file_handle ([`455c9e5`](https://github.com/molinfo-vienna/nerdd-link/commit/455c9e57995d54bf3a1efc5ab2889ca0b2501add))
+
+* fix: Add methods for checking file existence in Storage classes ([`15fa0b2`](https://github.com/molinfo-vienna/nerdd-link/commit/15fa0b2f53da5c0de6bae0938a178d086556f67e))
+
+* fix: Add boto3 to requirement files ([`80b5b41`](https://github.com/molinfo-vienna/nerdd-link/commit/80b5b41cf2743d3b0978e57af5f1881bcf8b0cf7))
+
+* fix: Bump version of nerdd_module dependency ([`94417a7`](https://github.com/molinfo-vienna/nerdd-link/commit/94417a7e9654b24a03bf6b0ad3054b76c1a34e28))
+
+* fix: Add method Storage.get_module_file_handle ([`34cb9d6`](https://github.com/molinfo-vienna/nerdd-link/commit/34cb9d69a3c881ed45e2bb95205106b8fef40999))
+
+* fix: Always close stream / file handles ([`9c0196a`](https://github.com/molinfo-vienna/nerdd-link/commit/9c0196ae56893f51ef4d3de70c2bbf6aff9ce43d))
+
+* fix: Add delete operations in Storage classes ([`57da8f9`](https://github.com/molinfo-vienna/nerdd-link/commit/57da8f98b8b2b4ecfa06eb9cd25168af40e51a43))
+
+* fix: Let StructureJsonReader read only from given storage ([`f5e6474`](https://github.com/molinfo-vienna/nerdd-link/commit/f5e6474a9e1eddc7f7891719e4cc1ebfe94ee5d6))
+
+* fix: Use storage instead of data_dir ([`ae1fbe2`](https://github.com/molinfo-vienna/nerdd-link/commit/ae1fbe282d32aa798d315f9b7b897d6ba46188bd))
+
+* fix: Define Storage class as an abstraction to FileSystem ([`cf82b9d`](https://github.com/molinfo-vienna/nerdd-link/commit/cf82b9dcd3637a13d81c7328ffd27e6e9a9d9729))
+
+* fix: Install boto3 for s3 access ([`2c454bf`](https://github.com/molinfo-vienna/nerdd-link/commit/2c454bf87c4fa509d95baee8d37f207a11957e13))
+
+### Refactoring
+
+* refactor: Use correct terminology for S3 related variables ([`1f2c502`](https://github.com/molinfo-vienna/nerdd-link/commit/1f2c502c9d4bac7004d1e4d9277d3ec627fed6fd))
+
+* refactor: Use explicit imports / exports ([`7386ed8`](https://github.com/molinfo-vienna/nerdd-link/commit/7386ed8dbb643b553c4d39128512cf2fec56821c))
+
+* refactor: Migrate FileSystem to FileSystemStorage ([`16b1d9b`](https://github.com/molinfo-vienna/nerdd-link/commit/16b1d9b467644aae2be8707df75e152ae896c8d5))
+
+### Testing
+
+* test: Define pytest_plugins to reuse fixtures in other projects ([`45fdb94`](https://github.com/molinfo-vienna/nerdd-link/commit/45fdb94cd2c039745d9216ab7bbb530a3a2ec5b6))
+
+* test: Add tests for S3Storage ([`6ae1eea`](https://github.com/molinfo-vienna/nerdd-link/commit/6ae1eead7735ffe05f05f63a909405d9ee545544))
+
+* test: Add tests for StructureJsonReader ([`d023d80`](https://github.com/molinfo-vienna/nerdd-link/commit/d023d8035773ae94316d6cd4734d7701b7f5dcd9))
+
+* test: Move storage tests into separate folder ([`ec58030`](https://github.com/molinfo-vienna/nerdd-link/commit/ec58030af293e05fef8c5c236ccf53a9f468355f))
+
+* test: Move tests for FileSystemStorage into separate file ([`d72b16c`](https://github.com/molinfo-vienna/nerdd-link/commit/d72b16c6ca223cacd8e20183c1f61e7fab385d42))
+
+* test: Implement DummyStorage to test path roundtrips ([`ccfcf6e`](https://github.com/molinfo-vienna/nerdd-link/commit/ccfcf6e8ea0f420b1598a6f9824f5e78da4eb185))
+
+* test: Add tests for ChainedStorage ([`e59d9ac`](https://github.com/molinfo-vienna/nerdd-link/commit/e59d9acb43f17698b68182577a021d21d273bedf))
+
+* test: Add tests for MirroredStorage ([`4e3dd61`](https://github.com/molinfo-vienna/nerdd-link/commit/4e3dd611b6454e96ed0c750c1bd39c60ad0b894b))
+
+* test: Add test for get_storage ([`925b524`](https://github.com/molinfo-vienna/nerdd-link/commit/925b5243d13f5b9d0547158a71cb4d0a72e49aa9))
+
+* test: Check behavior of MirroredStorage class ([`0d0165a`](https://github.com/molinfo-vienna/nerdd-link/commit/0d0165a5ac46939be6b8da4bbc7e29b114dfe72d))
+
+* test: Check that parsing and generating file paths are inverse to each other ([`ba0f70f`](https://github.com/molinfo-vienna/nerdd-link/commit/ba0f70f65be2440312276d3ec421d9d8e835eaa8))
+
+### Unknown
+
+* Merge pull request #85 from shirte/main
+
+Add support for S3 storage ([`3dcc571`](https://github.com/molinfo-vienna/nerdd-link/commit/3dcc5715f56f49b94f897705e99b97716d300316))
+
+
 ## v0.5.28 (2026-07-09)
 
 ### Fixes
