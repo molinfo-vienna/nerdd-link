@@ -1,1 +1,3 @@
-from .predict_checkpoint_model import *
+from .predict_checkpoint_model import PredictCheckpointModel
+
+__all__ = ["PredictCheckpointModel"]

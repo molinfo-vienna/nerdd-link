@@ -4,4 +4,11 @@
 # from .steps import *
 #
 # instead, we use pytest_plugins to make this work
-pytest_plugins = ["tests.steps", "nerdd_module.tests", "nerdd_link.tests"]
+pytest_plugins = [
+    "nerdd_link.tests.channels",
+    "nerdd_link.tests.files",
+    "nerdd_module.tests",
+    "tests.steps.actions",
+    "tests.steps.basic",
+    "tests.steps.servers",
+]

@@ -12,15 +12,16 @@ license-files = ["LICENSE"]
 authors = [{ name = "Steffen Hirte", email = "steffen.hirte@univie.ac.at" }]
 maintainers = [{ name = "Steffen Hirte", email = "steffen.hirte@univie.ac.at" }]
 dependencies = [
-    "nerdd-module>=0.3.44",
+    "nerdd-module>=0.3.57",
     "pandas>=1.2.1",
     "pyyaml~=6.0",
     "filetype~=1.2.0",
-    "rich-click>=1.7.1",
+    "rich-click>=1.9.0",
     "stringcase~=1.2.0",
     "numpy",
     "simplejson>=3",
     "pydantic>=2",
+    "boto3>=1",
     # TODO: move dependencies to extras
     "aiokafka>=0.12.0",
     "confluent-kafka>=2.14.0",
@@ -78,12 +79,6 @@ nerdd_serialization_server = "nerdd_link.cli:run_serialization_server"
 #
 # TOOLS
 #
-
-
-
-
-
-
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["nerdd_link*"]
@@ -114,7 +109,6 @@ select = [
     "T20", # no print statements
 ]
 ignore = [
-    "F403", # I often use 'from .submodule import *' in __init__.py files
     "C408", # I prefer dict(a=5) over {'a': 5}
 ]
 

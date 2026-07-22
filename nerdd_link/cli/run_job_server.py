@@ -5,7 +5,9 @@ import rich_click as click
 
 from ..actions import ProcessJobsAction, supervise_actions
 from ..channels import Channel
+from ..storage import Storage
 from ..utils import async_to_sync
+from .get_storage import get_storage
 
 __all__ = ["run_job_server"]
 
@@ -19,17 +21,17 @@ async def _run_job_server(
     maximum_depth: int,
     # reading options for readers
     max_num_lines_mol_block: int,
-    data_dir: str,
+    storage: Storage,
 ) -> None:
     try:
         async with channel:
             action = ProcessJobsAction(
-                channel,
-                num_test_entries,
-                ratio_valid_entries,
-                maximum_depth,
-                max_num_lines_mol_block,
-                data_dir,
+                channel=channel,
+                num_test_entries=num_test_entries,
+                ratio_valid_entries=ratio_valid_entries,
+                maximum_depth=maximum_depth,
+                max_num_lines_mol_block=max_num_lines_mol_block,
+                storage=storage,
             )
 
             await supervise_actions([action])
@@ -87,8 +89,28 @@ async def _run_job_server(
 )
 @click.option(
     "--data-dir",
-    default="sources",
+    default=None,
     help="Directory containing structure files associated with the incoming jobs.",
+)
+@click.option(
+    "--s3-url",
+    default=None,
+    help="S3 endpoint URL.",
+)
+@click.option(
+    "--s3-bucket",
+    default=None,
+    help="S3 bucket name.",
+)
+@click.option(
+    "--s3-access-key-id",
+    default=None,
+    help="S3 access key ID.",
+)
+@click.option(
+    "--s3-secret-access-key",
+    default=None,
+    help="S3 secret access key.",
 )
 @click.option(
     "--log-level",
@@ -109,7 +131,11 @@ async def run_job_server(
     maximum_depth: int,
     # reading options for readers
     max_num_lines_mol_block: int,
-    data_dir: str,
+    data_dir: Optional[str],
+    s3_url: Optional[str],
+    s3_bucket: Optional[str],
+    s3_access_key_id: Optional[str],
+    s3_secret_access_key: Optional[str],
     # log level
     log_level: str,
 ) -> None:
@@ -123,11 +149,20 @@ async def run_job_server(
 
     channel_instance = Channel.create_channel(channel, **channel_kwargs)
 
+    storage = get_storage(
+        data_dir,
+        s3_url,
+        s3_bucket,
+        s3_access_key_id,
+        s3_secret_access_key,
+        mirrored=True,
+    )
+
     await _run_job_server(
         channel=channel_instance,
         num_test_entries=num_test_entries,
         ratio_valid_entries=ratio_valid_entries,
         maximum_depth=maximum_depth,
         max_num_lines_mol_block=max_num_lines_mol_block,
-        data_dir=data_dir,
+        storage=storage,
     )

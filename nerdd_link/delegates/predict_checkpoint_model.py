@@ -1,12 +1,11 @@
 from asyncio import AbstractEventLoop
-from typing import Any, Iterable, List, Optional
+from typing import IO, Any, Iterable, List, Optional
 
 from nerdd_module import Model, Step
 from nerdd_module.config import Configuration
 from rdkit.Chem import Mol
 
 from ..channels import Channel
-from ..files import FileSystem
 from ..steps import (
     AddRecordIdStep,
     ReadPickleStep,
@@ -14,6 +13,7 @@ from ..steps import (
     SplitAndMergeStep,
     WrapResultsStep,
 )
+from ..storage import Storage
 
 __all__ = ["PredictCheckpointModel"]
 
@@ -23,16 +23,16 @@ class PredictCheckpointModel(Model):
         self,
         base_model: Model,
         job_id: str,
-        file_system: FileSystem,
-        checkpoint_id: int,
+        storage: Storage,
+        result_checkpoint_handle: IO,
         channel: Channel,
         loop: AbstractEventLoop,
     ) -> None:
         super().__init__()
         self._base_model = base_model
         self._job_id = job_id
-        self._file_system = file_system
-        self._checkpoint_id = checkpoint_id
+        self._storage = storage
+        self._result_checkpoint_handle = result_checkpoint_handle
         self._channel = channel
         self._loop = loop
 
@@ -69,7 +69,7 @@ class PredictCheckpointModel(Model):
             *send_to_channel_steps[:-1],
             # replace large properties with file references
             ReplaceLargePropertiesStep(
-                self._base_model._get_config().get_dict(), self._file_system, self._job_id
+                self._base_model._get_config().get_dict(), self._storage, self._job_id
             ),
             # add record ids
             AddRecordIdStep(self._job_id),
@@ -79,12 +79,8 @@ class PredictCheckpointModel(Model):
             send_to_channel_steps[-1],
         ]
 
-        results_file = self._file_system.get_results_file_handle(
-            self._job_id, self._checkpoint_id, "wb"
-        )
-
         file_writing_steps = self._base_model._get_postprocessing_steps(
-            output_format="pickle", output_file=results_file, **kwargs
+            output_format="pickle", output_file=self._result_checkpoint_handle, **kwargs
         )
 
         return [SplitAndMergeStep(send_to_channel_steps, file_writing_steps)]

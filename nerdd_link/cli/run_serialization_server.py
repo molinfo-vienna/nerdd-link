@@ -5,17 +5,19 @@ import rich_click as click
 
 from ..actions import Action, SerializeJobAction, supervise_actions
 from ..channels import Channel
+from ..storage import Storage
 from ..utils import async_to_sync
+from .get_storage import get_storage
 
 logger = logging.getLogger(__name__)
 
 
-async def _run_serialization_server(channel: Channel, data_dir: str) -> None:
+async def _run_serialization_server(channel: Channel, storage: Storage) -> None:
     try:
         async with channel:
             serialize_job = SerializeJobAction(
                 channel=channel,
-                data_dir=data_dir,
+                storage=storage,
             )
 
             actions: List[Action] = [serialize_job]
@@ -55,8 +57,28 @@ async def _run_serialization_server(channel: Channel, data_dir: str) -> None:
 )
 @click.option(
     "--data-dir",
-    default="sources",
+    default=None,
     help="Directory containing structure files associated with the incoming jobs.",
+)
+@click.option(
+    "--s3-url",
+    default=None,
+    help="S3 endpoint URL.",
+)
+@click.option(
+    "--s3-bucket",
+    default=None,
+    help="S3 bucket name.",
+)
+@click.option(
+    "--s3-access-key-id",
+    default=None,
+    help="S3 access key ID.",
+)
+@click.option(
+    "--s3-secret-access-key",
+    default=None,
+    help="S3 secret access key.",
 )
 @click.option(
     "--log-level",
@@ -72,7 +94,11 @@ async def run_serialization_server(
     broker_username: Optional[str],
     broker_password: Optional[str],
     # options
-    data_dir: str,
+    data_dir: Optional[str],
+    s3_url: Optional[str],
+    s3_bucket: Optional[str],
+    s3_access_key_id: Optional[str],
+    s3_secret_access_key: Optional[str],
     # log level
     log_level: str,
 ) -> None:
@@ -86,7 +112,16 @@ async def run_serialization_server(
 
     channel_instance = Channel.create_channel(channel, **channel_kwargs)
 
+    storage = get_storage(
+        data_dir,
+        s3_url,
+        s3_bucket,
+        s3_access_key_id,
+        s3_secret_access_key,
+        mirrored=False,
+    )
+
     await _run_serialization_server(
         channel=channel_instance,
-        data_dir=data_dir,
+        storage=storage,
     )

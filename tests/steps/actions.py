@@ -4,6 +4,7 @@ import pytest_asyncio
 from pytest_bdd import parsers, when
 
 from nerdd_link.actions import PredictCheckpointsAction, ProcessJobsAction, SerializeJobAction
+from nerdd_link.storage import FileSystemStorage
 from nerdd_link.tests import async_step
 
 
@@ -11,7 +12,7 @@ from nerdd_link.tests import async_step
 async def process_job_action(channel, data_dir):
     action = ProcessJobsAction(
         channel=channel,
-        data_dir=data_dir,
+        storage=FileSystemStorage(data_dir),
         num_test_entries=10,
         ratio_valid_entries=0.5,
         maximum_depth=50,
@@ -34,7 +35,7 @@ async def predict_checkpoints_action(channel, model, data_dir):
     action = PredictCheckpointsAction(
         channel=channel,
         model=model,
-        data_dir=data_dir,
+        storage=FileSystemStorage(data_dir),
     )
 
     task = asyncio.create_task(action.run())
@@ -52,7 +53,7 @@ async def execute_predict_checkpoints_action(predict_checkpoints_action):
 async def serialize_job_action(channel, data_dir):
     action = SerializeJobAction(
         channel=channel,
-        data_dir=data_dir,
+        storage=FileSystemStorage(data_dir),
     )
 
     task = asyncio.create_task(action.run())

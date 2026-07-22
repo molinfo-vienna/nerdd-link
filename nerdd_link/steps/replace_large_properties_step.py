@@ -3,7 +3,7 @@ from typing import Any, Iterator, Optional
 from nerdd_module import Step
 from nerdd_module.config import Module
 
-from ..files import FileSystem
+from ..storage import Storage
 
 __all__ = ["ReplaceLargePropertiesStep"]
 
@@ -12,11 +12,11 @@ class ReplaceLargePropertiesStep(Step):
     def __init__(
         self,
         config: Module,
-        file_system: FileSystem,
+        storage: Storage,
         job_id: str,
     ) -> None:
         super().__init__()
-        self._file_system = file_system
+        self._storage = storage
         self._job_id = job_id
 
         # large properties
@@ -48,26 +48,31 @@ class ReplaceLargePropertiesStep(Step):
         # -> if the property is a molecular property, we store the value in <mol_id>
         #    and otherwise in <mol_id>-<sub_id>
         if k in self._molecular_properties:
-            file_path = self._file_system.get_property_file_path(
-                job_id=self._job_id, property_name=k, record_id=str(record["mol_id"])
-            )
+            property_record_id = str(record["mol_id"])
         else:
-            file_path = self._file_system.get_property_file_path(
-                job_id=self._job_id, property_name=k, record_id=record_id
-            )
+            property_record_id = record_id
+
+        file_path = self._storage.get_property_file_path(
+            job_id=self._job_id, property_name=k, record_id=property_record_id
+        )
 
         # write the property to a file
         # case 1: atomic or derivative properties (k not in self._molecular_properties)
         # case 2: molecular properties in molecular property prediction (sub_id = None)
         # case 3: molecular properties in atom / derivative property prediction (sub_id = 0)
         if k not in self._molecular_properties or sub_id is None or sub_id == 0:
-            with open(file_path, "wb") as f:
+            with self._storage.get_property_file_handle(
+                job_id=self._job_id,
+                property_name=k,
+                record_id=property_record_id,
+                mode="wb",
+            ) as f:
                 if isinstance(v, bytes):
                     f.write(v)
                 else:
                     f.write(str(v).encode("utf-8"))
 
-        return f"file://{file_path}"
+        return file_path
 
     def _run(self, source: Iterator[dict]) -> Iterator[dict]:
         for record in source:

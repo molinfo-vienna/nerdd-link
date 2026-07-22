@@ -1,12 +1,13 @@
 import logging
 from abc import ABC
-from asyncio import CancelledError
 from typing import Generic, List, TypeVar, Union
 
 from stringcase import spinalcase
 
 from ..channels import Channel, Topic
 from ..types import Message, Tombstone
+
+__all__ = ["Action"]
 
 logger = logging.getLogger(__name__)
 
@@ -23,13 +24,7 @@ class Action(ABC, Generic[T]):
         async for message_batch in self._input_topic.receive(
             consumer_group, batch_size=self._batch_size
         ):
-            try:
-                await self._process_message_batch(message_batch)
-            except CancelledError:
-                # the consumer was cancelled, stop processing messages
-                break
-
-            # Let all other exceptions pass through and stop processing messages.
+            await self._process_message_batch(message_batch)
 
     async def _process_message_batch(self, message_batch: List[Union[T, Tombstone[T]]]) -> None:
         messages = []

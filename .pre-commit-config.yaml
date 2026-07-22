@@ -1,13 +1,13 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 'v0.8.0'
+    rev: "v0.8.0"
     hooks:
       # Run the linter.
       - id: ruff
-        args: [ --fix, --config=pyproject.toml ]
+        args: [--fix, --config=pyproject.toml]
       # Run the formatter.
       - id: ruff-format
-        args: [ --config=pyproject.toml ]
+        args: [--config=pyproject.toml]
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.13.0
     hooks:
@@ -17,4 +17,5 @@ repos:
           - nerdd-module
           - rich-click
           - pydantic
+          - boto3-stubs[s3]
         args: [--config-file=pyproject.toml]

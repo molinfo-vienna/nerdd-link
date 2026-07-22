@@ -1,7 +1,6 @@
 import asyncio
 import json
 import logging
-import os
 import signal
 from importlib import import_module
 from typing import Any, List, Optional
@@ -11,14 +10,15 @@ from nerdd_module import Model
 
 from ..actions import Action, PredictCheckpointsAction, supervise_actions
 from ..channels import Channel
-from ..files import FileSystem
+from ..storage import Storage
 from ..types import ModuleMessage
 from ..utils import async_to_sync
+from .get_storage import get_storage
 
 logger = logging.getLogger(__name__)
 
 
-async def _run_prediction_server(model: Model, channel: Channel, data_dir: str) -> None:
+async def _run_prediction_server(model: Model, channel: Channel, storage: Storage) -> None:
     # enable graceful shutdown on SIGTERM
     loop = asyncio.get_running_loop()
 
@@ -33,18 +33,17 @@ async def _run_prediction_server(model: Model, channel: Channel, data_dir: str) 
             #
             # register the module
             #
-            file_system = FileSystem(data_dir)
-            module_file_path = file_system.get_module_file_path(model.config.id)
-
             # compare old json with new one, only write if changed
             new_config_json = model.config.model_dump()
-            if os.path.exists(module_file_path):
-                old_config_json = json.load(open(module_file_path, "r"))
+            if storage.module_file_exists(model.config.id):
+                with storage.get_module_file_handle(model.config.id, "r") as f:
+                    old_config_json = json.load(f)
             else:
                 old_config_json = None
             if new_config_json != old_config_json:
                 logger.info(f"Registering module {model.config.id}")
-                json.dump(new_config_json, open(module_file_path, "w"))
+                with storage.get_module_file_handle(model.config.id, "w") as f:
+                    json.dump(new_config_json, f)
                 await channel.modules_topic().send(ModuleMessage(id=model.config.id))
 
             #
@@ -53,7 +52,7 @@ async def _run_prediction_server(model: Model, channel: Channel, data_dir: str) 
             predict_checkpoints = PredictCheckpointsAction(
                 channel=channel,
                 model=model,
-                data_dir=data_dir,
+                storage=storage,
             )
 
             # run actions in parallel
@@ -95,8 +94,28 @@ async def _run_prediction_server(model: Model, channel: Channel, data_dir: str) 
 )
 @click.option(
     "--data-dir",
-    default="sources",
+    default=None,
     help="Directory containing structure files associated with the incoming jobs.",
+)
+@click.option(
+    "--s3-url",
+    default=None,
+    help="S3 endpoint URL.",
+)
+@click.option(
+    "--s3-bucket",
+    default=None,
+    help="S3 bucket name.",
+)
+@click.option(
+    "--s3-access-key-id",
+    default=None,
+    help="S3 access key ID.",
+)
+@click.option(
+    "--s3-secret-access-key",
+    default=None,
+    help="S3 secret access key.",
 )
 @click.option(
     "--log-level",
@@ -113,7 +132,11 @@ async def run_prediction_server(
     broker_password: Optional[str],
     # options
     model_name: str,
-    data_dir: str,
+    data_dir: Optional[str],
+    s3_url: Optional[str],
+    s3_bucket: Optional[str],
+    s3_access_key_id: Optional[str],
+    s3_secret_access_key: Optional[str],
     # log level
     log_level: str,
 ) -> None:
@@ -127,6 +150,8 @@ async def run_prediction_server(
 
     channel_instance = Channel.create_channel(channel, **channel_kwargs)
 
+    storage = get_storage(data_dir, s3_url, s3_bucket, s3_access_key_id, s3_secret_access_key)
+
     # import the model class
     package_name, class_name = model_name.rsplit(".", 1)
     package = import_module(package_name)
@@ -136,5 +161,5 @@ async def run_prediction_server(
     await _run_prediction_server(
         model=model,
         channel=channel_instance,
-        data_dir=data_dir,
+        storage=storage,
     )

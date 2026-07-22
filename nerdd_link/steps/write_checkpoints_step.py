@@ -5,8 +5,8 @@ from nerdd_module import Step
 from rdkit.Chem import Mol
 from rdkit.Chem.PropertyMol import PropertyMol
 
-from ..files import FileSystem
 from ..output import PickleWriter
+from ..storage import Storage
 from ..types import CheckpointMessage, LogMessage
 from ..utils import batched
 
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class WriteCheckpointsStep(Step):
     def __init__(
         self,
-        filesystem: FileSystem,
+        storage: Storage,
         job_id: str,
         job_type: str,
         checkpoint_size: int,
@@ -26,7 +26,7 @@ class WriteCheckpointsStep(Step):
         params: dict,
     ) -> None:
         super().__init__()
-        self._file_system = filesystem
+        self._storage = storage
         self._job_id = job_id
         self._job_type = job_type
         self._checkpoint_size = checkpoint_size
@@ -47,7 +47,7 @@ class WriteCheckpointsStep(Step):
             num_store = min(len(batch), self._max_num_molecules - num_entries)
 
             # store batch in data_dir
-            with self._file_system.get_checkpoint_file_handle(self._job_id, i, "wb") as f:
+            with self._storage.get_checkpoint_file_handle(self._job_id, i, "wb") as f:
                 results = list(batch[:num_store])
 
                 # Convert Mol to PropertyMol to keep properties. Unfortunately, this code is
