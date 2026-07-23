@@ -1,6 +1,33 @@
 # CHANGELOG
 
 
+## v0.6.3 (2026-07-23)
+
+### Fixes
+
+* fix: Require latest version of nerdd-module ([`bb382c0`](https://github.com/molinfo-vienna/nerdd-link/commit/bb382c074fc2d9119f799d1cae41cccffbb09198))
+
+* fix: Make arguments of ChannelWriter optional ([`12509c2`](https://github.com/molinfo-vienna/nerdd-link/commit/12509c26df656ce7c4556e3765501639e27d6ac8))
+
+* fix: Adapt imports of nerdd-module classes ([`3163bc4`](https://github.com/molinfo-vienna/nerdd-link/commit/3163bc41248ed2fe87eeb2583f95f68f158f0763))
+
+* fix: Explicitly load plugin in __init__ ([`e0b7e1f`](https://github.com/molinfo-vienna/nerdd-link/commit/e0b7e1f2a19005db7e52ab390960ac9baeb41758))
+
+* fix: Remove internal classes from public module ([`f83f5b1`](https://github.com/molinfo-vienna/nerdd-link/commit/f83f5b1370901b211790bb600a69a4443436ea91))
+
+* fix: Connect to nerdd-module's plugin interface ([`b4ac672`](https://github.com/molinfo-vienna/nerdd-link/commit/b4ac67227d847b2893bc03973f1d77ceaf698fb2))
+
+### Testing
+
+* test: Check plugin behavior ([`68f8a46`](https://github.com/molinfo-vienna/nerdd-link/commit/68f8a464a482e8473808a7e63dbb01604b73be9b))
+
+### Unknown
+
+* Merge pull request #88 from shirte/main
+
+Connect to nerdd-module's plugin interface ([`ba8432e`](https://github.com/molinfo-vienna/nerdd-link/commit/ba8432e0c6413d6464cbada66a55daf3d65e8b86))
+
+
 ## v0.6.2 (2026-07-22)
 
 ### Chores
