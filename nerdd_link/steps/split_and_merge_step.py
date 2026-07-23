@@ -3,7 +3,7 @@ from queue import Queue
 from threading import Barrier, Lock, Thread
 from typing import Any, Callable, Iterator, List, Optional
 
-from nerdd_module import OutputStep, Step
+from nerdd_module.steps import OutputStep, Step
 
 from ..utils import run_pipeline
 

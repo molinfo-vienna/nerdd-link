@@ -1,8 +1,9 @@
 from asyncio import AbstractEventLoop
 from typing import IO, Any, Iterable, List, Optional
 
-from nerdd_module import Model, Step
+from nerdd_module import Model
 from nerdd_module.config import Configuration
+from nerdd_module.steps import Step
 from rdkit.Chem import Mol
 
 from ..channels import Channel

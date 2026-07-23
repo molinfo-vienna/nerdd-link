@@ -1,7 +1,7 @@
 import logging
 from typing import BinaryIO, Iterator, Optional, cast
 
-from nerdd_module import Step
+from nerdd_module.steps import Step
 from rdkit.Chem import Mol
 from rdkit.Chem.PropertyMol import PropertyMol
 

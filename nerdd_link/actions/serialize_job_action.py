@@ -2,7 +2,7 @@ import json
 import logging
 from asyncio import get_running_loop, to_thread
 
-from nerdd_module import WriteOutputStep
+from nerdd_module.model import WriteOutputStep
 
 from ..channels import Channel
 from ..steps import PostprocessFromConfigStep, ReadPickleStep

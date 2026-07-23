@@ -1,6 +1,6 @@
 from typing import Any
 
-from nerdd_module import Converter, ConverterConfig
+from nerdd_module.converters import Converter, ConverterConfig
 from rdkit.Chem import Mol
 from rdkit.Chem.PropertyMol import PropertyMol
 

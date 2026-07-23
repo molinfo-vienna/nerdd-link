@@ -1,6 +1,6 @@
 import tempfile
 
-from nerdd_link import PickleWriter
+from nerdd_link.output import PickleWriter
 
 
 def test_unpicklable_values():

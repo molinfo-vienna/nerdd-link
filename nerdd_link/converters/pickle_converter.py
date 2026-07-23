@@ -1,6 +1,6 @@
 from typing import Any
 
-from nerdd_module import ALL, Converter, ConverterConfig
+from nerdd_module.converters import ALL, Converter, ConverterConfig
 
 __all__ = ["PickleConverter"]
 

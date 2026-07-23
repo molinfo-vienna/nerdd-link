@@ -2,7 +2,7 @@ import pickle
 from io import IOBase
 from typing import IO, Iterable, Iterator, Optional, Union
 
-from nerdd_module import Step
+from nerdd_module.steps import Step
 
 __all__ = ["ReadPickleStep"]
 

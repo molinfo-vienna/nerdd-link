@@ -1,7 +1,7 @@
 from typing import Any
 from xml.dom import Node, minidom
 
-from nerdd_module import Converter, ConverterConfig
+from nerdd_module.converters import Converter, ConverterConfig
 from rdkit.Chem import AllChem, KekulizeException, Mol
 from rdkit.Chem.Draw import MolDraw2DSVG
 

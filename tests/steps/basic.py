@@ -1,9 +1,9 @@
 import asyncio
 import os
 
-from nerdd_module import ReadInputStep, WriteOutputStep
 from nerdd_module.config import Module
 from nerdd_module.input import DepthFirstExplorer
+from nerdd_module.model import ReadInputStep, WriteOutputStep
 from pytest_bdd import given, parsers, then, when
 
 from nerdd_link.tests import async_step

@@ -1,7 +1,8 @@
 from typing import Any, Iterator, List, Optional
 
-from nerdd_module import Model, Step
+from nerdd_module import Model
 from nerdd_module.config import Configuration, DictConfiguration
+from nerdd_module.steps import Step
 from rdkit.Chem import Mol
 
 from ..types import SerializationResultMessage

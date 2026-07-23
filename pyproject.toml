@@ -12,7 +12,7 @@ license-files = ["LICENSE"]
 authors = [{ name = "Steffen Hirte", email = "steffen.hirte@univie.ac.at" }]
 maintainers = [{ name = "Steffen Hirte", email = "steffen.hirte@univie.ac.at" }]
 dependencies = [
-    "nerdd-module>=0.3.57",
+    "nerdd-module>=0.3.59",
     "pandas>=1.2.1",
     "pyyaml~=6.0",
     "filetype~=1.2.0",
@@ -75,6 +75,9 @@ nerdd_init = "nerdd_link.cli:initialize_system"
 nerdd_job_server = "nerdd_link.cli:run_job_server"
 nerdd_prediction_server = "nerdd_link.cli:run_prediction_server"
 nerdd_serialization_server = "nerdd_link.cli:run_serialization_server"
+
+[project.entry-points."nerdd_module.plugins"]
+nerdd_link = "nerdd_link._plugin:register"
 
 #
 # TOOLS
