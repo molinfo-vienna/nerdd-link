@@ -1,6 +1,41 @@
 # CHANGELOG
 
 
+## v0.6.4 (2026-07-26)
+
+### Chores
+
+* chore: Add rstream to pre-commit config ([`c076137`](https://github.com/molinfo-vienna/nerdd-link/commit/c0761379d82e2628fee6a28eabc1dd706086ee1f))
+
+### Fixes
+
+* fix: Always serialize to bytes in RabbitmqStreamsChannel ([`7935827`](https://github.com/molinfo-vienna/nerdd-link/commit/7935827f6f933b0726a0c682a452184e8292cfba))
+
+* fix: Reduce constructor arguments in RabbitmqStreamsChannel ([`8324d70`](https://github.com/molinfo-vienna/nerdd-link/commit/8324d708f40be91119f266a0800a6173d092ca5c))
+
+* fix: Minimize rstream type stubs ([`b25678c`](https://github.com/molinfo-vienna/nerdd-link/commit/b25678c72cec5672bb2411bb4ce5fa1efd131bc2))
+
+* fix: Keep action classes internal ([`b6800ec`](https://github.com/molinfo-vienna/nerdd-link/commit/b6800ecbb41433d254aff27ce2fae4c882fb0668))
+
+* fix: Use event to track if channel is stopping ([`04d0f10`](https://github.com/molinfo-vienna/nerdd-link/commit/04d0f10388830615ce32299357c35fd7d5542c03))
+
+* fix: Implement channel supporting RabbitMQ ([`20f17a5`](https://github.com/molinfo-vienna/nerdd-link/commit/20f17a54fe604b93f86efa4bb613d39dcda89565))
+
+* fix: Add type stubs for rstream ([`50b54b9`](https://github.com/molinfo-vienna/nerdd-link/commit/50b54b96aebde90fc0f6364c3a8f21810dc54997))
+
+* fix: Add rstream dependency ([`6b2663f`](https://github.com/molinfo-vienna/nerdd-link/commit/6b2663f74704a69ca5e2aa1f6320d35f933543ed))
+
+### Refactoring
+
+* refactor: Inline key and value decoding in RabbitmqStreamsChannel ([`2c28b64`](https://github.com/molinfo-vienna/nerdd-link/commit/2c28b64ee83061fb8329e00e414ecbf47228bb38))
+
+### Unknown
+
+* Merge pull request #89 from shirte/main
+
+Add rabbitmq support ([`3cad2d7`](https://github.com/molinfo-vienna/nerdd-link/commit/3cad2d7b3bd44488e4829f3c310f05be39d772ce))
+
+
 ## v0.6.3 (2026-07-23)
 
 ### Fixes
