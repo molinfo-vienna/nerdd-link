@@ -18,4 +18,5 @@ repos:
           - rich-click
           - pydantic
           - boto3-stubs[s3]
+          - rstream==1.0.1
         args: [--config-file=pyproject.toml]

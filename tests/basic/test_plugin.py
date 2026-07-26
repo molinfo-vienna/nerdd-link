@@ -16,3 +16,7 @@ def test_plugin_classes_are_not_part_of_the_root_api() -> None:
     assert not hasattr(nerdd_link, "ChannelWriter")
     assert not hasattr(nerdd_link, "PickleWriter")
     assert not hasattr(nerdd_link, "PickleConverter")
+    assert not hasattr(nerdd_link, "PredictCheckpointsAction")
+    assert not hasattr(nerdd_link, "ProcessJobsAction")
+    assert not hasattr(nerdd_link, "RegisterModuleAction")
+    assert not hasattr(nerdd_link, "SerializeJobAction")
