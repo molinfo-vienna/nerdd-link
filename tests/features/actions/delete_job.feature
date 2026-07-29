@@ -7,16 +7,16 @@ Feature: Delete job
 
     # predict checkpoint action
     And the mol weight model (version 'mol_ids')
-    
+
     #
     # First, job is processed normally
     #
     When the channel receives a message on topic 'jobs' with content
-        { 
-            "id": "123", 
-            "job_type": 
-            "mol-scale", 
-            "source_id": "456", 
+        {
+            "id": "123",
+            "job_type":
+            "mol-scale",
+            "source_id": "456",
             "params": { "multiplier": 10 },
             "max_num_molecules": 10000,
             "checkpoint_size": 40
@@ -25,13 +25,13 @@ Feature: Delete job
     And the predict checkpoints action is executed
     And we wait for 1 seconds
 
-    Then the channel sends a message on topic 'mol-scale-checkpoints' with content 
+    Then the channel sends a message on topic 'mol-scale-checkpoints' with content
         { "job_id": "123", "checkpoint_id": 0, "params": { "multiplier": 10 } }
-    And the channel sends a message on topic 'mol-scale-checkpoints' with content 
+    And the channel sends a message on topic 'mol-scale-checkpoints' with content
         { "job_id": "123", "checkpoint_id": 1, "params": { "multiplier": 10 } }
-    And the channel sends a message on topic 'mol-scale-checkpoints' with content 
+    And the channel sends a message on topic 'mol-scale-checkpoints' with content
         { "job_id": "123", "checkpoint_id": 2, "params": { "multiplier": 10 } }
-    And the channel sends a message on topic 'logs' with content 
+    And the channel sends a message on topic 'logs' with content
         { "job_id": "123", "message_type": "report_job_size", "num_entries": 100, "num_checkpoints": 3 }
 
     #
@@ -66,16 +66,16 @@ Feature: Delete job
 
     # predict checkpoint action
     And the mol weight model (version 'mol_ids')
-    
+
     #
     # Job is processed, but checkpoints are not predicted
     #
     When the channel receives a message on topic 'jobs' with content
-        { 
-            "id": "123", 
-            "job_type": 
-            "mol-scale", 
-            "source_id": "456", 
+        {
+            "id": "123",
+            "job_type":
+            "mol-scale",
+            "source_id": "456",
             "params": { "multiplier": 10 },
             "max_num_molecules": 10000,
             "checkpoint_size": 40
@@ -83,13 +83,13 @@ Feature: Delete job
     And the process job action is executed
     And we wait for 1 seconds
 
-    Then the channel sends a message on topic 'mol-scale-checkpoints' with content 
+    Then the channel sends a message on topic 'mol-scale-checkpoints' with content
         { "job_id": "123", "checkpoint_id": 0, "params": { "multiplier": 10 } }
-    And the channel sends a message on topic 'mol-scale-checkpoints' with content 
+    And the channel sends a message on topic 'mol-scale-checkpoints' with content
         { "job_id": "123", "checkpoint_id": 1, "params": { "multiplier": 10 } }
-    And the channel sends a message on topic 'mol-scale-checkpoints' with content 
+    And the channel sends a message on topic 'mol-scale-checkpoints' with content
         { "job_id": "123", "checkpoint_id": 2, "params": { "multiplier": 10 } }
-    And the channel sends a message on topic 'logs' with content 
+    And the channel sends a message on topic 'logs' with content
         { "job_id": "123", "message_type": "report_job_size", "num_entries": 100, "num_checkpoints": 3 }
 
     #
@@ -119,13 +119,13 @@ Feature: Delete job
     Given a temporary data directory
     And a list of 100 random molecules
     And a file 'sources/456' with the molecules in format 'sdf'
-    
+
     When the channel receives a message on topic 'jobs' with content
-        { 
-            "id": "123", 
-            "job_type": 
-            "mol-scale", 
-            "source_id": "456", 
+        {
+            "id": "123",
+            "job_type":
+            "mol-scale",
+            "source_id": "456",
             "params": { "multiplier": 10 },
             "max_num_molecules": 10000,
             "checkpoint_size": 40

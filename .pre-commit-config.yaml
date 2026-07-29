@@ -1,4 +1,16 @@
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-yaml
+      - id: debug-statements
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: trailing-whitespace
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: "v0.8.0"
     hooks:
@@ -12,6 +24,7 @@ repos:
     rev: v1.13.0
     hooks:
       - id: mypy
+        exclude: ^(tests|nerdd_link/tests)/
         additional_dependencies:
           - rdkit-stubs
           - nerdd-module
@@ -20,3 +33,7 @@ repos:
           - boto3-stubs[s3]
           - rstream==1.0.1
         args: [--config-file=pyproject.toml]
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.12
+    hooks:
+      - id: actionlint

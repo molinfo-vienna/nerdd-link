@@ -10,13 +10,13 @@ Feature: Serialize job action
     And the job server is running
     And the serialization server is running
 
-    # predict checkpoint action    
+    # predict checkpoint action
     And the channel receives a message on topic 'jobs' with content
-        { 
-            "id": "123", 
-            "job_type": 
-            "mol-scale", 
-            "source_id": "456", 
+        {
+            "id": "123",
+            "job_type":
+            "mol-scale",
+            "source_id": "456",
             "params": { "multiplier": 10 },
             "max_num_molecules": 10000,
             "checkpoint_size": 40
