@@ -1,6 +1,23 @@
 # CHANGELOG
 
 
+## v0.6.5 (2026-07-29)
+
+### Fixes
+
+* fix: Let combined storages accept file paths from all child storages ([`c925e64`](https://github.com/molinfo-vienna/nerdd-link/commit/c925e643597ce74b03353dd8bf5a97b1923401e0))
+
+### Testing
+
+* test: Check behavior of parse_*_file_path in combined storages ([`73c758f`](https://github.com/molinfo-vienna/nerdd-link/commit/73c758fdbe2d9bb8633c9c080e4b0de6ee5c4c78))
+
+### Unknown
+
+* Merge pull request #90 from shirte/main
+
+Let combined storages accept file paths from all child storages ([`88d0b96`](https://github.com/molinfo-vienna/nerdd-link/commit/88d0b960520e6233f838072aaf5d6d22a61c91ba))
+
+
 ## v0.6.4 (2026-07-26)
 
 ### Chores
