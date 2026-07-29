@@ -3,6 +3,7 @@ import io
 import pytest
 
 from nerdd_link import FileSystemStorage, MirroredStorage
+from nerdd_link.storage import PropertyFilePathSpec
 
 
 class _FailingWriteStorage(FileSystemStorage):
@@ -36,6 +37,23 @@ def test_repr():
 def test_requires_at_least_one_storage():
     with pytest.raises(ValueError, match="at least one storage"):
         MirroredStorage()
+
+
+def test_parse_property_file_path_uses_matching_child_prefix(tmp_path):
+    first = FileSystemStorage(str(tmp_path / "first"))
+    first._prefix = "first"
+    second = FileSystemStorage(str(tmp_path / "second"))
+    second._prefix = "second"
+
+    storage = MirroredStorage(first, second)
+
+    assert storage.parse_property_file_path(
+        "second://jobs/123/results/preprocessed_mol/0"
+    ) == PropertyFilePathSpec(
+        job_id="123",
+        property_name="preprocessed_mol",
+        record_id="0",
+    )
 
 
 def test_writes_binary_files_to_every_storage(tmp_path):

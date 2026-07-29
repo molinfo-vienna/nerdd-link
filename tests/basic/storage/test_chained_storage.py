@@ -1,4 +1,5 @@
 from nerdd_link import ChainedStorage, FileSystemStorage
+from nerdd_link.storage import PropertyFilePathSpec
 
 
 def test_repr():
@@ -35,3 +36,20 @@ def test_get_file_size_uses_first_storage_containing_file(tmp_path):
             handle.write(content)
 
     assert storage.get_file_size(file_path) == len(b"first")
+
+
+def test_parse_property_file_path_uses_matching_child_prefix(tmp_path):
+    first = FileSystemStorage(str(tmp_path / "first"))
+    first._prefix = "first"
+    second = FileSystemStorage(str(tmp_path / "second"))
+    second._prefix = "second"
+
+    storage = ChainedStorage(first, second)
+
+    assert storage.parse_property_file_path(
+        "second://jobs/123/results/preprocessed_mol/0"
+    ) == PropertyFilePathSpec(
+        job_id="123",
+        property_name="preprocessed_mol",
+        record_id="0",
+    )

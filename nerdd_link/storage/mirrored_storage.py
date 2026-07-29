@@ -3,6 +3,7 @@ from contextlib import suppress
 from typing import Any, BinaryIO, Iterator, List, Literal, Optional, Sequence, cast
 
 from .storage import Storage
+from .wrong_prefix_error import WrongPrefixError
 
 __all__ = ["MirroredStorage"]
 
@@ -93,6 +94,15 @@ class MirroredStorage(Storage):
     def _validate(self) -> None:
         for storage in self._storages:
             storage.validate()
+
+    def _unprefix_file_path(self, file_path: str) -> str:
+        for storage in self._storages:
+            try:
+                return storage._unprefix_file_path(file_path)
+            except WrongPrefixError:
+                continue
+
+        raise WrongPrefixError(self._prefix, file_path)
 
     def _iter_directory(self, identifier: str) -> Iterator[str]:
         seen = set()
