@@ -1,6 +1,59 @@
 # CHANGELOG
 
 
+## v0.6.6 (2026-07-30)
+
+### Chores
+
+* chore: Satisfy spellcheck ([`cd09991`](https://github.com/molinfo-vienna/nerdd-link/commit/cd0999124f0282ccf5d147a80e6ec0622471dc7e))
+
+* chore: Remove fastapi ruff rules ([`20d6dd1`](https://github.com/molinfo-vienna/nerdd-link/commit/20d6dd116135ec1961ae6d274674357a949acb83))
+
+* chore: Update step versions in github actions ([`438d592`](https://github.com/molinfo-vienna/nerdd-link/commit/438d5926552d735401a6969add9148335b72cd11))
+
+* chore: Add more hooks to pre-commit config ([`1ca2875`](https://github.com/molinfo-vienna/nerdd-link/commit/1ca2875f98ba7d25994e3dc8db0e603e223fe9ed))
+
+* chore: Use pre-commit to check code quality in github actions ([`2088991`](https://github.com/molinfo-vienna/nerdd-link/commit/2088991224dabadaa06e2beaf468f4b9253c4adb))
+
+### Code Style
+
+* style: Format code ([`6e8dadc`](https://github.com/molinfo-vienna/nerdd-link/commit/6e8dadc6b88ea0f02cf84024fc25ffde3d04069c))
+
+### Documentation
+
+* docs: Improve Readme header ([`ea68caa`](https://github.com/molinfo-vienna/nerdd-link/commit/ea68caa87a8f4cb29032f65429b7eb2b105703e4))
+
+### Fixes
+
+* fix: Use a different check for file_handles in ReadPickleStep ([`59cd52a`](https://github.com/molinfo-vienna/nerdd-link/commit/59cd52a179c4129df3ea2bc50f59ba70e9cdbd75))
+
+* fix: Use SpooledTemporaryFile polyfill in S3Storage ([`c6930de`](https://github.com/molinfo-vienna/nerdd-link/commit/c6930de57580f2ec4080b7f0a78aa88cf300200f))
+
+* fix: Implement polyfill for SpooledTemporaryFile ([`dbf294e`](https://github.com/molinfo-vienna/nerdd-link/commit/dbf294ecb78fce4d13adf5bf8a5c7a8846b0e03c))
+
+* fix: Replace parameter mirrored with mode in get_storage ([`d5cac9e`](https://github.com/molinfo-vienna/nerdd-link/commit/d5cac9e2894bcfe6a34b1a8390d357f6318d1298))
+
+### Refactoring
+
+* refactor: Create a subpackage polyfills ([`859b6e1`](https://github.com/molinfo-vienna/nerdd-link/commit/859b6e1b71c2224b18a1cad2a24622b342e993fe))
+
+### Testing
+
+* test: Check type guard in ReadPickleStep ([`a52861a`](https://github.com/molinfo-vienna/nerdd-link/commit/a52861af47312c3536a090dc266711a6d1489fdc))
+
+* test: Check new version of get_storage ([`0e93ca3`](https://github.com/molinfo-vienna/nerdd-link/commit/0e93ca3e31eeddb4e326a7e583c1eb47c649d603))
+
+### Unknown
+
+* Merge pull request #92 from shirte/main
+
+Patch SpooledTemporaryFile for python 3.9 ([`8bdbbe8`](https://github.com/molinfo-vienna/nerdd-link/commit/8bdbbe80c2d4c36c4261092a20737050153efcb8))
+
+* Merge pull request #91 from shirte/main
+
+Check code in github actions using pre-commit ([`c9606e8`](https://github.com/molinfo-vienna/nerdd-link/commit/c9606e888f32a3bb74f491670e865220feeb3512))
+
+
 ## v0.6.5 (2026-07-29)
 
 ### Fixes
