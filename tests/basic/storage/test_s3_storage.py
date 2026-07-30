@@ -72,6 +72,17 @@ def test_reads_object_into_seekable_handle(mocker):
     assert body.closed
 
 
+def test_reads_text_object(mocker):
+    storage, client = _create_storage(mocker)
+    body = io.BytesIO(b'{"id": "module-1"}')
+    client.get_object.return_value = {"Body": body}
+
+    with storage.get_module_file_handle("module-1", "r") as handle:
+        assert handle.read() == '{"id": "module-1"}'
+
+    assert body.closed
+
+
 def test_writes_small_object_on_close(mocker):
     storage, client = _create_storage(mocker)
 

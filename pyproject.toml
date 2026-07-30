@@ -27,7 +27,7 @@ dependencies = [
     "confluent-kafka>=2.14.0",
     # for old Python versions
     "importlib-metadata>=4.6; python_version<'3.10'",
-    "typing_extensions>=4.0.1; python_version<'3.8'",
+    "typing_extensions>=4.0.1; python_version<'3.10'",
 ]
 keywords = ["science", "research", "development", "nerdd"]
 classifiers = [

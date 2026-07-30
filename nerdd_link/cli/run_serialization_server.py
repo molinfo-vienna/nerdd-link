@@ -118,7 +118,7 @@ async def run_serialization_server(
         s3_bucket,
         s3_access_key_id,
         s3_secret_access_key,
-        mirrored=False,
+        mode="chained",
     )
 
     await _run_serialization_server(

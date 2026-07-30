@@ -150,7 +150,9 @@ async def run_prediction_server(
 
     channel_instance = Channel.create_channel(channel, **channel_kwargs)
 
-    storage = get_storage(data_dir, s3_url, s3_bucket, s3_access_key_id, s3_secret_access_key)
+    storage = get_storage(
+        data_dir, s3_url, s3_bucket, s3_access_key_id, s3_secret_access_key, mode="single"
+    )
 
     # import the model class
     package_name, class_name = model_name.rsplit(".", 1)

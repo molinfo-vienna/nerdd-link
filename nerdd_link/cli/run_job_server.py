@@ -155,7 +155,7 @@ async def run_job_server(
         s3_bucket,
         s3_access_key_id,
         s3_secret_access_key,
-        mirrored=True,
+        mode="mirrored",
     )
 
     await _run_job_server(
