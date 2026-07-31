@@ -5,7 +5,7 @@ from nerdd_module.input import DepthFirstExplorer
 from nerdd_module.model import ReadInputStep, WriteOutputStep
 
 from ..channels import Channel
-from ..steps import WriteCheckpointsStep
+from ..steps import ReplaceInvalidInputStep, WriteCheckpointsStep
 from ..storage import Storage
 from ..types import CheckpointMessage, JobMessage, Tombstone
 from ..utils import run_pipeline
@@ -68,6 +68,8 @@ class ProcessJobsAction(Action[JobMessage]):
             steps = [
                 # read the input file (given by source_id)
                 ReadInputStep(explorer, source_file_handle),
+                # replace storage handles in invalid input records before checkpointing
+                ReplaceInvalidInputStep(message.source_id),
                 # write checkpoints
                 WriteCheckpointsStep(
                     storage=self._storage,
