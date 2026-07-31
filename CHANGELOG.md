@@ -1,6 +1,23 @@
 # CHANGELOG
 
 
+## v0.6.7 (2026-07-31)
+
+### Fixes
+
+* fix: Ensure that raw_input contains source filename or id on errors ([`99d186c`](https://github.com/molinfo-vienna/nerdd-link/commit/99d186ccb7230e4a3d1ef50a503e834c779b0938))
+
+### Testing
+
+* test: Check if raw_input is replaced for invalid files ([`628aa4a`](https://github.com/molinfo-vienna/nerdd-link/commit/628aa4a353b34b5bb98a9d04aacee9a2a90263f0))
+
+### Unknown
+
+* Merge pull request #93 from shirte/main
+
+Ensure that raw_input contains source filename or id on errors ([`2bb713c`](https://github.com/molinfo-vienna/nerdd-link/commit/2bb713cfed2ad166cca6a13b01ceed6df3dc0312))
+
+
 ## v0.6.6 (2026-07-30)
 
 ### Chores
