@@ -1,6 +1,39 @@
 # CHANGELOG
 
 
+## v0.7.0 (2026-09-10)
+
+### Features
+
+* feat: Enable manual flushing in base Channel class ([`8fdb38c`](https://github.com/molinfo-vienna/nerdd-link/commit/8fdb38ccc1328a9be4ae5bfc0d48d5e22f89031b))
+
+### Fixes
+
+* fix: Handle rebalance errors in ConfluentKafkaChannel in an outer loop ([`ca38c4f`](https://github.com/molinfo-vienna/nerdd-link/commit/ca38c4f19f0e235e67c209d76a5eb41da1f0cb34))
+
+* fix: Avoid blocking in SplitAndMergeStep ([`4cf9910`](https://github.com/molinfo-vienna/nerdd-link/commit/4cf9910cca0a7ffa936fbe473e84d80d4b7a7be9))
+
+* fix: Move PredictCheckpointModel next to PredictCheckpointsAction ([`aca6d52`](https://github.com/molinfo-vienna/nerdd-link/commit/aca6d529710fda20adde7f9e79328acf83c168d5))
+
+* fix: Move PredictCheckpointModel to utils submodule ([`b5c131f`](https://github.com/molinfo-vienna/nerdd-link/commit/b5c131f5d05d1c717ef9e9de3949e8b26e782dac))
+
+* fix: Use CommandQueueThread in ChannelWriter ([`fccd585`](https://github.com/molinfo-vienna/nerdd-link/commit/fccd5856e4ddc61d496a21d34f586e688b1f0f56))
+
+* fix: Add separate producer worker in ConfluentKafkaChannel ([`274a47d`](https://github.com/molinfo-vienna/nerdd-link/commit/274a47d263863a3c171cb590580c535bfc5f69fa))
+
+* fix: Implement a thread running commands in a queue ([`1fcc9a5`](https://github.com/molinfo-vienna/nerdd-link/commit/1fcc9a546156e1f42ea9f695091c5419675742df))
+
+### Testing
+
+* test: Check properties of CommandQueueThread ([`00aade1`](https://github.com/molinfo-vienna/nerdd-link/commit/00aade18558319615bdce17ba233c154a5727fef))
+
+### Unknown
+
+* Merge pull request #94 from shirte/main
+
+Simplify code with new CommandQueueThread class ([`1518089`](https://github.com/molinfo-vienna/nerdd-link/commit/1518089ebda793dd635101d5374cf2f95fd23936))
+
+
 ## v0.6.7 (2026-07-31)
 
 ### Fixes
