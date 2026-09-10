@@ -173,6 +173,12 @@ class Channel(ABC):
                         message_batch.append(message_type(**value))
 
                 yield message_batch
+
+                # We need to flush the messages that were produced while processing this batch
+                # before entering the next iteration of _iter_messages (current loop). Otherwise
+                # we commit this batch and a crash after the commit but before delivery could lose
+                # the produced messages.
+                await self.flush()
         finally:
             # decrease number of active consumers
             async with self._num_consumers_lock:
@@ -215,6 +221,12 @@ class Channel(ABC):
 
     @abstractmethod
     async def _send(self, topic: str, key: Optional[tuple], value: Optional[dict]) -> None:
+        pass
+
+    async def flush(self) -> None:
+        await self._flush()
+
+    async def _flush(self) -> None:  # noqa: B027
         pass
 
     #
