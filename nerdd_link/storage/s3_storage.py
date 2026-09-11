@@ -4,6 +4,7 @@ from shutil import copyfileobj
 from typing import Any, BinaryIO, Dict, Iterator, List, Literal, Optional, cast
 
 import boto3
+from botocore.config import Config
 from botocore.exceptions import ClientError
 
 from ..polyfills import SpooledTemporaryFile
@@ -176,6 +177,7 @@ class S3Storage(Storage):
             endpoint_url=url,
             aws_access_key_id=access_key_id,
             aws_secret_access_key=secret_access_key,
+            config=Config(max_pool_connections=20),
         )
 
     def _validate(self) -> None:

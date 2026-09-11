@@ -16,7 +16,7 @@ from ..steps import (
     SplitAndMergeStep,
     WrapResultsStep,
 )
-from ..storage import Storage
+from ..storage import QueuedWriterStorage, Storage
 from ..types import CheckpointMessage, ResultCheckpointMessage, Tombstone
 from .action import Action
 
@@ -56,31 +56,32 @@ class PredictCheckpointsAction(Action[CheckpointMessage]):
         # remove specific parameter keys that could induce vulnerabilities
         params.pop("input", None)
 
-        with (
-            self._storage.get_checkpoint_file_handle(
-                job_id, checkpoint_id, "rb"
-            ) as checkpoint_handle,
-            self._storage.get_result_checkpoint_file_handle(
-                job_id, checkpoint_id, "wb"
-            ) as result_checkpoint_handle,
-        ):
-            # create a wrapper model that
-            # * reads the checkpoint file instead of normal input
-            # * does preprocessing, prediction, and postprocessing like the encapsulated model
-            # * does not write to the specified results file, but to the checkpoints file instead
-            # * sends the results to the results topic
-            model = _PredictCheckpointModel(
-                base_model=self._model,
-                job_id=job_id,
-                storage=self._storage,
-                result_checkpoint_handle=result_checkpoint_handle,
-                channel=self.channel,
-                loop=get_running_loop(),
-            )
+        async with QueuedWriterStorage(self._storage) as queued_storage:
+            with (
+                self._storage.get_checkpoint_file_handle(
+                    job_id, checkpoint_id, "rb"
+                ) as checkpoint_handle,
+                self._storage.get_result_checkpoint_file_handle(
+                    job_id, checkpoint_id, "wb"
+                ) as result_checkpoint_handle,
+            ):
+                # create a wrapper model that
+                # * reads the checkpoint file instead of normal input
+                # * does preprocessing, prediction, and postprocessing like the encapsulated model
+                # * writes to the checkpoint file instead of the specified results file
+                # * sends the results to the results topic
+                model = _PredictCheckpointModel(
+                    base_model=self._model,
+                    job_id=job_id,
+                    storage=queued_storage,
+                    result_checkpoint_handle=result_checkpoint_handle,
+                    channel=self.channel,
+                    loop=get_running_loop(),
+                )
 
-            # Run the prediction in a separate thread to avoid blocking the event loop. We don't
-            # need to look out for exceptions, because exceptions in the thread are re-raised here.
-            await to_thread(lambda: model.predict(input=checkpoint_handle, **params))
+                # Run the prediction in a separate thread to avoid blocking the event loop. We don't
+                # need to handle exceptions separately because they are re-raised here.
+                await to_thread(lambda: model.predict(input=checkpoint_handle, **params))
 
         # None indicates the end of the queue (end of the prediction)
         end_time = time.time()
@@ -180,9 +181,7 @@ class _PredictCheckpointModel(Model):
         ]
 
         file_writing_steps = self._base_model._get_postprocessing_steps(
-            output_format="pickle",
-            output_file=self._result_checkpoint_handle,
-            **kwargs,
+            output_format="pickle", output_file=self._result_checkpoint_handle, **kwargs
         )
 
         return [
