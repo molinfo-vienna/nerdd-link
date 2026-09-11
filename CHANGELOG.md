@@ -1,6 +1,23 @@
 # CHANGELOG
 
 
+## v0.7.3 (2026-09-11)
+
+### Fixes
+
+* fix: Remove placeholder classes in RabbitmqStreamsChannel ([`0baff1b`](https://github.com/molinfo-vienna/nerdd-link/commit/0baff1b26f25fbda3f7640800d4891634d0de8bb))
+
+* fix: Remove placeholder classes in ConfluentKafkaChannel ([`6e6a613`](https://github.com/molinfo-vienna/nerdd-link/commit/6e6a6135d20125eb652a232e2b7da490c6f93f77))
+
+* fix: Defer raising ImportError in AioKafkaChannel ([`6061dc3`](https://github.com/molinfo-vienna/nerdd-link/commit/6061dc3af6cf04b9df757d2d61bbbe05be61baa5))
+
+### Unknown
+
+* Merge pull request #97 from shirte/main
+
+Simplify channel classes ([`8967ba5`](https://github.com/molinfo-vienna/nerdd-link/commit/8967ba52ae06d340720d9fbf62dc9a9041c9186e))
+
+
 ## v0.7.2 (2026-09-11)
 
 ### Fixes
