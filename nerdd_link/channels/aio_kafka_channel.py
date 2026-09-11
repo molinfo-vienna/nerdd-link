@@ -3,10 +3,17 @@ import logging
 from asyncio import Lock
 from typing import Any, AsyncIterable, List, Optional, Tuple
 
-from aiokafka import AIOKafkaConsumer, AIOKafkaProducer, ConsumerRebalanceListener
-from aiokafka.coordinator.assignors.sticky.sticky_assignor import StickyPartitionAssignor
-
 from .channel import Channel
+
+try:
+    from aiokafka import AIOKafkaConsumer, AIOKafkaProducer, ConsumerRebalanceListener
+    from aiokafka.coordinator.assignors.sticky.sticky_assignor import StickyPartitionAssignor
+
+    _IMPORT_ERROR: Optional[ImportError] = None
+except ImportError as e:
+    # This channel requires confluent-kafka to be installed. We store the ImportError in a variable
+    # to avoid import errors when the library is missing, as long as this channel is not used.
+    _IMPORT_ERROR = e
 
 __all__ = ["AioKafkaChannel"]
 
@@ -43,6 +50,9 @@ class AioKafkaChannel(Channel):
         broker_password: Optional[str] = None,
     ) -> None:
         super().__init__()
+        if _IMPORT_ERROR is not None:
+            raise _IMPORT_ERROR
+
         self._broker_url = broker_url
         self._broker_username = broker_username
         self._broker_password = broker_password

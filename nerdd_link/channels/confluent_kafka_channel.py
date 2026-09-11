@@ -13,26 +13,9 @@ try:
 
     _IMPORT_ERROR: Optional[ImportError] = None
 except ImportError as e:
-    # This channel requires confluent-kafka to be installed.
-    # We define placeholders to avoid import errors when the library is missing,
-    # as long as this channel is not used.
+    # This channel requires confluent-kafka to be installed. We store the ImportError in a variable
+    # to avoid import errors when the library is missing, as long as this channel is not used.
     _IMPORT_ERROR = e
-
-    # We use classes as placeholders to avoid typing warnings like
-    # "Variable not allowed in type expression"
-    class Consumer:  # type: ignore
-        pass
-
-    class Producer:  # type: ignore
-        pass
-
-    class KafkaException(Exception):  # type: ignore
-        pass
-
-    class KafkaError:  # type: ignore
-        ILLEGAL_GENERATION = 22
-        UNKNOWN_MEMBER_ID = 25
-        REBALANCE_IN_PROGRESS = 27
 
 
 __all__ = ["ConfluentKafkaChannel"]

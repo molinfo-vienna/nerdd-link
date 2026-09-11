@@ -18,36 +18,9 @@ try:
 
     _IMPORT_ERROR: Optional[ImportError] = None
 except ImportError as e:
-    # This channel requires rstream to be installed. We define placeholders to
-    # avoid import errors when the library is missing, as long as this channel
-    # is not used.
+    # This channel requires rstream to be installed. We store the ImportError in a variable
+    # to avoid import errors when the library is missing, as long as this channel is not used.
     _IMPORT_ERROR = e
-
-    # We use classes as placeholders to avoid typing warnings like
-    # "Variable not allowed in type expression".
-    class AMQPMessage:  # type: ignore
-        pass
-
-    class Consumer:  # type: ignore
-        pass
-
-    class ConsumerOffsetSpecification:  # type: ignore
-        pass
-
-    class MessageContext:  # type: ignore
-        pass
-
-    class OffsetNotFound(Exception):  # type: ignore
-        pass
-
-    class OffsetType:  # type: ignore
-        pass
-
-    class Producer:  # type: ignore
-        pass
-
-    def amqp_decoder(*args, **kwargs):  # type: ignore
-        pass
 
 
 from .channel import Channel
