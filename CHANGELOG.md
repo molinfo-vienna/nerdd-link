@@ -1,6 +1,25 @@
 # CHANGELOG
 
 
+## v0.7.1 (2026-09-11)
+
+### Fixes
+
+* fix: Add QueuedWriterStorage to main exports ([`03a4956`](https://github.com/molinfo-vienna/nerdd-link/commit/03a4956201d24c92a3aab8d544d8537f887e2cb5))
+
+* fix: Use QueuedWriterStorage in PredictCheckpointsAction ([`14af6ad`](https://github.com/molinfo-vienna/nerdd-link/commit/14af6ad44430d69cb625c40afec2f2f42d6babb7))
+
+* fix: Implement QueuedWriterStorage ([`e4d882b`](https://github.com/molinfo-vienna/nerdd-link/commit/e4d882b74400d1a39747afda2e289eac4ca360be))
+
+* fix: Increase limit for pool connections in S3Storage ([`e7de00a`](https://github.com/molinfo-vienna/nerdd-link/commit/e7de00af2646399fb861a6594e49b54b74dd5acb))
+
+### Unknown
+
+* Merge pull request #95 from shirte/main
+
+Write to storage in parallel to prediction ([`adade5c`](https://github.com/molinfo-vienna/nerdd-link/commit/adade5c4af40f115b75b9592e1fb466f7aa89bb3))
+
+
 ## v0.7.0 (2026-09-10)
 
 ### Features
