@@ -1,6 +1,23 @@
 # CHANGELOG
 
 
+## v0.7.2 (2026-09-11)
+
+### Fixes
+
+* fix: Simplify registration code in _run_prediction_server ([`e3385a1`](https://github.com/molinfo-vienna/nerdd-link/commit/e3385a1780da34d6c1bd2fd2a77b9af2f15fcf76))
+
+* fix: Implement RegisterModuleAction ([`09015f3`](https://github.com/molinfo-vienna/nerdd-link/commit/09015f3e79829f998b3a6d3974f3d316ab18063e))
+
+### Unknown
+
+* Merge pull request #96 from shirte/main
+
+Add RegisterModuleAction ([`85f8e01`](https://github.com/molinfo-vienna/nerdd-link/commit/85f8e013bb30caf9c9a4f8a956d05dfd3cdebb80))
+
+* tests: Check RegisterModuleAction ([`37b40de`](https://github.com/molinfo-vienna/nerdd-link/commit/37b40dea029c1638f19ed603fc1ce7cabd103246))
+
+
 ## v0.7.1 (2026-09-11)
 
 ### Fixes
