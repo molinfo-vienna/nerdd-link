@@ -1,6 +1,31 @@
 # CHANGELOG
 
 
+## v0.7.4 (2026-10-27)
+
+### Documentation
+
+* docs: Extend readme ([`f419556`](https://github.com/molinfo-vienna/nerdd-link/commit/f419556190cfab6184b4cee38afb99e710c2def1))
+
+### Fixes
+
+* fix: Keep pytest at version < 8.2 ([`e60756a`](https://github.com/molinfo-vienna/nerdd-link/commit/e60756a4f6d7c84e7351f3c0a98551e62ca9d248))
+
+* fix: Flush system message when initializing system ([`844e0ba`](https://github.com/molinfo-vienna/nerdd-link/commit/844e0ba18a442651c6695baa9e977b7b8e674dbd))
+
+* fix: Flush registration message in RegisterModuleAction ([`3a9cc49`](https://github.com/molinfo-vienna/nerdd-link/commit/3a9cc492119a0953c2ca5b278a03811d30a3a003))
+
+### Unknown
+
+* Merge pull request #99 from shirte/main
+
+Flush messages after sending ([`dde562a`](https://github.com/molinfo-vienna/nerdd-link/commit/dde562a650925a11cb3e12052f3c328421c1f98a))
+
+* Merge pull request #98 from shirte/main
+
+Extend readme ([`3c85b09`](https://github.com/molinfo-vienna/nerdd-link/commit/3c85b091327b16fbf42de679350445fc9b13cf5d))
+
+
 ## v0.7.3 (2026-09-11)
 
 ### Fixes
