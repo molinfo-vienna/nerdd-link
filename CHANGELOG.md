@@ -1,6 +1,33 @@
 # CHANGELOG
 
 
+## v0.7.5 (2026-10-28)
+
+### Fixes
+
+* fix: Unassign partitions in _ConsumerWorker._on_revoke ([`77bf508`](https://github.com/molinfo-vienna/nerdd-link/commit/77bf5086b0a249b3bb5c5ad46d145caff7e6d1eb))
+
+* fix: Simplify ConfluentKafkaChannel._iter_messages ([`a7967a0`](https://github.com/molinfo-vienna/nerdd-link/commit/a7967a0c66824914fa7ec1fa14188c9698ea8388))
+
+* fix: Manage committable offsets in _ConsumerWorker ([`af125b7`](https://github.com/molinfo-vienna/nerdd-link/commit/af125b71bf9c709601804fa479c2875a6688384f))
+
+* fix: Wire _ConsumerWorker into ConfluentKafkaChannel ([`21e8dbf`](https://github.com/molinfo-vienna/nerdd-link/commit/21e8dbf1a77cbfb33556670655a4add6e2ebca6e))
+
+* fix: Create background consumer worker in ConfluentKafkaChannel ([`f97e1b4`](https://github.com/molinfo-vienna/nerdd-link/commit/f97e1b464dba461cd234110bdd10c1807f19ca9a))
+
+* fix: Simplify _ProducerWorker.produce command ([`fd2e0d5`](https://github.com/molinfo-vienna/nerdd-link/commit/fd2e0d59504d9827ab4ca1a6de781ad68373a28e))
+
+* fix: Flush remaining messages when calling ProducerWorker.stop() ([`10f1183`](https://github.com/molinfo-vienna/nerdd-link/commit/10f11834240cbf2cbf751f9bbda55c2aaf026bd8))
+
+* fix: Forward the context body exception in Channel.__aexit__ ([`70d1ce6`](https://github.com/molinfo-vienna/nerdd-link/commit/70d1ce6da6829908b2946fb2648ace731e3aad95))
+
+### Unknown
+
+* Merge pull request #100 from shirte/main
+
+Create background consumer worker for ConfluentKafkaChannel ([`33a7011`](https://github.com/molinfo-vienna/nerdd-link/commit/33a7011d875ee71cc66505126c01892235657f29))
+
+
 ## v0.7.4 (2026-10-27)
 
 ### Documentation
