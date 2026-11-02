@@ -140,12 +140,16 @@ class _ConsumerWorker(CommandQueueThread):
         )
 
     def _on_assign(self, consumer: Consumer, partitions: List[Any]) -> None:
-        """Pause partitions newly assigned while a batch is still running."""
+        """Match newly assigned partitions' pause state to batch activity."""
         consumer.incremental_assign(partitions)
 
-        # we need to pause newly assigned partitions if we are currently processing messages
-        if self._pending is not None and len(partitions) > 0:
-            consumer.pause(partitions)
+        if len(partitions) > 0:
+            # we need to pause newly assigned partitions if we are currently processing messages
+            if self._pending is not None:
+                consumer.pause(partitions)
+            else:
+                # reassigned partitions might be in a paused state
+                consumer.resume(partitions)
 
     def _on_revoke(self, consumer: Consumer, partitions: List[Any]) -> None:
         """Invalidate the current batch's commit offsets for revoked partitions."""
