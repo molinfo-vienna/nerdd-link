@@ -1,13 +1,30 @@
 # CHANGELOG
 
 
+## v0.7.7 (2026-11-02)
+
+### Unknown
+
+* Merge pull request #101 from shirte/main
+
+Resume partitions in _on_assign ([`3c20834`](https://github.com/molinfo-vienna/nerdd-link/commit/3c208343ecf4d66a889ba624021e66933c6327fc))
+
+* Merge branch 'main' into main ([`d1d8824`](https://github.com/molinfo-vienna/nerdd-link/commit/d1d88245d711e54daee7c646421c43137d39d1d5))
+
+
 ## v0.7.6 (2026-11-02)
 
 ### Fixes
 
 * fix: Use Ubuntu 24.04 for tests with python 3.9 ([`a21a07f`](https://github.com/molinfo-vienna/nerdd-link/commit/a21a07fe5c1d551b0cac32da8bf21c90f20c0667))
 
+* fix: Use Ubuntu 24.04 for tests with python 3.9 ([`c5e9e3c`](https://github.com/molinfo-vienna/nerdd-link/commit/c5e9e3c1ac450f4faf3d64bab3ed1fb6d8f38b5f))
+
+* fix: Resume partitions in _on_assign ([`45348a1`](https://github.com/molinfo-vienna/nerdd-link/commit/45348a19ab77def309178dec9cb3f7bc9e6594c4))
+
 ### Unknown
+
+* Merge branch 'main' into main ([`f3bce2d`](https://github.com/molinfo-vienna/nerdd-link/commit/f3bce2dd5dd9d23524885e7afd3dbaa3b9bb0adc))
 
 * Merge pull request #102 from shirte/ci-python39
 
