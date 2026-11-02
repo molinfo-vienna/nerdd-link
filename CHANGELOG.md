@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v0.7.6 (2026-11-02)
+
+### Fixes
+
+* fix: Use Ubuntu 24.04 for tests with python 3.9 ([`a21a07f`](https://github.com/molinfo-vienna/nerdd-link/commit/a21a07fe5c1d551b0cac32da8bf21c90f20c0667))
+
+### Unknown
+
+* Merge pull request #102 from shirte/ci-python39
+
+Use Ubuntu 24.04 for tests with python 3.9 ([`f74c96c`](https://github.com/molinfo-vienna/nerdd-link/commit/f74c96c8abb1a8f7df461a9fae1fd8f87cec7461))
+
+
 ## v0.7.5 (2026-10-28)
 
 ### Fixes
