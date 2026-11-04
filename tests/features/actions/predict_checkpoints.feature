@@ -12,6 +12,7 @@ Feature: Predict checkpoints action
     And the prediction server is running
 
     And the channel receives a message on topic 'jobs' with content
+        """
         { "id": "123",
           "job_type": "mol-scale",
           "source_id": "456",
@@ -19,6 +20,7 @@ Feature: Predict checkpoints action
           "max_num_molecules": 10000,
           "checkpoint_size": 40
         }
+        """
     And we wait for 1 seconds
 
     # files
@@ -31,8 +33,14 @@ Feature: Predict checkpoints action
     And the channel sends 100 messages on topic 'results'
     # actions sends result checkpoint messages:
     And the channel sends a message on topic 'result-checkpoints' containing
+        """
         { "job_id": "123", "checkpoint_id": 0 }
+        """
     And the channel sends a message on topic 'result-checkpoints' containing
+        """
         { "job_id": "123", "checkpoint_id": 1 }
+        """
     And the channel sends a message on topic 'result-checkpoints' containing
+        """
         { "job_id": "123", "checkpoint_id": 2 }
+        """

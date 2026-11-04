@@ -55,11 +55,11 @@ classifiers = [
 [project.optional-dependencies]
 dev = ["mypy", "ruff==0.8.0", "pre-commit>=2"]
 test = [
-    "pytest<8.2",
+    "pytest~=9.2",
     "pytest-sugar",
     "pytest-cov",
-    "pytest-asyncio~=0.21.1",
-    "pytest-bdd==7.3.0",
+    "pytest-asyncio~=1.3",
+    "pytest-bdd~=9.0.1",
     "pytest-mock",
     "pytest-watcher",
     "hypothesis",
@@ -93,6 +93,7 @@ nerdd_link = ["py.typed"]
 log_cli = 1
 log_cli_level = "INFO"
 addopts = "-x --cov-report term --cov=nerdd_link"
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.pytest-watcher]
 patterns = ["*.py", "*.feature", "pyproject.toml"]

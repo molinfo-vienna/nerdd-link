@@ -41,10 +41,10 @@ async def channel():
         yield channel
 
 
-@when(parsers.parse("the channel receives a message on topic '{topic}' with content\n{message}"))
+@when(parsers.parse("the channel receives a message on topic '{topic}' with content"))
 @async_step
-async def receive_message(channel, topic, message):
-    message = literal_eval(message)
+async def receive_message(channel, topic, docstring):
+    message = literal_eval(docstring)
     MessageType = get_message_type_from_topic(topic)
     await channel.send(topic, MessageType(**message))
 
@@ -57,9 +57,9 @@ async def receive_tombstone(channel, topic, key):
     await channel.send(topic, Tombstone(MessageType, *key_tuple))
 
 
-@then(parsers.parse("the channel sends a message on topic '{topic}' with content\n{message}"))
-def check_exists_message_with_content(channel, topic, message):
-    message = literal_eval(message)
+@then(parsers.parse("the channel sends a message on topic '{topic}' with content"))
+def check_exists_message_with_content(channel, topic, docstring):
+    message = literal_eval(docstring)
     messages = channel.get_produced_messages()
     found = False
     for t, _, value in messages:
@@ -91,9 +91,9 @@ def check_number_of_messages(channel, num, topic):
     assert count == num, f"Expected {num} messages on topic {topic}, got {count}."
 
 
-@then(parsers.parse("the channel sends a message on topic '{topic}' containing\n{message}"))
-def check_exists_message_containing(channel, topic, message):
-    message = literal_eval(message)
+@then(parsers.parse("the channel sends a message on topic '{topic}' containing"))
+def check_exists_message_containing(channel, topic, docstring):
+    message = literal_eval(docstring)
     messages = channel.get_produced_messages()
     found = False
     for t, _, message in messages:
