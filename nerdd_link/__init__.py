@@ -49,7 +49,6 @@ __all__ = [
     "Message",
     "MirroredStorage",
     "ModuleMessage",
-    "OutputFilePathSpec",
     "QueuedWriterStorage",
     "RabbitmqStreamsChannel",
     "ResultCheckpointMessage",
