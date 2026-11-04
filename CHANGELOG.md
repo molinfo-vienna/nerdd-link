@@ -1,6 +1,41 @@
 # CHANGELOG
 
 
+## v0.7.8 (2026-11-04)
+
+### Fixes
+
+* fix: Activate ruff preview mode to identify undefined exports ([`369711b`](https://github.com/molinfo-vienna/nerdd-link/commit/369711b5166b914e2eb2f7c5918540ab32d0bd9b))
+
+* fix: Avoid exporting undefined variables ([`054f34a`](https://github.com/molinfo-vienna/nerdd-link/commit/054f34aca65aea2bccdad54a3d327784215e8766))
+
+### Testing
+
+* test: Simplify async_step function ([`cac83e1`](https://github.com/molinfo-vienna/nerdd-link/commit/cac83e1ad0c1e01159ccd39058e49f8c9243caaf))
+
+* test: Set pytest-asyncio fixture loop scope to function ([`cd6cc34`](https://github.com/molinfo-vienna/nerdd-link/commit/cd6cc34ec2c37ce70d7a5651a6af38690cb43674))
+
+* test: Update pytest and pytest-asyncio ([`b7fe86e`](https://github.com/molinfo-vienna/nerdd-link/commit/b7fe86ec6e4d3ec28b3e1cdaec67ee6fd7c2a5fe))
+
+* test: Use new docstring parameter in channels fixtures ([`df1f97c`](https://github.com/molinfo-vienna/nerdd-link/commit/df1f97c8406db778c88509c32ad0138089dcd71a))
+
+* test: Update pytest-bdd ([`112de4f`](https://github.com/molinfo-vienna/nerdd-link/commit/112de4ffa6c282372dfcdec26bfb8213d2f56f2b))
+
+* test: Add python versions to github test matrix ([`48bcf10`](https://github.com/molinfo-vienna/nerdd-link/commit/48bcf107d37cc8ec4af52844f5ca402bd84eab97))
+
+* test: Remove python 3.9 from tested versions ([`698a196`](https://github.com/molinfo-vienna/nerdd-link/commit/698a1963f92518cc95b9c25573fd86545c0de714))
+
+### Unknown
+
+* Merge pull request #104 from shirte/main
+
+Check undefined exports ([`556d17b`](https://github.com/molinfo-vienna/nerdd-link/commit/556d17b5ef767a98be20b32420b29040bb83b16d))
+
+* Merge pull request #103 from shirte/main
+
+Update pytest and testing matrix ([`8ea3d75`](https://github.com/molinfo-vienna/nerdd-link/commit/8ea3d75dc7490a6d6fa8e7947d42893418fd6ff1))
+
+
 ## v0.7.7 (2026-11-02)
 
 ### Unknown
